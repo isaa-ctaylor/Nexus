@@ -1,30 +1,41 @@
 from os import PathLike, path
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
-from yaml import load
+from aiofile import async_open
+from yaml import safe_dump as yamldump
+from yaml import safe_load as yamlload
 
 from .helpers import DotDict
 
-CONFIG_DIR = path.join(path.dirname(__file__), '../config.yaml')
+CONFIG_PATH = path.join(path.dirname(__file__), "../config.yaml")
 
-if not path.exists(CONFIG_DIR):
-    with open(CONFIG_DIR, "w") as f:
-        print(f"Config file created: {CONFIG_DIR}")
+if not path.exists(CONFIG_PATH):
+    with open(CONFIG_PATH, "w") as f:
+        print(f"Config file created: {CONFIG_PATH}")
+
 
 class Config:
     def __init__(self, path: Optional[Union[str, PathLike]] = None):
-        path = path or CONFIG_DIR
-        
+        path = path or CONFIG_PATH
+
         with open(path, "r") as f:
-            self._raw_data = load(f)
-            
+            self._raw_data = yamlload(f)
+
         self.data = DotDict(self._raw_data)
-        
-    def __getattr__(self, key: str) -> Any:
-        return self.data.__getattr__(key)
-    
-    def __setattr__(self, key: str, value: Any) -> Any:
-        return self.data.__setattr__(key, value)
-    
-    def __delattr__(self, key: str) -> Any:
-        return self.data.__delattr__(key)
+
+    async def load(self, *, path: Union[str, PathLike] = CONFIG_PATH) -> None:
+        """
+        Load the config from the file. Useful for re-loading the config without
+        stopping the bot.
+        """
+        async with async_open(path, "r") as f:
+            self._raw_data = await f.read()
+
+            self.data = DotDict(self._raw_data)
+
+    async def dump(self, *, path: Union[str, PathLike] = CONFIG_PATH) -> None:
+        """
+        Dump the current loaded config
+        """
+        async with async_open(path, "w") as f:
+            await f.write(yamldump(self._raw_data, default_flow_style=False))
