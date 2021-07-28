@@ -1,5 +1,5 @@
 cogs:
-  null
+  - cogs.Help
 
 colours:
   bad: "!Colour 15158332"
