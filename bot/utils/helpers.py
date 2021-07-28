@@ -1,11 +1,12 @@
 from typing import Any, Union
 
+from discord.colour import Colour
+
 
 class DotDict(dict):
     """
     A `dict` subclass that implements dot notation
     """
-
     def _format_array(
         self,
         array: list,
@@ -37,6 +38,9 @@ class DotDict(dict):
                 value,
                 tuple_=not isinstance(value, list)
             )
+
+        if isinstance(value, str) and value.startswith("!Colour "):
+            return Colour(int(value.split()[1]))
 
         return value
 
