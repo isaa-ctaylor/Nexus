@@ -1,5 +1,0 @@
-git+https://github.com/Rapptz/discord.py/
-pyyaml==5.4
-aiofile==3.5
-python-dotenv==0.19
-aiohttp==3.7.4
