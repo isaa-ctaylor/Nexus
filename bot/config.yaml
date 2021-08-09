@@ -1,7 +1,18 @@
+owner: 718087881087910018
+
+assets:
+  banner: "!Asset Banner.png"
+  logo: "!Asset Nexus.png"
+
 cogs:
   - cogs.Help
+  - cogs.Developer
+  - cogs.Errors
 
 colours:
   bad: "!Colour 15158332"
   good: "!Colour 3066993"
   neutral: "!Colour 16711774"
+
+channels:
+  errors: 871371177208188948
