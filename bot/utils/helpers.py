@@ -1,4 +1,5 @@
 import asyncio
+from collections import deque
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Any, List, Union
@@ -7,7 +8,12 @@ from discord import Embed, File, Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.ext.commands import Bot, Context
+from discord.ext.commands.converter import Converter
 from discord.mentions import AllowedMentions
+from os import path
+
+
+ASSETPATH = path.join(path.dirname(__file__), "../assets")
 
 
 class DotDict(dict):
@@ -15,12 +21,7 @@ class DotDict(dict):
     A `dict` subclass that implements dot notation
     """
 
-    def _format_array(
-        self,
-        array: list,
-        *,
-        tuple_: bool = False
-    ) -> Union[list, tuple]:
+    def _format_array(self, array: list, *, tuple_: bool = False) -> Union[list, tuple]:
         data = [
             DotDict(element)
             if isinstance(element, dict)
@@ -42,13 +43,17 @@ class DotDict(dict):
             return DotDict(value)
 
         if isinstance(value, (list, tuple)):
-            return self._format_array(
-                value,
-                tuple_=not isinstance(value, list)
-            )
+            return self._format_array(value, tuple_=not isinstance(value, list))
 
-        if isinstance(value, str) and value.startswith("!Colour "):
-            return Colour(int(value.split()[1]))
+        if isinstance(value, str):
+            if value.startswith(prefix := "!Colour "):
+                return Colour(int(value.removeprefix(prefix)))
+
+            if value.startswith(prefix := "!Asset "):
+                return File(
+                    ASSETPATH + "/" + value.removeprefix(prefix),
+                    filename=value.removeprefix(prefix),
+                )
 
         return value
 
@@ -72,13 +77,7 @@ class paginatorinput:
     file: Union[File, None] = None
 
 
-REACTIONS = {
-    "⏮": "first",
-    "◀": "previous",
-    "🗑": "delete",
-    "▶": "next",
-    "⏭": "last"
-}
+REACTIONS = {"⏮": "first", "◀": "previous", "🗑": "delete", "▶": "next", "⏭": "last"}
 
 
 class Paginator:
@@ -98,12 +97,8 @@ class Paginator:
 
         self.user = None
 
-        self.remove_reactions: bool = bool(
-            kwargs.pop("remove_reactions", True)
-        )
-        self.two_way_reactions: bool = bool(
-            kwargs.pop("two_way_reactions", True)
-        )
+        self.remove_reactions: bool = bool(kwargs.pop("remove_reactions", True))
+        self.two_way_reactions: bool = bool(kwargs.pop("two_way_reactions", True))
 
         self.stopemoji = kwargs.pop("stopemoji", "\U0001f5d1")
 
@@ -147,9 +142,7 @@ class Paginator:
                     await self.message.clear_reaction(emoji)
                 except HTTPException:
                     with suppress(HTTPException, Forbidden):
-                        await self.message.remove_reaction(
-                            emoji, self.ctx.guild.me
-                        )
+                        await self.message.remove_reaction(emoji, self.ctx.guild.me)
 
     async def _remove_reaction(self, emoji, member):
         with suppress(HTTPException, Forbidden):
@@ -170,9 +163,7 @@ class Paginator:
         done, pending = await asyncio.wait(
             [
                 self.bot.wait_for("reaction_add", check=self._reaction_check),
-                self.bot.wait_for(
-                    "reaction_remove", check=self._reaction_check
-                ),
+                self.bot.wait_for("reaction_remove", check=self._reaction_check),
             ],
             return_when=asyncio.FIRST_COMPLETED,
             timeout=self.timeout,
@@ -264,6 +255,7 @@ class Paginator:
         *,
         destination: Messageable = None,
         start: int = 0,
+        message: Message = None,
     ):
         destination = destination or self.ctx.channel
 
@@ -272,17 +264,27 @@ class Paginator:
             if isinstance(item, Embed)
             else paginatorinput(file=item)
             if isinstance(item, File)
+            else item
+            if isinstance(item, paginatorinput)
             else paginatorinput(str(item))
             for item in items
         ]
 
-        self.message = await destination.send(
-            self.items[start].content,
-            embed=self.items[start].embed,
-            file=self.items[start].file,
-            reference=self.ctx.message if self.reply else None,
-            mention_author=False,
-        )
+        if message:
+            await message.edit(
+                self.items[start].content,
+                embed=self.items[start].embed,
+            )
+
+            self.message = message
+        else:
+            self.message = await destination.send(
+                self.items[start].content,
+                embed=self.items[start].embed,
+                file=self.items[start].file,
+                reference=self.ctx.message if self.reply else None,
+                mention_author=False,
+            )
 
         self.sent = True
 
@@ -314,3 +316,50 @@ class Paginator:
                     await asyncio.sleep(0.5)  # Prevent abuse
             except asyncio.TimeoutError:
                 carry_on = await self.stop()
+
+
+@dataclass
+class Codeblock:
+    lang: str
+    code: str
+
+
+class CodeblockConverter(Converter):
+    async def convert(self, ctx, argument: Any):
+        if not argument.startswith("`"):
+            return Codeblock(None, argument)
+
+        last = deque(maxlen=3)
+        backticks = 0
+        in_language = False
+        in_code = False
+        language = []
+        code = []
+
+        for char in argument:
+            if char == "`" and not in_code and not in_language:
+                backticks += 1
+            if (
+                last
+                and last[-1] == "`"
+                and char != "`"
+                or in_code
+                and "".join(last) != "`" * backticks
+            ):
+                in_code = True
+                code.append(char)
+            if char == "\n":
+                in_language = False
+                in_code = True
+            elif "".join(last) == "`" * 3 and char != "`":
+                in_language = True
+                language.append(char)
+            elif in_language:
+                language.append(char)
+
+            last.append(char)
+
+        if not code and not language:
+            code[:] = last
+
+        return Codeblock("".join(language), "".join(code[len(language) : -backticks]))
