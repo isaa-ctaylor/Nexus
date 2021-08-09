@@ -19,6 +19,10 @@ class Nexus(Bot):
 
         cogs = self.config.data.cogs
 
+        super().__init__(*args, **kwargs)
+
+        self.owner_id = self.config.data.owner
+
         if cogs:
             for cog in cogs:
                 try:
@@ -29,8 +33,6 @@ class Nexus(Bot):
                             format_exception(type(e), e, e.__traceback__)
                         )
                     )
-
-        super().__init__(*args, **kwargs)
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
