@@ -69,7 +69,7 @@ class NexusHelp(HelpCommand):
 
     async def _get_cog_help(self, cog: Cog) -> Union[List[Embed], Embed]:
         if not self._show(cog):
-            return await self.command_not_found(self.context.content.removeprefix(f"{self.context.prefix}help "))
+            return await self.send_error_message(self.command_not_found(self.context.message.content.removeprefix(f"{self.context.prefix}help ")))
         
         commands: List[Command] = await self.filter_commands(cog.get_commands())
         grouped: List[List[Command]] = [
@@ -113,14 +113,14 @@ class NexusHelp(HelpCommand):
         )
 
         if getattr(command, "examples", None):
-            examples = "\n".join(command.examples)
+            examples = "\n".join(f"{self.context.clean_prefix}{command.qualified_name} {example}" for example in command.examples)
             embed.add_field(name="Examples", value=f"```\n{examples}```", inline=False)
             
         return embed
 
     async def send_command_help(self, command: Command) -> None:
         if not self._show(command):
-            return await self.command_not_found(self.context.content.removeprefix(f"{self.context.prefix}help "))
+            return await self.send_error_message(self.command_not_found(self.context.message.content.removeprefix(f"{self.context.prefix}help ")))
         await self._send(await self._get_command_help(command))
 
     async def _get_command_help(self, command: Command) -> Union[List[Embed], Embed]:
@@ -128,7 +128,7 @@ class NexusHelp(HelpCommand):
 
     async def send_group_help(self, group: Group):
         if not self._show(group):
-            return await self.command_not_found(self.context.content.removeprefix(f"{self.context.prefix}help "))
+            return await self.send_error_message(self.command_not_found(self.context.message.content.removeprefix(f"{self.context.prefix}help ")))
         await self._send(await self._get_group_help(group))
         
     async def _get_group_help(self, group: Group):
