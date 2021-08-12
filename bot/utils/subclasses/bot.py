@@ -1,3 +1,4 @@
+from logging import INFO, getLogger
 from traceback import format_exception
 from os import getenv
 
@@ -6,6 +7,7 @@ from discord.ext.commands import Bot
 from dotenv import load_dotenv
 
 from ..config import Config
+from ..logging import WebhookHandler
 from .context import NexusContext
 
 load_dotenv()
@@ -22,6 +24,12 @@ class Nexus(Bot):
         super().__init__(*args, **kwargs)
 
         self.owner_id = self.config.data.owner
+        self.strip_after_prefix = True
+        self.case_insensitive = True
+        
+        logger = getLogger("discord")
+        logger.setLevel(INFO)
+        logger.addHandler(WebhookHandler(level=INFO, bot=self, url=getenv("LOGGING"), session=self.session))
 
         if cogs:
             for cog in cogs:
