@@ -1,5 +1,5 @@
 from difflib import get_close_matches
-from inspect import isasyncgen
+from inspect import Parameter, isasyncgen
 from os import path
 from pathlib import Path
 from textwrap import indent
@@ -8,9 +8,11 @@ from typing import Callable, List
 
 from discord.embeds import Embed
 from discord.ext.commands import command, is_owner
+from discord.ext.commands.errors import MissingRequiredArgument
 from discord.file import File
 from discord.member import Member
 from import_expression import eval, exec
+from utils import codeblocksafe
 from utils.helpers import CodeblockConverter, paginatorinput
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
@@ -88,7 +90,7 @@ class Developer(Cog, hidden=True):
         except Exception as e:
             result = e
 
-        if not result:
+        if result is None:
             embeds = []
 
         elif isinstance(result, Exception):
@@ -104,15 +106,15 @@ class Developer(Cog, hidden=True):
             embeds = [result]
 
         else:
-            result = str(result)
+            result = codeblocksafe(repr(result))
             embeds = [
                 Embed(
-                    description=f"```py\n{result[i:i + 4096]}```".replace(
+                    description=f"```py\n{result[i:i + 4087]}```".replace(
                         self.bot.http.token, "[TOKEN]"
                     ),
                     colour=self.bot.config.data.colours.neutral,
                 )
-                for i in range(0, len(result), 4096)
+                for i in range(0, len(result), 4087)
             ]
 
         await ctx.message.add_reaction("✅" if not error else "\U00002757")
@@ -121,6 +123,8 @@ class Developer(Cog, hidden=True):
             await ctx.paginate(embeds)
 
     async def _operate_on_cogs(self, cogs: List[str], func: Callable, options: List[str]):
+        if not cogs:
+            raise MissingRequiredArgument(Parameter("cogs", Parameter.POSITIONAL_OR_KEYWORD))
         _cogs = []
 
         _to_load = []
@@ -230,7 +234,7 @@ class Developer(Cog, hidden=True):
         cls=Command,
         examples=["@isaa_ctaylor#2494 help"]
     )
-    async def _as(self, ctx: NexusContext, user: Member, command: str):
+    async def _as(self, ctx: NexusContext, user: Member, *, command: str):
         """
         Run the specified command as someone else
         
@@ -244,7 +248,7 @@ class Developer(Cog, hidden=True):
                 return await ctx.send("Cannot run command as this user")
             return await ctx.send(f"Command {context.invoked_with} is not found")
         
-        return await context.command.invoke(context)
+        await context.command.invoke(context)
 
 def setup(bot: Nexus) -> None:
     bot.add_cog(Developer(bot))
