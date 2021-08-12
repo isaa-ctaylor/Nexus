@@ -1,10 +1,9 @@
-from discord.abc import Messageable
 from discord.ext.commands import Context
 from discord import Embed
-from discord.file import File
 from discord.message import Message
-from ..helpers import Paginator, paginatorinput
+from ..helpers import Paginator
 from copy import copy
+from discord.errors import Forbidden
 
 
 class NexusContext(Context):
@@ -23,7 +22,7 @@ class NexusContext(Context):
 
         p = Paginator(self)
 
-        return await p.send(items)
+        return await p.send(items, destination=destination)
     
     async def copy_with(self, *, author=None, channel=None, **kwargs):
         _msg: Message = copy(self.message)
@@ -35,3 +34,15 @@ class NexusContext(Context):
             _msg.channel = channel
 
         return await self.bot.get_context(_msg, cls=type(self))
+    
+    async def error(self, message: str):
+        try:
+            await self.paginate(
+                Embed(
+                    title="Error!",
+                    description=f"```\n{message}```",
+                    colour=self.bot.config.data.colours.bad,
+                )
+            )
+        except Forbidden:
+            await self.paginate(message)
