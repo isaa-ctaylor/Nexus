@@ -2,8 +2,9 @@ from discord.ext.commands import Cog as DiscordCog
 
 
 class Cog(DiscordCog):
-    def __init_subclass__(cls, hidden: bool = False) -> None:
+    def __init_subclass__(cls, emoji: str = None, hidden: bool = False) -> None:
         cls.hidden = hidden
+        cls.emoji = emoji
 
     @property
     def doc(self) -> str:
