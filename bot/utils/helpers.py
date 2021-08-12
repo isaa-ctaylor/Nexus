@@ -2,15 +2,19 @@ import asyncio
 from collections import deque
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from discord import Embed, File, Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.ext.commands import Bot, Context
 from discord.ext.commands.converter import Converter
+from discord.interactions import InteractionResponse
 from discord.mentions import AllowedMentions
 from os import path
+
+from discord.ui.view import View
+from discord.utils import MISSING
 
 
 ASSETPATH = path.join(path.dirname(__file__), "../assets")
@@ -75,6 +79,7 @@ class paginatorinput:
     content: Union[str, None] = None
     embed: Union[Embed, None] = None
     file: Union[File, None] = None
+    view: Optional[View] = MISSING
 
 
 REACTIONS = {"⏮": "first", "◀": "previous", "🗑": "delete", "▶": "next", "⏭": "last"}
@@ -192,6 +197,7 @@ class Paginator:
             await self.message.edit(
                 content=self.items[self.current_page].content,
                 embed=self.items[self.current_page].embed,
+                view=self.items[self.current_page].view,
                 allowed_mentions=AllowedMentions.none(),
             )
 
@@ -256,6 +262,7 @@ class Paginator:
         destination: Messageable = None,
         start: int = 0,
         message: Message = None,
+        **kwargs,
     ):
         destination = destination or self.ctx.channel
 
@@ -274,16 +281,27 @@ class Paginator:
             await message.edit(
                 self.items[start].content,
                 embed=self.items[start].embed,
+                view=self.items[start].view,
+                **kwargs,
             )
 
             self.message = message
+        elif isinstance(destination, InteractionResponse):
+            self.message = await destination.send_message(
+                self.items[start].content,
+                embed=self.items[start].embed,
+                view=self.items[start].view,
+                **kwargs,
+            )
         else:
             self.message = await destination.send(
                 self.items[start].content,
                 embed=self.items[start].embed,
                 file=self.items[start].file,
+                view=self.items[start].view,
                 reference=self.ctx.message if self.reply else None,
                 mention_author=False,
+                **kwargs,
             )
 
         self.sent = True
