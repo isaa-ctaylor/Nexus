@@ -2,12 +2,14 @@ import asyncio
 from collections import deque
 from contextlib import suppress
 from dataclasses import dataclass
+import re
 from typing import Any, List, Optional, Union
 
 from discord import Embed, File, Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.ext.commands import Bot, Context
+from discord.ext.commands.bot import when_mentioned_or
 from discord.ext.commands.converter import Converter
 from discord.interactions import InteractionResponse
 from discord.mentions import AllowedMentions
@@ -141,6 +143,7 @@ class Paginator:
     async def _clear_reactions(self):
         try:
             await self.message.clear_reactions()
+            return
         except HTTPException:
             for emoji in self.emojis:
                 try:
@@ -148,6 +151,7 @@ class Paginator:
                 except HTTPException:
                     with suppress(HTTPException, Forbidden):
                         await self.message.remove_reaction(emoji, self.ctx.guild.me)
+            return
 
     async def _remove_reaction(self, emoji, member):
         with suppress(HTTPException, Forbidden):
@@ -264,6 +268,9 @@ class Paginator:
         message: Message = None,
         **kwargs,
     ):
+        if not items:
+            return
+        
         destination = destination or self.ctx.channel
 
         self.items = [
@@ -381,3 +388,14 @@ class CodeblockConverter(Converter):
             code[:] = last
 
         return Codeblock("".join(language), "".join(code[len(language) : -backticks]))
+
+
+fallback = "Nxs"
+prefixes = ['nxs']
+
+def get_prefix(bot, msg: Message):
+    comp = re.compile("^(" + "|".join(map(re.escape, prefixes)) + ").*", flags=re.I)
+    match = comp.match(msg.content)
+    if match is not None:
+        return when_mentioned_or(match.group(1))(bot, msg)
+    return when_mentioned_or(fallback)(bot, msg)
