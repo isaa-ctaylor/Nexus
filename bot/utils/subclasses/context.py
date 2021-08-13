@@ -11,7 +11,11 @@ class NexusContext(Context):
         kwargs["colour"] = kwargs.pop("colour", self.bot.config.data.colours.neutral)
 
         destination = kwargs.pop("destination", self)
+        paginate = kwargs.pop("paginate", True)
 
+        if paginate:
+            return await self.paginate(Embed(**kwargs), destination=destination)
+        
         return await destination.send(embed=Embed(**kwargs))
 
     async def paginate(self, *items, **kwargs):
