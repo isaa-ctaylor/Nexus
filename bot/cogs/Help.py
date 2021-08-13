@@ -3,10 +3,10 @@ from discord.components import SelectOption
 from discord.ui import Select, View
 from discord import Interaction
 
-from discord.ext.commands.core import Group, bot_has_permissions
+from discord.ext.commands.core import bot_has_permissions
 from discord.utils import MISSING
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command
+from utils.subclasses.command import Command, Group
 from utils.helpers import paginatorinput
 from discord.ext.commands.help import HelpCommand, _HelpCommandImpl
 from discord import Embed
@@ -28,13 +28,13 @@ class NexusHelp(HelpCommand):
         *,
         destination: Optional[Messageable] = None,
         view: View = None,
-        **kwargs
+        **kwargs,
     ) -> None:
         destination = destination or self.get_destination()
 
         await self.context.paginate(items, destination=destination, view=view, **kwargs)
 
-    def _show(self, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]):
+    async def _show(self, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]):
         if isinstance(item, (Command, Group, _HelpCommandImpl)):
             item = item.cog
 
@@ -52,49 +52,15 @@ class NexusHelp(HelpCommand):
     async def send_bot_help(
         self, mapping: Mapping[Optional[Cog], List[Command]]
     ) -> None:
-        class CogDropdown(Select):
-            def __init__(this):
-                options = [
-                    SelectOption(
-                        label=cog.qualified_name,
-                        description=cog.description,
-                        emoji=cog.emoji,
-                    )
-                    for cog in mapping.keys()
-                    if cog and self._show(cog)
-                ]
-                
-                super().__init__(placeholder="Select a module...", min_values=1, max_values=1, options=options)
-                
-            async def callback(this, interaction: Interaction):
-                embeds = await self._get_cog_help(self.context.bot.get_cog(this.values[0]))
-                if isinstance(embeds, Embed):
-                    embeds = [embeds]
-
-                await interaction.response.send_message(embeds=embeds, ephemeral=True)
-                await interaction.message.edit(view=None)
-                this.disabled = True
-                
-        class DropdownView(View):
-            def __init__(this, *, timeout: Optional[float] = None):
-                super().__init__(timeout=timeout)
-                
-                this.add_item(CogDropdown())
-                
-            async def interaction_check(this, interaction: Interaction) -> bool:
-                return interaction.user.id == self.context.author.id
-
-        view = DropdownView()
-
-        help = await self._get_bot_help(mapping)
-        help.view = view
-        
-        await self._send(help)
+        await self._send(await self._get_bot_help(mapping))
 
     async def _get_bot_help(
         self, mapping: Mapping[Optional[Cog], List[Command]]
     ) -> paginatorinput:
-        cogs: List[Cog] = [cog for cog in mapping.keys() if cog and self._show(cog)]
+        cogs: List[Cog] = sorted(
+            [cog for cog in mapping.keys() if cog and await self._show(cog)],
+            key=lambda c: c.qualified_name,
+        )
 
         _embed = Embed(colour=self.context.bot.config.data.colours.neutral).set_image(
             url="attachment://Banner.png"
@@ -107,7 +73,7 @@ class NexusHelp(HelpCommand):
         )
 
     async def send_cog_help(self, cog: Cog) -> None:
-        if not self._show(cog) or not await self.filter_commands(cog.get_commands()):
+        if not await self._show(cog):
             await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -120,7 +86,7 @@ class NexusHelp(HelpCommand):
 
     async def _get_cog_help(self, cog: Cog) -> Union[List[Embed], Embed]:
 
-        commands: List[Command] = await self.filter_commands(cog.get_commands())
+        commands: List[Command] = cog.get_commands()
 
         grouped: List[List[Command]] = [
             commands[i:PER_PAGE] for i in range(0, len(commands), PER_PAGE)
@@ -173,7 +139,7 @@ class NexusHelp(HelpCommand):
         return embed
 
     async def send_command_help(self, command: Command) -> None:
-        if not self._show(command):
+        if not await self._show(command):
             return await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -187,7 +153,7 @@ class NexusHelp(HelpCommand):
         return await self._basic_command_help(command)
 
     async def send_group_help(self, group: Group):
-        if not self._show(group):
+        if not await self._show(group):
             return await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -201,13 +167,13 @@ class NexusHelp(HelpCommand):
         embed = await self._basic_command_help(group)
 
         embed.description += (
-            "\n```yaml"
+            "\n```yaml\n"
             + "\n".join(
-                f"{c.qualified_name}: {c.short_doc}"
-                for c in await self.filter_commands(group.commands)
+                f"{c.name}: {c.short_doc}"
+                for c in group.commands
             )
             + "```"
-        )
+        ) if group.commands else ""
 
         return embed
 
