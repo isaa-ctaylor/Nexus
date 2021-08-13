@@ -22,13 +22,16 @@ class WebhookHandler(Handler):
         
     def handle(self, log: LogRecord) -> str:
         loop = None
+
         with suppress(RuntimeError):
             loop = get_running_loop()
-        
-        if loop is not None:
-            create_task(self._async_handle(log))
-        else:
-            self._sync_handle(log)
+
+        with suppress(Exception):
+            if loop is not None:
+                create_task(self._async_handle(log))
+            else:
+                self._sync_handle(log)
+
         return log
     
     async def _async_handle(self, log: LogRecord):
