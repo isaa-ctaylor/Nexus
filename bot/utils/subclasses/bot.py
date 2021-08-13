@@ -1,3 +1,4 @@
+from ..helpers import get_prefix
 from logging import INFO, getLogger
 from traceback import format_exception
 from os import getenv
@@ -10,6 +11,8 @@ from ..config import Config
 from ..logging import WebhookHandler
 from .context import NexusContext
 
+from discord.ext.commands.core import _CaseInsensitiveDict
+
 load_dotenv()
 
 
@@ -18,6 +21,9 @@ class Nexus(Bot):
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
         self.config = Config()
+        
+        kwargs["command_prefix"] = kwargs.pop("command_prefix", get_prefix)
+        kwargs["case_insensitive"] = kwargs.pop("case_insensitive", True)
 
         cogs = self.config.data.cogs
 
@@ -25,11 +31,12 @@ class Nexus(Bot):
 
         self.owner_id = self.config.data.owner
         self.strip_after_prefix = True
-        self.case_insensitive = True
         
-        logger = getLogger("discord")
-        logger.setLevel(INFO)
-        logger.addHandler(WebhookHandler(level=INFO, bot=self, url=getenv("LOGGING"), session=self.session))
+        self.logger = getLogger("discord")
+        self.logger.setLevel(INFO)
+        self.logger.addHandler(WebhookHandler(level=INFO, bot=self, url=getenv("LOGGING"), session=self.session))
+        
+        self._BotBase__cogs = _CaseInsensitiveDict()
 
         if cogs:
             for cog in cogs:
@@ -46,6 +53,7 @@ class Nexus(Bot):
         print(f"Logged in as {self.user} - {self.user.id}")
 
     async def close(self):
+        
         if self.session:
             await self.session.close()
 
@@ -57,4 +65,4 @@ class Nexus(Bot):
     def run(self, *args, **kwargs):
         TOKEN = getenv("TOKEN")
 
-        super().run(TOKEN)
+        super().run(TOKEN, *args, **kwargs)
