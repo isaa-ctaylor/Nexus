@@ -7,10 +7,12 @@ from pathlib import Path
 from textwrap import indent
 from traceback import format_exception
 from typing import Callable, List
+from re import findall
 
 from discord.embeds import Embed
 from discord.ext.commands import command, is_owner
 from discord.ext.commands.errors import MissingRequiredArgument
+from discord.ext.commands.flags import FlagConverter, flag
 from discord.file import File
 from discord.member import Member
 from import_expression import eval, exec
@@ -169,7 +171,11 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
+            + str(file)
+            .removeprefix(str(COG_PATH))
+            .strip("\\")
+            .strip("./")
+            .removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
@@ -196,7 +202,11 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
+            + str(file)
+            .removeprefix(str(COG_PATH))
+            .strip("\\")
+            .strip("./")
+            .removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
@@ -223,7 +233,11 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
+            + str(file)
+            .removeprefix(str(COG_PATH))
+            .strip("\\")
+            .strip("./")
+            .removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
@@ -256,29 +270,52 @@ class Developer(Cog, hidden=True):
 
         await context.command.invoke(context)
 
+    class Flags(FlagConverter, prefix="--", delimiter=" "):
+        no_reload: bool = flag(name="no-reload", aliases=["nr"], default=False)
+
     @is_owner()
-    @command(name="sync", cls=Command)
-    async def _sync(self, ctx: NexusContext, aliases=["pull"]):
+    @command(name="sync", cls=Command, aliases=["pull"])
+    async def _sync(self, ctx: NexusContext, *, flags: Flags):
         """
         Sync to github
         """
-        proc = await create_subprocess_shell(
-            "git pull", stdout=PIPE, stderr=PIPE
-        )
+        proc = await create_subprocess_shell("git pull", stdout=PIPE, stderr=PIPE)
 
         stdout, stderr = await proc.communicate()
-        
+
         _ = ""
-        
+
         if stdout:
-            _ += f'[stdout]\n{stdout.decode()}'
-            
+            _ += f"[stdout]\n{stdout.decode()}"
+
         if stderr:
-            _ += f'\n[stderr]\n{stderr.decode()}'
-            
+            _ += f"\n[stderr]\n{stderr.decode()}"
+
         _ = _ or "No output"
-        
-        await ctx.paginate(Embed(description=f"```sh\n$ git pull\n{_}```", colour=self.bot.config.data.colours.neutral))
+
+        _cogs = ""
+
+        if not flags.no_reload:
+            cogs = findall("r(?<=cogs\/)[^\/\W]*(?=\.py)", _)
+
+            options = [
+                "cogs."
+                + str(file)
+                .removeprefix(str(COG_PATH))
+                .strip("\\")
+                .strip("./")
+                .removesuffix(".py")
+                for file in COG_PATH.glob("./*.py")
+            ]
+
+            _cogs = await self._operate_on_cogs(cogs, self.bot.reload_extension, options)
+
+        await ctx.paginate(
+            Embed(
+                description=f"```sh\n$ git pull\n{_}```" + (f"\n\n```\n{_cogs}```" if _cogs else ""),
+                colour=self.bot.config.data.colours.neutral,
+            )
+        )
 
 
 def setup(bot: Nexus) -> None:
