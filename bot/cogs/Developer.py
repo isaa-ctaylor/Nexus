@@ -1,3 +1,5 @@
+from asyncio import create_subprocess_shell
+from asyncio.subprocess import PIPE
 from difflib import get_close_matches
 from inspect import Parameter, isasyncgen
 from os import path
@@ -29,7 +31,7 @@ class Developer(Cog, hidden=True):
 
     def __init__(self, bot: Nexus):
         self.bot = bot
-        self.COG_NAMES = ("Jishaku")
+        self.COG_NAMES = "Jishaku"
 
     async def _evaluate_code(self, code: str, variables: dict):
         # sourcery skip: comprehension-to-generator, simplify-generator
@@ -70,10 +72,10 @@ class Developer(Cog, hidden=True):
     async def _eval(self, ctx: NexusContext, *, code: CodeblockConverter):
         """
         Evaluate python code
-        
+
         Can only be used by the bot owner
         """
-        
+
         variables = {
             "ctx": ctx,
             "author": ctx.author,
@@ -86,7 +88,9 @@ class Developer(Cog, hidden=True):
         await ctx.message.add_reaction("▶")
         error = False
         try:
-            result = await self._evaluate_code(code.code.replace("bot.http.token", '"[TOKEN]"'), variables)
+            result = await self._evaluate_code(
+                code.code.replace("bot.http.token", '"[TOKEN]"'), variables
+            )
         except Exception as e:
             result = e
 
@@ -122,13 +126,17 @@ class Developer(Cog, hidden=True):
         if embeds:
             await ctx.paginate(embeds)
 
-    async def _operate_on_cogs(self, cogs: List[str], func: Callable, options: List[str]):
+    async def _operate_on_cogs(
+        self, cogs: List[str], func: Callable, options: List[str]
+    ):
         if not cogs:
-            raise MissingRequiredArgument(Parameter("cogs", Parameter.POSITIONAL_OR_KEYWORD))
+            raise MissingRequiredArgument(
+                Parameter("cogs", Parameter.POSITIONAL_OR_KEYWORD)
+            )
         _cogs = []
 
         _to_load = []
-        
+
         for cog in cogs:
             if not cog.startswith("cogs.") and cog not in self.COG_NAMES:
                 maybe_cogs = get_close_matches(cog, options)
@@ -156,7 +164,7 @@ class Developer(Cog, hidden=True):
     async def _load(self, ctx: NexusContext, *cogs: str):
         """
         Load the given cogs
-        
+
         Can only be used by the bot owner
         """
         options = [
@@ -173,7 +181,7 @@ class Developer(Cog, hidden=True):
                 colour=self.bot.config.data.colours.neutral,
             )
         )
-        
+
     @is_owner()
     @command(
         name="unload",
@@ -183,7 +191,7 @@ class Developer(Cog, hidden=True):
     async def _unload(self, ctx: NexusContext, *cogs: str):
         """
         Unoad the given cogs
-        
+
         Can only be used by the bot owner
         """
         options = [
@@ -210,7 +218,7 @@ class Developer(Cog, hidden=True):
     async def _reload(self, ctx: NexusContext, *cogs: str):
         """
         Reload the given cogs
-        
+
         Can only be used by the bot owner
         """
         options = [
@@ -229,26 +237,49 @@ class Developer(Cog, hidden=True):
         )
 
     @is_owner()
-    @command(
-        name="as",
-        cls=Command,
-        examples=["@isaa_ctaylor#2494 help"]
-    )
+    @command(name="as", cls=Command, examples=["@isaa_ctaylor#2494 help"])
     async def _as(self, ctx: NexusContext, user: Member, *, command: str):
         """
         Run the specified command as someone else
-        
+
         Can only be used by the bot owner
         """
-        
-        context: NexusContext = await ctx.copy_with(author=user, content=ctx.prefix + command)
-        
+
+        context: NexusContext = await ctx.copy_with(
+            author=user, content=ctx.prefix + command
+        )
+
         if context.command is None:
             if context.invoked_with is None:
                 return await ctx.send("Cannot run command as this user")
             return await ctx.send(f"Command {context.invoked_with} is not found")
-        
+
         await context.command.invoke(context)
+
+    @is_owner()
+    @command(name="sync", cls=Command)
+    async def _sync(self, ctx: NexusContext):
+        """
+        Sync to github
+        """
+        proc = await create_subprocess_shell(
+            "git pull", stdout=PIPE, stderr=PIPE
+        )
+
+        stdout, stderr = await proc.communicate()
+        
+        _ = ""
+        
+        if stdout:
+            _ += f'[stdout]\n{stdout.decode()}'
+            
+        if stderr:
+            _ += f'\n[stderr]\n{stderr.decode()}'
+            
+        _ = _ or "No output"
+        
+        await ctx.paginate(Embed(description=f"```sh\n$ git pull\n{_}```", colour=self.bot.config.data.colours.neutral))
+
 
 def setup(bot: Nexus) -> None:
     bot.add_cog(Developer(bot))
