@@ -271,7 +271,7 @@ class Developer(Cog, hidden=True):
         await context.command.invoke(context)
 
     class Flags(FlagConverter, prefix="--", delimiter=" "):
-        no_reload: bool = flag(name="no-reload", aliases=["nr"], default=False)
+        no_reload: bool = flag(name="nr", default=False)
 
     @is_owner()
     @command(name="sync", cls=Command, aliases=["pull"])
