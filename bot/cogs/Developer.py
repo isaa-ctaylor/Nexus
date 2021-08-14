@@ -279,36 +279,38 @@ class Developer(Cog, hidden=True):
         """
         Sync to github
         """
-        proc = await create_subprocess_shell("git pull", stdout=PIPE, stderr=PIPE)
+        async with ctx.typing():
+            proc = await create_subprocess_shell("git pull", stdout=PIPE, stderr=PIPE)
 
-        stdout, stderr = await proc.communicate()
+            stdout, stderr = await proc.communicate()
 
-        _ = ""
+            _ = ""
 
-        if stdout:
-            _ += f"[stdout]\n{stdout.decode()}"
+            if stdout:
+                _ += f"[stdout]\n{stdout.decode()}"
 
-        if stderr:
-            _ += f"\n[stderr]\n{stderr.decode()}"
+            if stderr:
+                _ += f"\n[stderr]\n{stderr.decode()}"
 
-        _ = _ or "No output"
+            _ = _ or "No output"
 
-        _cogs = ""
+            _cogs = ""
 
-        if not flags.no_reload:
-            cogs = findall("r(?<=cogs\/)[^\/\W]*(?=\.py)", _)
+            if not flags.no_reload:
+                cogs = findall("r(?<=cogs\/)[^\/\W]*(?=\.py)", _)
 
-            options = [
-                "cogs."
-                + str(file)
-                .removeprefix(str(COG_PATH))
-                .strip("\\")
-                .strip("./")
-                .removesuffix(".py")
-                for file in COG_PATH.glob("./*.py")
-            ]
+                if cogs:
+                    options = [
+                        "cogs."
+                        + str(file)
+                        .removeprefix(str(COG_PATH))
+                        .strip("\\")
+                        .strip("./")
+                        .removesuffix(".py")
+                        for file in COG_PATH.glob("./*.py")
+                    ]
 
-            _cogs = await self._operate_on_cogs(cogs, self.bot.reload_extension, options)
+                    _cogs = await self._operate_on_cogs(cogs, self.bot.reload_extension, options)
 
         await ctx.paginate(
             Embed(
