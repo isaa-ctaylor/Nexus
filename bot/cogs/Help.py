@@ -167,13 +167,14 @@ class NexusHelp(HelpCommand):
         embed = await self._basic_command_help(group)
 
         embed.description += (
-            "\n```yaml\n"
-            + "\n".join(
-                f"{c.name}: {c.short_doc}"
-                for c in group.commands
+            (
+                "\n```yaml\n"
+                + "\n".join(f"{c.name}: {c.short_doc}" for c in group.commands)
+                + "```"
             )
-            + "```"
-        ) if group.commands else ""
+            if group.commands
+            else ""
+        )
 
         return embed
 
