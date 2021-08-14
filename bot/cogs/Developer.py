@@ -258,7 +258,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @command(name="sync", cls=Command)
-    async def _sync(self, ctx: NexusContext):
+    async def _sync(self, ctx: NexusContext, aliases=["pull"]):
         """
         Sync to github
         """
