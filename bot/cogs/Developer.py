@@ -169,7 +169,7 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").removesuffix(".py")
+            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
@@ -196,7 +196,7 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").removesuffix(".py")
+            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
@@ -223,7 +223,7 @@ class Developer(Cog, hidden=True):
         """
         options = [
             "cogs."
-            + str(file).removeprefix(str(COG_PATH)).strip("\\").removesuffix(".py")
+            + str(file).removeprefix(str(COG_PATH)).strip("\\").strip("./").removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
 
