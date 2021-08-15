@@ -345,7 +345,7 @@ class Developer(Cog, hidden=True):
         """
         Run a command bypassing all checks
         """
-        _ctx: NexusContext = ctx.copy_with(content=f"{ctx.prefix}{command}")
+        _ctx: NexusContext = await ctx.copy_with(content=f"{ctx.prefix}{command}")
 
         _ctx.reinvoke()
 
