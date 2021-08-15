@@ -318,6 +318,15 @@ class Developer(Cog, hidden=True):
                 colour=self.bot.config.data.colours.neutral,
             )
         )
+        
+    @is_owner()
+    @command(name="restart", cls=Command)
+    async def _restart(self, ctx: NexusContext):
+        """
+        Restart the bot
+        """
+        await ctx.message.add_reaction("\U0001f44d")
+        await self.bot.close()
 
 
 def setup(bot: Nexus) -> None:
