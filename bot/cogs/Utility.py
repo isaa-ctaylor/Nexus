@@ -45,7 +45,7 @@ class Utility(Cog):
 
                 filename = str(list(p.glob(f"{data['id']}.*"))[0])
                 await ctx.send(filename)
-                create_subprocess_shell(
+                await create_subprocess_shell(
                     f"ffmpeg -i {filename} -acodec libmp3lame {PATH}{data['id']}.mp3"
                 )
 
