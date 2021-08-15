@@ -1,6 +1,7 @@
 from asyncio.subprocess import create_subprocess_shell
 from os import path, remove
 from pathlib import Path
+from traceback import format_exception
 
 from discord.file import File
 from utils.subclasses.bot import Nexus
@@ -49,8 +50,8 @@ class Utility(Cog):
                 )
 
                 remove(filename)
-            except:
-                continue
+            except Exception as e:
+                return await ctx.send("".join(format_exception(type(e), e, e.__traceback__)))
 
         if Path(f"{PATH}{data['id']}.mp3").exists():
             await ctx.paginate(File(f"{PATH}{data['id']}.mp3"))
