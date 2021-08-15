@@ -43,7 +43,7 @@ class Utility(Cog):
             try:
                 data = ytdl.extract_info(url)
 
-                filename = str(p.glob(f"{data['id']}.*")[0])
+                filename = str(list(p.glob(f"{data['id']}.*"))[0])
 
                 create_subprocess_shell(
                     f"ffmpeg -i {filename} -acodec libmp3lame {PATH}{data['id']}.mp3"
