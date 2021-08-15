@@ -13,14 +13,14 @@ class Database:
     async def new_connection(self, **kwargs):
         try:
             return await asyncpg.create_pool(
-                user=kwargs.get("user", "postgres"),
-                password=kwargs.get("password", "postgres"),
+                user=kwargs.get("user", "Nexus"),
+                password=kwargs.get("password", "nexus"),
                 database=kwargs.get("database", "Nexus"),
                 host=kwargs.get("host", "localhost"),
             )
         except asyncpg.exceptions.InvalidCatalogNameError:
             con: Connection = await asyncpg.connect(
-                database="template1", user="postgres", password="postgres"
+                database="template1", user="postgres", password="postgres", host="localhost"
             )
 
             await con.execute("CREATE DATABASE Nexus OWNER postgres")
