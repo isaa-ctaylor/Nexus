@@ -11,6 +11,7 @@ from re import findall
 
 from discord.embeds import Embed
 from discord.ext.commands import command, is_owner
+from discord.ext.commands.core import bot_has_permissions
 from discord.ext.commands.errors import MissingRequiredArgument
 from discord.ext.commands.flags import FlagConverter, flag
 from discord.file import File
@@ -316,15 +317,18 @@ class Developer(Cog, hidden=True):
                         for file in COG_PATH.glob("./*.py")
                     ]
 
-                    _cogs = await self._operate_on_cogs(cogs, self.bot.reload_extension, options)
+                    _cogs = await self._operate_on_cogs(
+                        cogs, self.bot.reload_extension, options
+                    )
 
         await ctx.paginate(
             Embed(
-                description=f"```sh\n$ git pull\n{_}```" + (f"\n\n```\n{_cogs}```" if _cogs else ""),
+                description=f"```sh\n$ git pull\n{_}```"
+                + (f"\n\n```\n{_cogs}```" if _cogs else ""),
                 colour=self.bot.config.data.colours.neutral,
             )
         )
-        
+
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="restart", cls=Command)
@@ -334,7 +338,7 @@ class Developer(Cog, hidden=True):
         """
         await ctx.message.add_reaction("\U0001f44d")
         await self.bot.close()
-        
+
     @is_owner()
     @command(name="sudo", cls=Command)
     async def _sudo(self, ctx: NexusContext, *, command: str):
@@ -342,7 +346,7 @@ class Developer(Cog, hidden=True):
         Run a command bypassing all checks
         """
         _ctx: NexusContext = ctx.copy_with(content=f"{ctx.prefix}{command}")
-        
+
         _ctx.reinvoke()
 
 

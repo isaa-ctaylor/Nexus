@@ -39,6 +39,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(ban_members=True)
     @bot_has_guild_permissions(ban_members=True)
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="ban",
         cls=Command,
@@ -87,6 +88,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(ban_members=True)
     @bot_has_guild_permissions(ban_members=True)
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="unban",
         cls=Command,
@@ -135,6 +137,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_messages=True)
     @bot_has_guild_permissions(manage_roles=True)
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="mute", cls=Command, examples=["718087881087910018", "@Person#0123 spam"]
     )
@@ -199,6 +202,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(manage_messages=True)
     @bot_has_guild_permissions(manage_roles=True)
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="unmute", cls=Command)
     async def _unmute(
         self,
@@ -248,6 +252,7 @@ class Moderation(Cog):
     @guild_only()
     @has_guild_permissions(kick_members=True)
     @bot_has_guild_permissions(kick_members=True)
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="kick",
         cls=Command,
@@ -293,22 +298,30 @@ class Moderation(Cog):
 
     @guild_only()
     @has_permissions(manage_messages=True)
-    @bot_has_permissions(manage_channels=True)
+    @bot_has_permissions(manage_channels=True, send_messages=True, embed_links=True)
     @command(name="slowmode", cls=Command, examples=["#general 4", "10"])
-    async def _slowmode(self, ctx: NexusContext, channel: Optional[TextChannel] = None, rate: Optional[int] = 0):
+    async def _slowmode(
+        self,
+        ctx: NexusContext,
+        channel: Optional[TextChannel] = None,
+        rate: Optional[int] = 0,
+    ):
         """
         Change the slowmode for the specified or current channel
-        
+
         Specify a channel before the rate to change the rate for that channel
-        
+
         Maximum rate: 21600 (6 hours) (rates will be rounded to the max/min if over/under)
         """
-        
+
         rate = max(min(rate, 21600), 0)
         channel = channel or ctx.channel
-        
+
         try:
-            await channel.edit(slowmode_delay=rate, reason=f"{ctx.author} ({ctx.author.id}): Slowmode command invoked")
+            await channel.edit(
+                slowmode_delay=rate,
+                reason=f"{ctx.author} ({ctx.author.id}): Slowmode command invoked",
+            )
             await ctx.paginate(
                 Embed(
                     title="Done!",
@@ -344,7 +357,12 @@ class Moderation(Cog):
 
     @guild_only()
     @has_permissions(manage_messages=True)
-    @bot_has_permissions(manage_messages=True, read_message_history=True)
+    @bot_has_permissions(
+        manage_messages=True,
+        read_message_history=True,
+        send_messages=True,
+        embed_links=True,
+    )
     @group(
         name="purge",
         cls=Group,
@@ -362,7 +380,12 @@ class Moderation(Cog):
 
     @guild_only()
     @has_permissions(manage_messages=True)
-    @bot_has_permissions(manage_messages=True, read_message_history=True)
+    @bot_has_permissions(
+        manage_messages=True,
+        read_message_history=True,
+        send_messages=True,
+        embed_links=True,
+    )
     @_purge.command(name="user")
     async def _purge_user(
         self,
