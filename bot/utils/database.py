@@ -30,3 +30,11 @@ class Database:
         self.bot.logger.info("Database pool created.")
 
         return pool
+    
+    async def execute(self, command: str, *args):
+        return await self.pool.execute(command, *args)
+        
+    async def fetch(self, command: str, *args, one=True):
+        if one:
+            return self.pool.fetchrow(command, *args)
+        return self.pool.fetch(command, *args)

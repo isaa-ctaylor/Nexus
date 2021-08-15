@@ -52,6 +52,8 @@ class Nexus(Bot):
                     
         self.database = Database(self)
         self.db = self.database
+        
+        self.db.execute(r"CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}')")
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
