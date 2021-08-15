@@ -1,3 +1,4 @@
+import asyncio
 from discord.embeds import Embed
 from discord.ext.commands.cooldowns import BucketType, CooldownMapping
 from discord.ext.commands.core import (bot_has_permissions, group,
@@ -15,7 +16,7 @@ class Automod(Cog):
         self.bot = bot
         self.cooldown = CooldownMapping.from_cooldown(10, 12, BucketType.user)
 
-        bot.loop.run_until_complete(self.__ainit__())
+        asyncio.get_event_loop().run_until_complete(self.__ainit__())
 
     async def __ainit__(self):
         automoddata = [
