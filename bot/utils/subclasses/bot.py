@@ -50,7 +50,7 @@ class Nexus(Bot):
                         )
                     )
                     
-        self.database = Database()
+        self.database = Database(self)
         self.db = self.database
 
     async def on_ready(self):
