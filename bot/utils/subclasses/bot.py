@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from ..config import Config
 from ..logging import WebhookHandler
 from .context import NexusContext
+from ..database import Database
 
 from discord.ext.commands.core import _CaseInsensitiveDict
 
@@ -48,6 +49,9 @@ class Nexus(Bot):
                             format_exception(type(e), e, e.__traceback__)
                         )
                     )
+                    
+        self.database = Database()
+        self.db = self.database
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
