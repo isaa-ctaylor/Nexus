@@ -1,16 +1,13 @@
 from asyncio.subprocess import create_subprocess_shell
-import os
-
-from discord.file import File
-from bot.utils.subclasses.context import NexusContext
-from discord.ext.commands.core import command
-from utils.subclasses.cog import Cog
-from utils.subclasses.bot import Nexus
-from utils.subclasses.command import group, Group
-from youtube_dl import YoutubeDL
 from os import path, remove
 from pathlib import Path
 
+from discord.file import File
+from utils.subclasses.bot import Nexus
+from utils.subclasses.cog import Cog
+from utils.subclasses.command import Group, group
+from utils.subclasses.context import NexusContext
+from youtube_dl import YoutubeDL
 
 PATH = path.join(path.dirname(__file__), "./output/")
 RETRY = 5
