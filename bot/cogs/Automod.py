@@ -16,16 +16,16 @@ class Automod(Cog):
         self.bot = bot
         self.cooldown = CooldownMapping.from_cooldown(10, 12, BucketType.user)
 
-        asyncio.new_event_loop().run_until_complete(self.__ainit__())
+        bot.loop.create_task(self.__ainit__())
 
     async def __ainit__(self):
         automoddata = [
             dict(record)
-            for record in self.bot.db.fetch("SELECT * FROM automod", one=False)
+            for record in await self.bot.db.fetch("SELECT * FROM automod", one=False)
         ]
         spamcheckerdata = [
             dict(record)
-            for record in self.bot.db.fetch("SELECT * FROM spamchecker", one=False)
+            for record in await self.bot.db.fetch("SELECT * FROM spamchecker", one=False)
         ]
 
         _cache = {
