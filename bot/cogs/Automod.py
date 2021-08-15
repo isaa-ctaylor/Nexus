@@ -70,7 +70,7 @@ class Automod(Cog):
 
     @has_guild_permissions(manage_messages=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @_automod.group(name="spam", cls=Group)
+    @_automod.group(name="spam")
     async def _automod_spam(self, ctx: NexusContext):
         """
         See the current spam settings
