@@ -16,7 +16,7 @@ class Automod(Cog):
         self.bot = bot
         self.cooldown = CooldownMapping.from_cooldown(10, 12, BucketType.user)
 
-        asyncio.get_event_loop().run_until_complete(self.__ainit__())
+        asyncio.new_event_loop().run_until_complete(self.__ainit__())
 
     async def __ainit__(self):
         automoddata = [
