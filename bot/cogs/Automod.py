@@ -60,7 +60,7 @@ class Automod(Cog):
 
     @has_guild_permissions(manage_messages=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @group(name="automod", cls=Group)
+    @group(name="automod", cls=Group, invoke_without_command=True)
     async def _automod(self, ctx: NexusContext):
         """
         See the current automod settings
