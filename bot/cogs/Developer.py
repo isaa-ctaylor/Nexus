@@ -347,7 +347,7 @@ class Developer(Cog, hidden=True):
         """
         _ctx: NexusContext = await ctx.copy_with(content=f"{ctx.prefix}{command}")
 
-        _ctx.reinvoke()
+        await _ctx.reinvoke()
 
 
 def setup(bot: Nexus) -> None:
