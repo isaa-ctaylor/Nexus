@@ -44,12 +44,13 @@ class Utility(Cog):
                 data = ytdl.extract_info(url)
 
                 filename = str(list(p.glob(f"{data['id']}.*"))[0])
-
+                await ctx.send(filename)
                 create_subprocess_shell(
                     f"ffmpeg -i {filename} -acodec libmp3lame {PATH}{data['id']}.mp3"
                 )
 
                 remove(filename)
+                break
             except Exception as e:
                 return await ctx.send("".join(format_exception(type(e), e, e.__traceback__)))
 
