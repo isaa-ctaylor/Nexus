@@ -14,7 +14,7 @@ class Database:
         try:
             return await asyncpg.create_pool(
                 user=kwargs.get("user", "Nexus"),
-                # password=kwargs.get("password", "nexus"),
+                password=kwargs.get("password", "Nexus"),
                 database=kwargs.get("database", "Nexus"),
                 host=kwargs.get("host", "127.0.0.1"),
             )
