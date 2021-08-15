@@ -70,6 +70,7 @@ class Developer(Cog, hidden=True):
         return await result
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="eval", cls=Command, examples=["print('Hello world!')"])
     async def _eval(self, ctx: NexusContext, *, code: CodeblockConverter):
         """
@@ -158,6 +159,7 @@ class Developer(Cog, hidden=True):
         return "\n".join(_cogs)
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="load",
         cls=Command,
@@ -189,6 +191,7 @@ class Developer(Cog, hidden=True):
         )
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="unload",
         cls=Command,
@@ -220,6 +223,7 @@ class Developer(Cog, hidden=True):
         )
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="reload",
         cls=Command,
@@ -251,6 +255,7 @@ class Developer(Cog, hidden=True):
         )
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="as", cls=Command, examples=["@isaa_ctaylor#2494 help"])
     async def _as(self, ctx: NexusContext, user: Member, *, command: str):
         """
@@ -274,6 +279,7 @@ class Developer(Cog, hidden=True):
         no_reload: bool = flag(name="nr", default=False)
 
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="sync", cls=Command, aliases=["pull"])
     async def _sync(self, ctx: NexusContext, *, flags: Flags):
         """
@@ -320,6 +326,7 @@ class Developer(Cog, hidden=True):
         )
         
     @is_owner()
+    @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="restart", cls=Command)
     async def _restart(self, ctx: NexusContext):
         """
@@ -327,6 +334,16 @@ class Developer(Cog, hidden=True):
         """
         await ctx.message.add_reaction("\U0001f44d")
         await self.bot.close()
+        
+    @is_owner()
+    @command(name="sudo", cls=Command)
+    async def _sudo(self, ctx: NexusContext, *, command: str):
+        """
+        Run a command bypassing all checks
+        """
+        _ctx: NexusContext = ctx.copy_with(content=f"{ctx.prefix}{command}")
+        
+        _ctx.reinvoke()
 
 
 def setup(bot: Nexus) -> None:
