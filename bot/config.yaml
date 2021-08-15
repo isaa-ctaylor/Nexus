@@ -9,6 +9,7 @@ cogs:
   - cogs.Developer
   - cogs.Errors
   - cogs.Moderation
+  - cogs.Utility
 
 colours:
   bad: "!Colour 15158332"
