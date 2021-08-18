@@ -34,7 +34,18 @@ class Utility(Cog):
         Download audio from the given url
         """
         ytdl = YoutubeDL(
-            {"quiet": True, "format": "mp4", "outtmpl": f"{PATH}%(id)s.%(ext)s"}
+            {
+                "quiet": True,
+                "format": "mp4",
+                "outtmpl": f"{PATH}%(id)s.%(ext)s",
+                "postprocessors": [
+                    {
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": "mp3",
+                        "preferredquality": "192",
+                    }
+                ],
+            }
         )
 
         p = Path(PATH)
@@ -44,15 +55,11 @@ class Utility(Cog):
                 data = ytdl.extract_info(url)
 
                 filename = str(list(p.glob(f"{data['id']}.*"))[0])
-                await ctx.send(filename)
-                await create_subprocess_shell(
-                    f"ffmpeg -i {filename} -acodec libmp3lame {PATH}{data['id']}.mp3"
-                )
 
-                remove(filename)
-                break
             except Exception as e:
-                return await ctx.send("".join(format_exception(type(e), e, e.__traceback__)))
+                return await ctx.send(
+                    "".join(format_exception(type(e), e, e.__traceback__))
+                )
 
         if Path(f"{PATH}{data['id']}.mp3").exists():
             await ctx.paginate(File(f"{PATH}{data['id']}.mp3"))
