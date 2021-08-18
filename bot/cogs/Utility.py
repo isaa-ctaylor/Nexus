@@ -8,9 +8,6 @@ from utils.subclasses.context import NexusContext
 from pytube import YouTube
 from pytube.exceptions import RegexMatchError
 
-PATH = path.join(path.dirname(__file__), "./output/")
-RETRY = 5
-
 
 class Utility(Cog):
     def __init__(self, bot: Nexus):
@@ -36,20 +33,20 @@ class Utility(Cog):
 
         except RegexMatchError:
             return await ctx.error("Invalid link!")
-        
+
         streams.filter(only_audio=True, file_extension="mp3")
-        
+
         if not streams.count():
             return await ctx.error("Couldn't download that video in mp3 format!")
-        
+
         video = streams.desc().first()
-        
+
         b = BytesIO()
         video.stream_to_buffer(b)
         b.seek(0)
-        
+
         return await ctx.reply(file=File(b))
-        
+
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
