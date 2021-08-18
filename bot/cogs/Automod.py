@@ -67,7 +67,8 @@ class Automod(Cog):
 
         Other functionality in the subcommands
         """
-        await ctx.send_help(ctx.command)
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
 
     @has_guild_permissions(manage_messages=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
