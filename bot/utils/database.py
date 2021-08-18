@@ -36,5 +36,5 @@ class Database:
         
     async def fetch(self, command: str, *args, one=True):
         if one:
-            return self.pool.fetchrow(command, *args)
-        return self.pool.fetch(command, *args)
+            return await self.pool.fetchrow(command, *args)
+        return await self.pool.fetch(command, *args)
