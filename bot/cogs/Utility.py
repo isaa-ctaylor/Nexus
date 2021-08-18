@@ -29,7 +29,7 @@ class Utility(Cog):
         Download audio from the given url
         """
         try:
-            streams: StreamQuery = YouTube(url)
+            streams = YouTube(url).streams
 
         except RegexMatchError:
             return await ctx.error("Invalid link!")
