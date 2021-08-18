@@ -1,14 +1,12 @@
-from asyncio.subprocess import create_subprocess_shell
-from os import path, remove
-from pathlib import Path
-from traceback import format_exception
-
+from io import BytesIO
 from discord.file import File
+from pytube.query import StreamQuery
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Group, group
 from utils.subclasses.context import NexusContext
-from youtube_dl import YoutubeDL
+from pytube import YouTube
+from pytube.exceptions import RegexMatchError
 
 PATH = path.join(path.dirname(__file__), "./output/")
 RETRY = 5
@@ -33,40 +31,25 @@ class Utility(Cog):
         """
         Download audio from the given url
         """
-        ytdl = YoutubeDL(
-            {
-                "quiet": True,
-                "format": "mp4",
-                "outtmpl": f"{PATH}%(id)s.%(ext)s",
-                "postprocessors": [
-                    {
-                        "key": "FFmpegExtractAudio",
-                        "preferredcodec": "mp3",
-                        "preferredquality": "192",
-                    }
-                ],
-            }
-        )
+        try:
+            streams: StreamQuery = YouTube(url)
 
-        p = Path(PATH)
-
-        for _ in range(RETRY):
-            try:
-                data = ytdl.extract_info(url)
-
-                filename = str(list(p.glob(f"{data['id']}.*"))[0])
-
-            except Exception as e:
-                return await ctx.send(
-                    "".join(format_exception(type(e), e, e.__traceback__))
-                )
-
-        if Path(f"{PATH}{data['id']}.mp3").exists():
-            await ctx.paginate(File(f"{PATH}{data['id']}.mp3"))
-
-        else:
-            await ctx.error("Failed to download!")
-
+        except RegexMatchError:
+            return await ctx.error("Invalid link!")
+        
+        streams.filter(only_audio=True, file_extension="mp3")
+        
+        if not streams.count():
+            return await ctx.error("Couldn't download that video in mp3 format!")
+        
+        video = streams.desc().first()
+        
+        b = BytesIO()
+        video.stream_to_buffer(b)
+        b.seek(0)
+        
+        return await ctx.reply(file=File(b))
+        
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
