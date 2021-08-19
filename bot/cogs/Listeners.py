@@ -17,3 +17,7 @@ class Listeners(Cog):
             WHERE prefixes.guild_id = $1""",
             guild.id,
         )
+
+
+def setup(bot: Nexus):
+    bot.add_cog(Listeners(bot))

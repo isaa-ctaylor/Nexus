@@ -10,6 +10,7 @@ cogs:
   - cogs.Errors
   - cogs.Moderation
   - cogs.Utility
+  - cogs.Listeners
 
 colours:
   bad: "!Colour 15158332"
