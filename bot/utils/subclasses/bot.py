@@ -53,10 +53,12 @@ class Nexus(Bot):
         self.database = Database(self)
         self.db = self.database
 
-        self.db.execute(
-            r"""CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
+        self.loop.create_task(
+            self.db.execute(
+                r"""CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
-                CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINY NOT NULL, enabled BOOL DEFAULT 'false');"""
+                CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');"""
+            )
         )
 
     async def on_ready(self):
