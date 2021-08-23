@@ -58,34 +58,6 @@ class Automod(Cog):
         if bucket.update_rate_limit(message.created_at.timestamp()):
             await message.reply("Stop spamming!")
 
-    @has_guild_permissions(manage_messages=True)
-    @bot_has_permissions(send_messages=True, embed_links=True)
-    @group(name="automod", cls=Group, invoke_without_command=True)
-    async def _automod(self, ctx: NexusContext):
-        """
-        See the current automod settings
-
-        Other functionality in the subcommands
-        """
-        if not ctx.invoked_subcommand:
-            await ctx.send_help(ctx.command)
-
-    @has_guild_permissions(manage_messages=True)
-    @bot_has_permissions(send_messages=True, embed_links=True)
-    @_automod.group(name="spam")
-    async def _automod_spam(self, ctx: NexusContext):
-        """
-        See the current spam settings
-        """
-        embed = Embed(
-            title="Spam settings", colour=self.bot.config.data.colours.neutral
-        )
-        embed.add_field(
-            name="Enabled",
-            value=f"```\n{'Yes' if self.cache[ctx.guild.id].spam.enabled else 'No'}```",
-        )
-
-        await ctx.paginate(embed)
 
 def setup(bot: Nexus):
     bot.add_cog(Automod(bot))

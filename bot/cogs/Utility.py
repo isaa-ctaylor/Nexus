@@ -25,18 +25,21 @@ class Utility(Cog):
         """
         Screenshot a website
         """
-        page = await self.browser.new_page(geolocation={"latitude": 51.509865, "longitude": -0.118092}, viewport={"width": 1920, "height": 1080})
+        try:
+            page = await self.browser.new_page(geolocation={"latitude": 51.509865, "longitude": -0.118092}, viewport={"width": 1920, "height": 1080})
 
-        await page.goto(url)
-        
-        with suppress(TimeoutError):
-            await page.click("text=I agree")
+            await page.goto(url)
+            
+            with suppress(TimeoutError):
+                await page.click("text=I agree")
 
-        buf = await page.screenshot()
-        
-        await ctx.send(file=File(buf, "screenshot.png"))
+            buf = await page.screenshot()
+            
+            await ctx.send(file=File(buf, "screenshot.png"))
 
-        await page.close()
+            await page.close()
+        except Exception as e:
+            await ctx.send(e)
 
 
 def setup(bot: Nexus):
