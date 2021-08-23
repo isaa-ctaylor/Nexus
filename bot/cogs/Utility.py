@@ -1,5 +1,5 @@
 from discord.file import File
-from bot.utils.subclasses.context import NexusContext
+from utils.subclasses.context import NexusContext
 from discord.ext.commands.core import is_owner
 from utils.subclasses.cog import Cog
 from utils.subclasses.bot import Nexus
@@ -37,3 +37,7 @@ class Utility(Cog):
         await ctx.send(file=File(buf, "screenshot.png"))
 
         await page.close()
+
+
+def setup(bot: Nexus):
+    bot.add_cog(Utility(bot))
