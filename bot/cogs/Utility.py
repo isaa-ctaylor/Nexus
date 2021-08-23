@@ -26,7 +26,7 @@ class Utility(Cog):
         Screenshot a website
         """
         try:
-            page = await self.browser.new_page(geolocation={"latitude": 51.509865, "longitude": -0.118092}, viewport={"width": 1920, "height": 1080})
+            page = await self.browser.new_page()
 
             await page.goto(url)
             
