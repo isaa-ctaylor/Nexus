@@ -25,21 +25,22 @@ class Utility(Cog):
         """
         Screenshot a website
         """
-        try:
-            page = await self.browser.new_page()
+        with ctx.typing():
+            try:
+                page = await self.browser.new_page()
 
-            await page.goto(url)
-            
-            with suppress(TimeoutError):
-                await page.click("text=I agree")
+                await page.goto(url)
+                
+                with suppress(TimeoutError):
+                    await page.click("text=I agree")
 
-            buf = await page.screenshot()
-            
-            await ctx.send(file=File(buf, "screenshot.png"))
+                buf = await page.screenshot()
+                
+                await ctx.send(file=File(buf, "screenshot.png"))
 
-            await page.close()
-        except Exception as e:
-            await ctx.send(e)
+                await page.close()
+            except Exception as e:
+                await ctx.send(e)
 
 
 def setup(bot: Nexus):
