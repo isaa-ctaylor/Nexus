@@ -11,6 +11,7 @@ cogs:
   - cogs.Moderation
   - cogs.Utility
   - cogs.Listeners
+  - Jishaku
 
 colours:
   bad: "!Colour 15158332"
