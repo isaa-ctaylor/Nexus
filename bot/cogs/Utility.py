@@ -27,13 +27,7 @@ class Utility(Cog):
                 await ctx.send("Browser created")
             
             
-            page = await browser.new_page(
-                geolocation={"latitude": 51.509865, "longitude": -0.118092},
-                viewport={"width": 1920, "height": 1080},
-                locale="en-GB",
-                permissions=["geolocation"],
-                accept_downloads=False,
-            )
+            page = await browser.new_page()
             await ctx.send("Page created")
 
             await page.goto(url)
