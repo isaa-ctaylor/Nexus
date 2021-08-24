@@ -1,7 +1,7 @@
 from asyncio.events import get_event_loop
 from functools import partial
 from io import BytesIO
-from typing import Callable
+from typing import Callable, Optional
 from discord.file import File
 from utils.subclasses.context import NexusContext
 from discord.ext.commands.core import is_owner
@@ -13,16 +13,20 @@ from playwright._impl._api_types import TimeoutError
 from contextlib import suppress
 
 
+bot: Optional[Nexus] = None
+
+
+def execute(self, func: Callable):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await bot.loop.run_in_executor(None, partial(func, *args, **kwargs))
+
+    return wrapper
+
+
 class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = Nexus
-
-    def execute(self, func: Callable):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            return await self.bot.loop.run_in_executor(None, partial(func, *args, **kwargs))
-
-        return wrapper
 
 
     @execute
@@ -58,5 +62,8 @@ class Utility(Cog):
             await ctx.send(e)
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Utility(bot))
+def setup(_bot: Nexus):
+    _bot.add_cog(Utility(_bot))
+    
+    global bot
+    bot = _bot
