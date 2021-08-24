@@ -14,12 +14,6 @@ class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = Nexus
 
-        bot.loop.create_task(self.__ainit__())
-
-    async def __ainit__(self):
-        async with async_playwright() as playwright:
-            self.browser = await playwright.chromium.launch(headless=True)
-
     @is_owner()
     @command(name="screenshot", cls=Command, aliases=["ss"])
     async def _screenshot(self, ctx: NexusContext, url: str):
@@ -27,7 +21,10 @@ class Utility(Cog):
         Screenshot a website
         """
         try:
-            page = await self.browser.new_page(
+            async with async_playwright() as playwright:
+                browser = await playwright.chromium.launch(headless=True)
+
+            page = await browser.new_page(
                 geolocation={"latitude": 51.509865, "longitude": -0.118092},
                 viewport={"width": 1920, "height": 1080},
                 locale="en-GB",
