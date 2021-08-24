@@ -25,9 +25,15 @@ class Utility(Cog):
                 await ctx.send("Creating browser")
                 browser = await playwright.chromium.launch(headless=True)
                 await ctx.send("Browser created")
+                context = await browser.new_context()
             
-            
-            page = await browser.new_page()
+            page = await context.new_page(
+                geolocation={"latitude": 51.509865, "longitude": -0.118092},
+                viewport={"width": 1920, "height": 1080},
+                locale="en-GB",
+                permissions=["geolocation"],
+                accept_downloads=False,
+            )
             await ctx.send("Page created")
 
             await page.goto(url)
