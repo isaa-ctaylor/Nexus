@@ -134,9 +134,8 @@ class Developer(Cog, hidden=True):
         self, cogs: List[str], func: Callable, options: List[str]
     ):
         if not cogs:
-            raise MissingRequiredArgument(
-                Parameter("cogs", Parameter.POSITIONAL_OR_KEYWORD)
-            )
+            return await self._operate_on_cogs(self.bot.cogs, func, options)
+            
         _cogs = []
 
         _to_load = []
