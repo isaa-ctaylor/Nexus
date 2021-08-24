@@ -1,5 +1,7 @@
-from jishaku.functools import executor_function
+from asyncio.events import get_event_loop
+from functools import partial
 from io import BytesIO
+from typing import Callable
 from discord.file import File
 from utils.subclasses.context import NexusContext
 from discord.ext.commands.core import is_owner
@@ -15,7 +17,15 @@ class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = Nexus
 
-    @executor_function
+    def execute(self, func: Callable):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            return await self.bot.loop.run_in_executor(None, partial(func, *args, **kwargs))
+
+        return wrapper
+
+
+    @execute
     def _do_screenshot(self, url):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
