@@ -1,4 +1,4 @@
-from utils import execute
+from jishaku.functools import executor_function
 from io import BytesIO
 from discord.file import File
 from utils.subclasses.context import NexusContext
@@ -15,7 +15,7 @@ class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = Nexus
 
-    @execute
+    @executor_function
     def _do_screenshot(self, url):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
