@@ -1,5 +1,4 @@
-from asyncio.events import get_event_loop
-from functools import partial
+from functools import partial, wraps
 from io import BytesIO
 from typing import Callable, Optional
 from discord.file import File
