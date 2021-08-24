@@ -6,7 +6,6 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.bot import Nexus
 from playwright.async_api import async_playwright
 from utils.subclasses.command import command, Command
-from playwright._impl._api_types import TimeoutError
 from contextlib import suppress
 
 
@@ -32,7 +31,7 @@ class Utility(Cog):
 
             await page.goto(url)
 
-            with suppress(TimeoutError):
+            with suppress(Exception):
                 await page.click("text=I agree")
 
             buf = BytesIO(await page.screenshot())
