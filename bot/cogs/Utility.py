@@ -43,10 +43,7 @@ class Utility(Cog):
         Screenshot a website
         """
         try:
-            
-            await ctx.send(file=File(buf, "screenshot.png"))
-
-            await page.close()
+            await ctx.send(file=File(await self._do_screenshot(url), "screenshot.png"))
         except Exception as e:
             await ctx.send(e)
 
