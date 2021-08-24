@@ -1,4 +1,4 @@
-from functools import partial
+from functools import wraps, partial
 from typing import Callable
 from .config import *
 from .helpers import *
@@ -9,9 +9,10 @@ def codeblocksafe(string: Union[str, Any]):
 
 
 def execute(func: Callable):
-    async def inner(*args, **kwargs):
-        return await asyncio.get_event_loop().run_in_executor(
-            None, partial(func, *args, **kwargs)
-        )
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        internal_function = partial(func, *args, **kwargs)
+        return await loop.run_in_executor(None, internal_function)
 
-    return inner
+    return wrapper
