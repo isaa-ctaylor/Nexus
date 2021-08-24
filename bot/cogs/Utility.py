@@ -15,7 +15,7 @@ class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = Nexus
 
-    @execute()
+    @execute
     def _do_screenshot(self, url):
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
