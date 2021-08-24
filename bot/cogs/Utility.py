@@ -16,7 +16,7 @@ from contextlib import suppress
 bot: Optional[Nexus] = None
 
 
-def execute(self, func: Callable):
+def execute(func: Callable):
     @wraps(func)
     async def wrapper(*args, **kwargs):
         return await bot.loop.run_in_executor(None, partial(func, *args, **kwargs))
