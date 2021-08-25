@@ -20,7 +20,7 @@ class Utility(Cog):
                         history = list(resp.history)
                         history.append(resp)
                         
-                        urls = "\n".join(str(url.url) for url in history[1:])
+                        urls = "\n".join(str(url.url) if "grabify" not in str(url.url) else f"⚠ {url.url}" for url in history[1:])
             
             except TimeoutError:
                 return await ctx.error("The request timed out!")
@@ -28,10 +28,10 @@ class Utility(Cog):
             except InvalidURL:
                 return await ctx.error("Invalid url!")
 
-            if urls:
-                await ctx.paginate(Embed(description=f"```\n{urls}```", colour=self.bot.config.data.colours.neutral))
-            else:
-                await ctx.error(f"{url} does not redirect!")
+        if urls:
+            await ctx.paginate(Embed(description=f"```\n{urls}```\n{'This link contains a grabify redirect and could be being used maliciously. Proceed with care.' if '⚠' in urls else ''}", colour=self.bot.config.data.colours.neutral))
+        else:
+            await ctx.error(f"{url} does not redirect!")
 
 
 def setup(bot: Nexus):
