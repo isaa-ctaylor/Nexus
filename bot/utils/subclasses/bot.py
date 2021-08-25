@@ -31,6 +31,15 @@ class Nexus(Bot):
         self.owner_id = self.config.data.owner
         self.strip_after_prefix = True
 
+        self.loop.create_task(self.__ainit__())
+
+        self.logger = getLogger("discord")
+        self.logger.setLevel(INFO)
+        self.logger.addHandler(
+            WebhookHandler(
+                level=INFO, bot=self, url=getenv("LOGGING"), session=self.session
+            )
+        )
 
         self._BotBase__cogs = _CaseInsensitiveDict()
 
@@ -52,15 +61,7 @@ class Nexus(Bot):
             )
         )
         
-        self.loop.create_task(self.__ainit__())
         
-        self.logger = getLogger("discord")
-        self.logger.setLevel(INFO)
-        self.logger.addHandler(
-            WebhookHandler(
-                level=INFO, bot=self, url=getenv("LOGGING"), session=self.session
-            )
-        )
         
     async def __ainit__(self):
         self.session = ClientSession()
