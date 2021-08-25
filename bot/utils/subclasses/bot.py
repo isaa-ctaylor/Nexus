@@ -19,6 +19,8 @@ load_dotenv()
 
 class Nexus(Bot):
     def __init__(self, *args, **kwargs):
+        self.session: ClientSession = kwargs.pop("session", ClientSession())
+
         self.config = Config()
 
         kwargs["command_prefix"] = kwargs.pop("command_prefix", get_prefix)
@@ -30,8 +32,6 @@ class Nexus(Bot):
 
         self.owner_id = self.config.data.owner
         self.strip_after_prefix = True
-
-        self.loop.create_task(self.__ainit__())
 
         self.logger = getLogger("discord")
         self.logger.setLevel(INFO)
@@ -60,11 +60,6 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');"""
             )
         )
-        
-        
-        
-    async def __ainit__(self):
-        self.session = ClientSession()
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
