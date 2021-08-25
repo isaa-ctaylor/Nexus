@@ -35,7 +35,7 @@ class WebhookHandler(Handler):
         return log
     
     async def _async_handle(self, log: LogRecord):
-        return await self.async_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(self.bot.http.token, '[TOKEN]'))}```", colour=16711774))
+        return await self.async_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```", colour=16711774))
 
     def _sync_handle(self, log: LogRecord):
-        return self.sync_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(self.bot.http.token, '[TOKEN]'))}```", colour=16711774))
+        return self.sync_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```", colour=16711774))
