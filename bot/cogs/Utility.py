@@ -20,7 +20,7 @@ class Utility(Cog):
                         history = list(resp.history)
                         history.append(resp)
                         
-                        urls = "\n".join(str(url.url) for url in history)
+                        urls = "\n".join(str(url.url) for url in history[1:])
             
             except TimeoutError:
                 return await ctx.error("The request timed out!")
