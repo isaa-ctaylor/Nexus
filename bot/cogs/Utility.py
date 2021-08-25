@@ -29,7 +29,7 @@ class Utility(Cog):
                 return await ctx.error("Invalid url!")
 
         if urls:
-            await ctx.paginate(Embed(description=f"```\n{urls}```\n{'This link contains a grabify redirect and could be being used maliciously. Proceed with care.' if '⚠' in urls else ''}", colour=self.bot.config.data.colours.neutral))
+            await ctx.paginate(Embed(description=f"```\n{urls}```\n{'WARNING! This link contains a grabify redirect and could be being used maliciously. Proceed with care.' if '⚠' in urls else ''}", colour=self.bot.config.data.colours.neutral))
         else:
             await ctx.error(f"{url} does not redirect!")
 
