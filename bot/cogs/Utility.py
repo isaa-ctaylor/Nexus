@@ -1,4 +1,3 @@
-from aiohttp.client import ClientSession
 from discord.embeds import Embed
 from utils.subclasses.cog import Cog
 from utils.subclasses.bot import Nexus
@@ -10,15 +9,14 @@ from aiohttp import InvalidURL
 
 class Utility(Cog):
     def __init__(self, bot: Nexus):
-        self.bot = Nexus
-        self.session = ClientSession()
+        self.bot = bot
 
     @command(name="redirectcheck", cls=Command, aliases=["redirects", "linkcheck"])
     async def _redirectcheck(self, ctx: NexusContext, url: str):
         async with ctx.typing():
             try:
                 async with timeout(30):
-                    async with self.session.get(url) as resp:
+                    async with self.bot.session.get(url) as resp:
                         urls = "\n".join(str(url) for url in resp.history)
             
             except TimeoutError:
