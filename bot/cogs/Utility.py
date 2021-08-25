@@ -17,7 +17,10 @@ class Utility(Cog):
             try:
                 async with timeout(30):
                     async with self.bot.session.get(url) as resp:
-                        urls = "\n".join(str(url.url) for url in resp.history)
+                        history = list(resp.history)
+                        history.append(resp)
+                        
+                        urls = "\n".join(str(url.url) for url in history)
             
             except TimeoutError:
                 return await ctx.error("The request timed out!")
