@@ -47,7 +47,7 @@ class Utility(Cog):
             message = f"WARNING! This link contains {'a grabify.link' if 'grabify.link' in urls else 'an iplogger.org' if 'iplogger.org' in urls else 'a logging'} redirect and could be being used maliciously. Proceed with caution."
             await ctx.paginate(
                 Embed(
-                    description=f"```\n{urls}```\n{message if '⚠' in urls else ''}",
+                    description=f"```\n{urls}```\n{message if '⚠' in urls else ''}".strip(),
                     colour=self.bot.config.data.colours.neutral,
                 )
             )
