@@ -7,7 +7,7 @@ from os import path
 from pathlib import Path
 from textwrap import indent
 from traceback import format_exception
-from typing import Callable, List
+from typing import Callable, List, Optional
 from re import findall
 
 from discord.embeds import Embed
@@ -285,7 +285,7 @@ class Developer(Cog, hidden=True):
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="sync", cls=Command, aliases=["pull"])
-    async def _sync(self, ctx: NexusContext, *, flags: Flags):
+    async def _sync(self, ctx: NexusContext, *, flags: Optional[Flags]):
         """
         Sync to github
         """
