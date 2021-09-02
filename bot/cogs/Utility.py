@@ -11,10 +11,17 @@ class Utility(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
-    @command(name="redirectcheck", cls=Command, aliases=["redirects", "linkcheck"])
+    @command(
+        name="redirectcheck",
+        cls=Command,
+        aliases=["redirects", "linkcheck"],
+        examples=["https://www.google.com/"],
+    )
     async def _redirectcheck(self, ctx: NexusContext, url: str):
         """
         Check redirects on a link
+
+        This tool will warn you if the link contains a grabify link
         """
         async with ctx.typing():
             try:
@@ -22,17 +29,28 @@ class Utility(Cog):
                     async with self.bot.session.get(url) as resp:
                         history = list(resp.history)
                         history.append(resp)
-                        
-                        urls = "\n".join(str(url.url) if "grabify" not in str(url.url) else f"⚠ {url.url}" for url in history[1:])
-            
+
+                        urls = "\n".join(
+                            str(url.url)
+                            if "grabify.link" not in str(url.url) or "iplogger.org" not in str(url.url)
+                            else f"⚠ {url.url}"
+                            for url in history[1:]
+                        )
+
             except TimeoutError:
                 return await ctx.error("The request timed out!")
-            
+
             except InvalidURL:
                 return await ctx.error("Invalid url!")
 
         if urls:
-            await ctx.paginate(Embed(description=f"```\n{urls}```\n{'This link contains a grabify redirect and could be being used maliciously. Proceed with care.' if '⚠' in urls else ''}", colour=self.bot.config.data.colours.neutral))
+            message = f"WARNING! This link contains {'a grabify.link' if 'grabify.link' in urls else 'an iplogger.org' if 'iplogger.org' in urls else 'a logging'} redirect and could be being used maliciously. Proceed with caution."
+            await ctx.paginate(
+                Embed(
+                    description=f"```\n{urls}```\n{message if '⚠' in urls else ''}",
+                    colour=self.bot.config.data.colours.neutral,
+                )
+            )
         else:
             await ctx.error(f"{url} does not redirect!")
 
