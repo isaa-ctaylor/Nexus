@@ -13,6 +13,9 @@ class Utility(Cog):
 
     @command(name="redirectcheck", cls=Command, aliases=["redirects", "linkcheck"])
     async def _redirectcheck(self, ctx: NexusContext, url: str):
+        """
+        Check redirects on a link
+        """
         async with ctx.typing():
             try:
                 async with timeout(30):

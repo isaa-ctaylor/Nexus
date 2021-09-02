@@ -55,7 +55,9 @@ class Moderation(Cog):
         reason: Optional[str] = "No reason provided",
     ):
         """
-        Ban the given member for the optional reason, optionally deleting messages sent in the last specified days
+        Ban the given member for the optional reason
+        
+        Optionally delete messages sent in the last specified days
 
         The member in question can be supplied with a mention (e.g. @isaa_ctaylor#2494),
         a name (if they are in the server) (e.g. isaa_ctaylor) or an id (e.g. 718087881087910018)

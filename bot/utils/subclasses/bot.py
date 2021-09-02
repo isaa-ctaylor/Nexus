@@ -1,3 +1,4 @@
+from discord.flags import Intents
 from ..helpers import get_prefix
 from logging import INFO, getLogger
 from traceback import format_exception
@@ -17,18 +18,24 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 load_dotenv()
 
 
+intents = Intents.all()
+intents.members = False
+intents.presences = False
+
+
 class Nexus(Bot):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, intents: Intents = intents, *args, **kwargs):
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
         self.config = Config()
 
-        kwargs["command_prefix"] = kwargs.pop("command_prefix", get_prefix)
+        kwargs["command_prefix"] = get_prefix
         kwargs["case_insensitive"] = kwargs.pop("case_insensitive", True)
+        kwargs["slash_commands"] = kwargs.pop("slash_commands", True)
 
         cogs = self.config.data.cogs
 
-        super().__init__(*args, **kwargs)
+        super().__init__(intents=intents, *args, **kwargs)
 
         self.owner_id = self.config.data.owner
         self.strip_after_prefix = True

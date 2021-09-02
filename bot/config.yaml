@@ -10,8 +10,8 @@ cogs:
   - cogs.Errors
   - cogs.Moderation
   - cogs.Utility
-  - cogs.Listeners
-  - Jishaku
+  # - cogs.Listeners
+  # - Jishaku
 
 colours:
   bad: "!Colour 15158332"

@@ -18,7 +18,14 @@ class NexusContext(Context):
         
         return await destination.send(embed=Embed(**kwargs))
 
-    async def paginate(self, *items, **kwargs):
+    async def defer(self) -> None:
+        if self.interaction:
+            await self.interaction.response.defer()
+
+    async def paginate(self, *items, **kwargs) -> None:
+        if self.interaction:
+            await self.defer()
+
         destination = kwargs.pop("destination", self)
         
         if len(items) == 1 and isinstance(items[0], (list, tuple)):
@@ -36,6 +43,8 @@ class NexusContext(Context):
             _msg.author = author
         if channel is not None:
             _msg.channel = channel
+        
+        _msg.content = kwargs["content"]
 
         return await self.bot.get_context(_msg, cls=type(self))
     

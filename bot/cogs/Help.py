@@ -1,7 +1,5 @@
 from typing import Optional, Union, Mapping, List
-from discord.components import SelectOption
-from discord.ui import Select, View
-from discord import Interaction
+from discord.ui import View
 
 from discord.ext.commands.core import bot_has_permissions
 from discord.utils import MISSING
@@ -13,6 +11,8 @@ from discord import Embed
 from discord.abc import Messageable
 
 from utils.subclasses.bot import Nexus
+
+from discord.utils import MISSING
 
 
 PER_PAGE = 10
@@ -69,8 +69,8 @@ class NexusHelp(HelpCommand):
         _ = "\n".join(f"{cog.qualified_name}: {cog.doc}" for cog in cogs)
         _embed.description = f"```yaml\n{_.strip()}```"
         return paginatorinput(
-            embed=_embed, file=self.context.bot.config.data.assets.banner
-        )
+            embed=_embed, file=self.context.bot.config.data.assets.banner or "Test"
+            )
 
     async def send_cog_help(self, cog: Cog) -> None:
         if not await self._show(cog):
