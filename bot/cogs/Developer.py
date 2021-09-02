@@ -1,5 +1,6 @@
 from asyncio import create_subprocess_shell
 from asyncio.subprocess import PIPE
+from contextlib import suppress
 from difflib import get_close_matches
 from inspect import Parameter, isasyncgen
 from os import path
@@ -10,6 +11,7 @@ from typing import Callable, List
 from re import findall
 
 from discord.embeds import Embed
+from discord.errors import NotFound
 from discord.ext.commands import command, is_owner
 from discord.ext.commands.core import bot_has_permissions
 from discord.ext.commands.errors import MissingRequiredArgument
@@ -89,7 +91,8 @@ class Developer(Cog, hidden=True):
             "message": ctx.message,
         }
 
-        await ctx.message.add_reaction("▶")
+        with suppress(NotFound):
+            await ctx.message.add_reaction("▶")
         error = False
         try:
             result = await self._evaluate_code(
@@ -125,7 +128,8 @@ class Developer(Cog, hidden=True):
                 for i in range(0, len(result), 4087)
             ]
 
-        await ctx.message.add_reaction("✅" if not error else "\U00002757")
+        with suppress(NotFound):
+            await ctx.message.add_reaction("✅" if not error else "\U00002757")
 
         if embeds:
             await ctx.paginate(embeds)
@@ -335,7 +339,8 @@ class Developer(Cog, hidden=True):
         """
         Restart the bot
         """
-        await ctx.message.add_reaction("\U0001f44d")
+        with suppress(NotFound):
+            await ctx.message.add_reaction("\U0001f44d")
         await self.bot.close()
 
     @is_owner()
