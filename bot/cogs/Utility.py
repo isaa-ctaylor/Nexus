@@ -98,7 +98,7 @@ class Utility(Cog):
         """
         async with ctx.typing():
             if not discriminator:
-                discriminator = Discriminator().convert(ctx, ctx.author.discriminator)
+                discriminator = await Discriminator().convert(ctx, ctx.author.discriminator)
 
             users = sorted(
                 [m for m in self.bot.users if m.discriminator == discriminator],
