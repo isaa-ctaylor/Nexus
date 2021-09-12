@@ -1,10 +1,35 @@
 from discord.embeds import Embed
+from discord.ext.commands.errors import BadArgument
 from utils.subclasses.cog import Cog
 from utils.subclasses.bot import Nexus
 from utils.subclasses.context import NexusContext
 from utils.subclasses.command import command, Command
 from async_timeout import timeout
 from aiohttp import InvalidURL
+from typing import Any, Optional
+from discord.ext.commands import Converter
+
+
+class InvalidDiscriminator(BadArgument):
+    def __init__(self, arg: Any):
+        self.arg = arg
+
+    def __str__(self):
+        return f"{self.arg} is not a valid discriminator!"
+
+
+class Discriminator(Converter):
+    """
+    A converter to validate discriminators
+    """
+
+    async def convert(self, ctx: NexusContext, argument: Any):
+        _str = str(argument)
+
+        if len(_str) != 4 or not _str.isdigit():
+            raise InvalidDiscriminator(argument)
+
+        return _str
 
 
 class Utility(Cog):
@@ -23,7 +48,7 @@ class Utility(Cog):
 
         This tool will warn you if the link contains a grabify link
         """
-        
+
         try:
             async with ctx.typing():
                 async with timeout(30):
@@ -33,7 +58,8 @@ class Utility(Cog):
 
                         urls = "\n".join(
                             str(url.url)
-                            if "grabify.link" not in str(url.url) or "iplogger.org" not in str(url.url)
+                            if "grabify.link" not in str(url.url)
+                            or "iplogger.org" not in str(url.url)
                             else f"⚠ {url.url}"
                             for url in history[1:]
                         )
@@ -54,8 +80,53 @@ class Utility(Cog):
             )
         else:
             await ctx.error(f"{url} does not redirect!")
+
+    @command(
+        name="discriminator",
+        cls=Command,
+        aliases=["discrim"],
+        examples=["0000", "1234"],
+    )
+    async def _discriminator(
+        self, ctx: NexusContext, discriminator: Optional[Discriminator] = None
+    ):
+        """
+        Show all members that the bot can see with the given discriminator.
+        This tool can be used if you are trying to change your discriminator, by changing your name to an existing name.
+
+        Defaults to the author's discriminator.
+        """
+        async with ctx.typing():
+            if not discriminator:
+                discriminator = Discriminator().convert(ctx, ctx.author.discriminator)
+
+            users = sorted(
+                [m for m in self.bot.users if m.discriminator == discriminator],
+                key=lambda m: str(m),
+            )
+
+            if not users:
+                return await ctx.error(
+                    f"There are no users with the discriminator {discriminator}!"
+                )
+
+            pages = [
+                Embed(
+                    title=f"Users with discriminator {discriminator}",
+                    description="\n".join(f"{m} ({m.id})" for m in _),
+                    colour=self.bot.config.data.colours.neutral,
+                )
+                if i == 0
+                else Embed(
+                    description="\n".join(f"{m} ({m.id})"),
+                    colour=self.bot.config.data.colours.neutral,
+                )
+                for i, _ in enumerate(
+                    users[i : i + 10] for i in range(0, len(users), 10)
+                )
+            ]
             
-    
+        await ctx.paginate(pages)
 
 
 def setup(bot: Nexus):
