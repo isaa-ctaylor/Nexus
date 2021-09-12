@@ -7,7 +7,7 @@ from os import path
 from pathlib import Path
 from textwrap import indent
 from traceback import format_exception
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Tuple
 from re import findall
 
 from discord.embeds import Embed
@@ -169,7 +169,7 @@ class Developer(Cog, hidden=True):
         cls=Command,
         examples=["cogs.Developer", "Jishaku", "cogs.Help cogs.Developer"],
     )
-    async def _load(self, ctx: NexusContext, *cogs: str):
+    async def _load(self, ctx: NexusContext, *cogs: Tuple[str]):
         """
         Load the given cogs
 
@@ -279,13 +279,10 @@ class Developer(Cog, hidden=True):
 
         await context.command.invoke(context)
 
-    class Flags(FlagConverter, prefix="--", delimiter=" "):
-        no_reload: bool = flag(name="nr", default=False)
-
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="sync", cls=Command, aliases=["pull"])
-    async def _sync(self, ctx: NexusContext, *, flags: Optional[Flags]):
+    async def _sync(self, ctx: NexusContext):
         """
         Sync to github
         """
@@ -306,23 +303,22 @@ class Developer(Cog, hidden=True):
 
             _cogs = ""
 
-            if not flags.no_reload:
-                cogs = findall("r(?<=cogs\/)[^\/\W]*(?=\.py)", _)
+            cogs = findall(r"(?<=cogs\/)[^\/\W]*(?=\.py)", _)
 
-                if cogs:
-                    options = [
-                        "cogs."
-                        + str(file)
-                        .removeprefix(str(COG_PATH))
-                        .strip("\\")
-                        .strip("./")
-                        .removesuffix(".py")
-                        for file in COG_PATH.glob("./*.py")
-                    ]
+            if cogs:
+                options = [
+                    "cogs."
+                    + str(file)
+                    .removeprefix(str(COG_PATH))
+                    .strip("\\")
+                    .strip("./")
+                    .removesuffix(".py")
+                    for file in COG_PATH.glob("./*.py")
+                ]
 
-                    _cogs = await self._operate_on_cogs(
-                        cogs, self.bot.reload_extension, options
-                    )
+                _cogs = await self._operate_on_cogs(
+                    cogs, self.bot.reload_extension, options
+                )
 
         await ctx.paginate(
             Embed(
