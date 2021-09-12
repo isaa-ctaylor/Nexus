@@ -101,7 +101,7 @@ class Utility(Cog):
                 discriminator = await Discriminator().convert(ctx, ctx.author.discriminator)
 
             users = sorted(
-                [m for m in self.bot.users if m.discriminator == discriminator],
+                [m for m in self.bot.users if str(m.discriminator) == str(discriminator)],
                 key=lambda m: str(m),
             )
 
