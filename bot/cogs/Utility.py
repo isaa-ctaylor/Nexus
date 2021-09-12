@@ -100,10 +100,10 @@ class Utility(Cog):
             if not discriminator:
                 discriminator = await Discriminator().convert(ctx, ctx.author.discriminator)
 
-            users = sorted(
+            users = list(sorted(
                 [m for m in self.bot.users if str(m.discriminator) == str(discriminator)],
                 key=lambda m: str(m),
-            )
+            ))
 
             if not users:
                 return await ctx.error(
