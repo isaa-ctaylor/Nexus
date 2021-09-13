@@ -1,4 +1,5 @@
 from discord.embeds import Embed
+from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.errors import BadArgument
 from utils.subclasses.cog import Cog
 from utils.subclasses.bot import Nexus
@@ -27,7 +28,13 @@ class Discriminator(Converter):
     async def convert(self, ctx: NexusContext, argument: Any):
         _str = str(argument)
 
-        if len(_str) != 4 or not _str.isdigit():
+        if len(_str) != 4:
+            try:
+                return str((await UserConverter().convert(ctx, argument)).discriminator)
+            except:
+                return InvalidDiscriminator(argument)
+             
+        if not _str.isdigit():
             return InvalidDiscriminator(argument)
 
         return _str
