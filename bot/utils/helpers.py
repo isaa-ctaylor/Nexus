@@ -286,9 +286,9 @@ class Paginator:
 
         if message:
             await message.edit(
-                self.items[start].content,
-                embed=self.items[start].embed,
-                view=self.items[start].view,
+                self.items[start].content or MISSING,
+                embed=self.items[start].embed or MISSING,
+                view=self.items[start].view or MISSING,
                 **kwargs,
             )
 
@@ -304,8 +304,8 @@ class Paginator:
             self.message = await destination.send(
                 self.items[start].content or None,
                 embed=self.items[start].embed or None,
-                file=self.items[start].file or None,
-                view=self.items[start].view or None,
+                file=self.items[start].file or MISSING,
+                view=self.items[start].view or MISSING,
                 reference=self.ctx.message if self.reply and isinstance(self.ctx.message, Message) else None,
                 mention_author=False,
                 **kwargs,
