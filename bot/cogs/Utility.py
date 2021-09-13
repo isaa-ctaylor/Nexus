@@ -8,6 +8,7 @@ from async_timeout import timeout
 from aiohttp import InvalidURL
 from typing import Any, Optional
 from discord.ext.commands import Converter
+from utils import codeblocksafe
 
 
 class InvalidDiscriminator(BadArgument):
@@ -27,7 +28,7 @@ class Discriminator(Converter):
         _str = str(argument)
 
         if len(_str) != 4 or not _str.isdigit():
-            raise InvalidDiscriminator(argument)
+            return InvalidDiscriminator(argument)
 
         return _str
 
@@ -97,6 +98,9 @@ class Utility(Cog):
         Defaults to the author's discriminator.
         """
         async with ctx.typing():
+            if isinstance(discriminator, InvalidDiscriminator):
+                return await ctx.error(str(discriminator))
+
             if not discriminator:
                 discriminator = await Discriminator().convert(
                     ctx, ctx.author.discriminator
@@ -121,12 +125,12 @@ class Utility(Cog):
             pages = [
                 Embed(
                     title=f"Users with discriminator {discriminator}",
-                    description="\n".join(f"{m} ({m.id})" for m in _),
+                    description="\n".join(f"`{codeblocksafe(m)} ({m.id})`" for m in _),
                     colour=self.bot.config.data.colours.neutral,
                 )
                 if i == 0
                 else Embed(
-                    description="\n".join(f"{m} ({m.id})" for m in _),
+                    description="\n".join(f"`{codeblocksafe(m)} ({m.id})`" for m in _),
                     colour=self.bot.config.data.colours.neutral,
                 )
                 for i, _ in enumerate(
@@ -135,13 +139,6 @@ class Utility(Cog):
             ]
 
         await ctx.paginate(pages)
-        
-    @_discriminator.error
-    async def _handle_discriminator_error(self, ctx: NexusContext, error: Exception):
-        if isinstance(error, InvalidDiscriminator):
-            await ctx.error(str(error))
-        else:
-            raise error
 
 
 def setup(bot: Nexus):
