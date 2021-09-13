@@ -104,7 +104,7 @@ class Utility(Cog):
                 [m for m in self.bot.users if str(m.discriminator) == str(discriminator)],
                 key=lambda m: str(m),
             ))
-            await ctx.send(str(users)[:100])
+
             if not users:
                 return await ctx.error(
                     f"There are no users with the discriminator {discriminator}!"
@@ -118,7 +118,7 @@ class Utility(Cog):
                 )
                 if i == 0
                 else Embed(
-                    description="\n".join(f"{m} ({m.id})"),
+                    description="\n".join(f"{m} ({m.id})" for m in _),
                     colour=self.bot.config.data.colours.neutral,
                 )
                 for i, _ in enumerate(

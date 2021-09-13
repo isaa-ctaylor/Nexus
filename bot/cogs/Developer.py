@@ -323,7 +323,7 @@ class Developer(Cog, hidden=True):
         await ctx.paginate(
             Embed(
                 description=f"```sh\n$ git pull\n{_}```"
-                + (f"\n\n```\n{_cogs}```" if _cogs else ""),
+                + (f"\n```\n{_cogs}```" if _cogs else ""),
                 colour=self.bot.config.data.colours.neutral,
             )
         )
