@@ -18,13 +18,13 @@ from discord.ext.commands.core import _CaseInsensitiveDict
 load_dotenv()
 
 
-intents = Intents.all()
-intents.members = False
-intents.presences = False
+_intents = Intents.all()
+_intents.members = True
+_intents.presences = False
 
 
 class Nexus(Bot):
-    def __init__(self, intents: Intents = intents, *args, **kwargs):
+    def __init__(self, intents: Intents = None, *args, **kwargs):
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
         self.config = Config()
@@ -35,7 +35,7 @@ class Nexus(Bot):
 
         cogs = self.config.data.cogs
 
-        super().__init__(intents=intents, *args, **kwargs)
+        super().__init__(intents=intents or _intents, *args, **kwargs)
 
         self.owner_id = self.config.data.owner
         self.strip_after_prefix = True
