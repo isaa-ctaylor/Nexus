@@ -98,12 +98,20 @@ class Utility(Cog):
         """
         async with ctx.typing():
             if not discriminator:
-                discriminator = await Discriminator().convert(ctx, ctx.author.discriminator)
+                discriminator = await Discriminator().convert(
+                    ctx, ctx.author.discriminator
+                )
 
-            users = list(sorted(
-                [m for m in self.bot.users if str(m.discriminator) == str(discriminator)],
-                key=lambda m: str(m),
-            ))
+            users = list(
+                sorted(
+                    [
+                        m
+                        for m in self.bot.users
+                        if str(m.discriminator) == str(discriminator)
+                    ],
+                    key=lambda m: str(m),
+                )
+            )
 
             if not users:
                 return await ctx.error(
@@ -125,8 +133,15 @@ class Utility(Cog):
                     users[i : i + 10] for i in range(0, len(users), 10)
                 )
             ]
-            
+
         await ctx.paginate(pages)
+        
+    @_discriminator.error
+    async def _handle_discriminator_error(self, ctx: NexusContext, error: Exception):
+        if isinstance(error, InvalidDiscriminator):
+            await ctx.error(str(error))
+        else:
+            raise error
 
 
 def setup(bot: Nexus):
