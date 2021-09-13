@@ -104,7 +104,7 @@ class Utility(Cog):
                 [m for m in self.bot.users if str(m.discriminator) == str(discriminator)],
                 key=lambda m: str(m),
             ))
-
+            await ctx.send(str(users)[:100])
             if not users:
                 return await ctx.error(
                     f"There are no users with the discriminator {discriminator}!"
