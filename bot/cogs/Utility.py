@@ -118,7 +118,7 @@ class Utility(Cog):
                         for m in self.bot.users
                         if str(m.discriminator) == str(discriminator)
                     ],
-                    key=lambda m: str(m),
+                    key=lambda m: str(m)
                 )
             )
 
