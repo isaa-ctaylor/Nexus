@@ -16,7 +16,7 @@ class InvalidDiscriminator(BadArgument):
         self.arg = arg
 
     def __str__(self):
-        return f"{self.arg} is not a valid discriminator!"
+        return f"{codeblocksafe(self.arg)} is not a valid discriminator!"
 
 
 class Discriminator(Converter):
@@ -97,15 +97,13 @@ class Utility(Cog):
 
         Defaults to the author's discriminator.
         """
+        if isinstance(discriminator, InvalidDiscriminator):
+            return await ctx.error(str(discriminator))
+
+        if not discriminator:
+            discriminator = ctx.author.discriminator
+
         async with ctx.typing():
-            if isinstance(discriminator, InvalidDiscriminator):
-                return await ctx.error(str(discriminator))
-
-            if not discriminator:
-                discriminator = await Discriminator().convert(
-                    ctx, ctx.author.discriminator
-                )
-
             users = list(
                 sorted(
                     [
