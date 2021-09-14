@@ -1,9 +1,8 @@
-from typing import Callable, Optional, Text, Union
+from typing import Callable, Optional, Union
 
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.errors import Forbidden, HTTPException
-from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.core import (
     bot_has_guild_permissions,
     bot_has_permissions,
@@ -12,15 +11,11 @@ from discord.ext.commands.core import (
     guild_only,
     has_guild_permissions,
     has_permissions,
-    is_owner,
 )
 from discord.member import Member
-from discord.message import Message
-from discord.object import Object
 from discord.permissions import Permissions
 from discord.user import User
 from discord.utils import MISSING, get
-from requests.models import HTTPError
 from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
