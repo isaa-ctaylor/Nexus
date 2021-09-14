@@ -2,20 +2,18 @@ from asyncio import create_subprocess_shell
 from asyncio.subprocess import PIPE
 from contextlib import suppress
 from difflib import get_close_matches
-from inspect import Parameter, isasyncgen
+from inspect import isasyncgen
 from os import path
 from pathlib import Path
+from re import findall
 from textwrap import indent
 from traceback import format_exception
-from typing import Callable, List, Optional, Tuple
-from re import findall
+from typing import Callable, List, Tuple
 
 from discord.embeds import Embed
 from discord.errors import NotFound
 from discord.ext.commands import command, is_owner
 from discord.ext.commands.core import bot_has_permissions
-from discord.ext.commands.errors import MissingRequiredArgument
-from discord.ext.commands.flags import FlagConverter, flag
 from discord.file import File
 from discord.member import Member
 from import_expression import eval, exec
@@ -284,7 +282,9 @@ class Developer(Cog, hidden=True):
     @command(name="sync", cls=Command, aliases=["pull"])
     async def _sync(self, ctx: NexusContext):
         """
-        Sync to github
+        Sync with github.
+        
+        This command reloads any cogs that were changed.
         """
         async with ctx.typing():
             proc = await create_subprocess_shell("git pull", stdout=PIPE, stderr=PIPE)
