@@ -154,6 +154,7 @@ class Utility(Cog):
         
         embed.add_field(name="Websocket", value=f"```py\n{round(self.bot.latency * 1000, 2)}ms```")
         embed.add_field(name="Typing", value=f"```py\nPinging...```")
+        embed.add_field(name="Database", value=f"```py\n{round(self.bot.db.ping, 2)}ms```")
         
         with Timer() as t:
             m = await ctx.reply(embed=embed)
@@ -161,7 +162,7 @@ class Utility(Cog):
             t.end()
             
             embed.remove_field(1)
-            embed.add_field(name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```")
+            embed.insert_field_at(1, name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```")
         
         await m.edit(embed=embed)
         

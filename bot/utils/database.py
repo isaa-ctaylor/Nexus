@@ -1,7 +1,7 @@
 import asyncpg
 import asyncio
 
-from asyncpg.connection import Connection
+from . import Timer
 
 
 class Database:
@@ -38,3 +38,12 @@ class Database:
         if one:
             return await self.pool.fetchrow(command, *args)
         return await self.pool.fetch(command, *args)
+    
+    @property
+    async def ping(self):
+        with Timer() as t:
+            await self.fetch("SELECT 1")
+            
+            t.end()
+            
+            return t.elapsed
