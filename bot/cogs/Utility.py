@@ -9,7 +9,7 @@ from async_timeout import timeout
 from aiohttp import InvalidURL
 from typing import Any, Optional
 from discord.ext.commands import Converter
-from utils import codeblocksafe
+from utils import codeblocksafe, Timer
 
 
 class InvalidDiscriminator(BadArgument):
@@ -41,6 +41,9 @@ class Discriminator(Converter):
 
 
 class Utility(Cog):
+    """
+    Useful commands
+    """
     def __init__(self, bot: Nexus):
         self.bot = bot
 
@@ -144,6 +147,23 @@ class Utility(Cog):
             ]
 
         await ctx.paginate(pages)
+
+    @command(name="ping", cls=Command)
+    async def _ping(self, ctx: NexusContext):
+        embed = Embed(title="Pong!", colour=self.bot.config.data.colours.neutral)
+        
+        embed.add_field(name="Websocket", value=f"```py\n{self.bot.latency * 1000}ms```")
+        embed.add_field(name="Typing", value=f"```py\nPinging...```")
+        
+        with Timer() as t:
+            m = await ctx.reply(embed=embed)
+            
+            t.end()
+            
+            embed.fields[1].value = f"```py\n{t.elapsed * 1000}```"
+        
+        await m.edit(embed=embed)
+        
 
 
 def setup(bot: Nexus):
