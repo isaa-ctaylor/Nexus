@@ -34,7 +34,7 @@ class Discriminator(Converter):
                 return str((await UserConverter().convert(ctx, argument)).discriminator)
             except:
                 return InvalidDiscriminator(argument)
-             
+
         if not _str.isdigit():
             return InvalidDiscriminator(argument)
 
@@ -45,6 +45,7 @@ class Utility(Cog):
     """
     Useful commands
     """
+
     def __init__(self, bot: Nexus):
         self.bot = bot
 
@@ -122,7 +123,7 @@ class Utility(Cog):
                         for m in self.bot.users
                         if str(m.discriminator) == str(discriminator)
                     ],
-                    key=lambda m: str(m)
+                    key=lambda m: str(m),
                 )
             )
 
@@ -156,18 +157,21 @@ class Utility(Cog):
         embed.add_field(name="Websocket", value=f"```py\n{round(_ * 1000, 2)}ms```")
         embed.add_field(name="Typing", value=f"```py\nPinging...```")
         _ = await self.bot.db.ping
-        embed.add_field(name="Database", value=f"```py\n{round(_, -int(floor(log10(abs(_)))))}ms```")
-        
+        embed.add_field(
+            name="Database", value=f"```py\n{round(_, -int(floor(log10(abs(_)))))}ms```"
+        )
+
         with Timer() as t:
             m = await ctx.reply(embed=embed)
-            
+
             t.end()
-            
+
             embed.remove_field(1)
-            embed.insert_field_at(1, name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```")
-        
+            embed.insert_field_at(
+                1, name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```"
+            )
+
         await m.edit(embed=embed)
-        
 
 
 def setup(bot: Nexus):
