@@ -162,8 +162,7 @@ class Utility(Cog):
         )
 
         with Timer() as t:
-            m = await ctx.reply(embed=embed)
-
+            m = await ctx.reply(embed=embed, mention_author=False)
             t.end()
 
             embed.remove_field(1)
