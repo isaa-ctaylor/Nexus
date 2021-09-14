@@ -30,20 +30,20 @@ class Database:
         self.bot.logger.info("Database pool created.")
 
         return pool
-    
+
     async def execute(self, command: str, *args):
         return await self.pool.execute(command, *args)
-        
+
     async def fetch(self, command: str, *args, one=True):
         if one:
             return await self.pool.fetchrow(command, *args)
         return await self.pool.fetch(command, *args)
-    
+
     @property
     async def ping(self):
         with Timer() as t:
             await self.fetch("SELECT 1")
-            
+
             t.end()
-            
+
             return t.elapsed

@@ -137,7 +137,7 @@ class Developer(Cog, hidden=True):
     ):
         if not cogs:
             return await self._operate_on_cogs(self.bot.cogs, func, options)
-            
+
         _cogs = []
 
         _to_load = []
@@ -283,7 +283,7 @@ class Developer(Cog, hidden=True):
     async def _sync(self, ctx: NexusContext):
         """
         Sync with github.
-        
+
         This command reloads any cogs that were changed.
         """
         async with ctx.typing():

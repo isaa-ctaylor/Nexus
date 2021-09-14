@@ -12,14 +12,22 @@ from . import codeblocksafe
 
 
 class WebhookHandler(Handler):
-    def __init__(self, *, level, bot, url: str, session: ClientSession, format: str = "%(asctime)s:%(levelname)s:%(name)s: %(message)s"):
+    def __init__(
+        self,
+        *,
+        level,
+        bot,
+        url: str,
+        session: ClientSession,
+        format: str = "%(asctime)s:%(levelname)s:%(name)s: %(message)s",
+    ):
         self.level = level
         self.url = url
         self.formatter = Formatter(format)
         self.async_webhook = Webhook.from_url(self.url, session=session)
         self.sync_webhook = SyncWebhook.from_url(self.url)
         self.bot = bot
-        
+
     def handle(self, log: LogRecord) -> str:
         loop = None
 
@@ -33,9 +41,19 @@ class WebhookHandler(Handler):
                 self._sync_handle(log)
 
         return log
-    
+
     async def _async_handle(self, log: LogRecord):
-        return await self.async_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```", colour=16711774))
+        return await self.async_webhook.send(
+            embed=Embed(
+                description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```",
+                colour=16711774,
+            )
+        )
 
     def _sync_handle(self, log: LogRecord):
-        return self.sync_webhook.send(embed=Embed(description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```", colour=16711774))
+        return self.sync_webhook.send(
+            embed=Embed(
+                description=f"```json\n{codeblocksafe(self.formatter.format(log).replace(str(self.bot.http.token), '[TOKEN]'))}```",
+                colour=16711774,
+            )
+        )

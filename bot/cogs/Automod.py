@@ -1,8 +1,7 @@
 import asyncio
 from discord.embeds import Embed
 from discord.ext.commands.cooldowns import BucketType, CooldownMapping
-from discord.ext.commands.core import (bot_has_permissions, group,
-                                       has_guild_permissions)
+from discord.ext.commands.core import bot_has_permissions, group, has_guild_permissions
 from discord.message import Message
 from utils.helpers import DotDict
 from utils.subclasses.bot import Nexus
@@ -25,7 +24,9 @@ class Automod(Cog):
         ]
         spamcheckerdata = [
             dict(record)
-            for record in await self.bot.db.fetch("SELECT * FROM spamchecker", one=False)
+            for record in await self.bot.db.fetch(
+                "SELECT * FROM spamchecker", one=False
+            )
         ]
 
         _cache = {

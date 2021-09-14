@@ -56,7 +56,7 @@ class Moderation(Cog):
     ):
         """
         Ban the given member for the optional reason
-        
+
         Optionally delete messages sent in the last specified days
 
         The member in question can be supplied with a mention (e.g. @isaa_ctaylor#2494),

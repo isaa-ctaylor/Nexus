@@ -70,7 +70,7 @@ class NexusHelp(HelpCommand):
         _embed.description = f"```yaml\n{_.strip()}```"
         return paginatorinput(
             embed=_embed, file=self.context.bot.config.data.assets.banner or "Test"
-            )
+        )
 
     async def send_cog_help(self, cog: Cog) -> None:
         if not await self._show(cog):

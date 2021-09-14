@@ -270,7 +270,7 @@ class Paginator:
     ):
         if not items:
             return
-        
+
         destination = destination or self.ctx.channel
 
         self.items = [
@@ -304,9 +304,13 @@ class Paginator:
             self.message = await destination.send(
                 self.items[start].content or None,
                 embed=self.items[start].embed or None,
-                file=self.items[start].file or MISSING if not isinstance(self.ctx.message, Message) else None,
+                file=self.items[start].file or MISSING
+                if not isinstance(self.ctx.message, Message)
+                else None,
                 view=self.items[start].view or MISSING,
-                reference=self.ctx.message if self.reply and isinstance(self.ctx.message, Message) else None,
+                reference=self.ctx.message
+                if self.reply and isinstance(self.ctx.message, Message)
+                else None,
                 mention_author=False,
                 **kwargs,
             )
@@ -391,7 +395,8 @@ class CodeblockConverter(Converter):
 
 
 fallback = "Nxs"
-prefixes = ['nxs']
+prefixes = ["nxs"]
+
 
 def get_prefix(bot, msg: Message):
     if isinstance(msg, _FakeSlashMessage):
