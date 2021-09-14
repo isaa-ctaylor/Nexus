@@ -10,6 +10,7 @@ from aiohttp import InvalidURL
 from typing import Any, Optional
 from discord.ext.commands import Converter
 from utils import codeblocksafe, Timer
+from math import floor, log10
 
 
 class InvalidDiscriminator(BadArgument):
@@ -151,10 +152,11 @@ class Utility(Cog):
     @command(name="ping", cls=Command)
     async def _ping(self, ctx: NexusContext):
         embed = Embed(title="Pong!", colour=self.bot.config.data.colours.neutral)
-        
-        embed.add_field(name="Websocket", value=f"```py\n{round(self.bot.latency * 1000, 2)}ms```")
+        _ = self.bot.latency
+        embed.add_field(name="Websocket", value=f"```py\n{round(_ * 1000, 2)}ms```")
         embed.add_field(name="Typing", value=f"```py\nPinging...```")
-        embed.add_field(name="Database", value=f"```py\n{round(await self.bot.db.ping, 2)}ms```")
+        _ = await self.bot.db.ping
+        embed.add_field(name="Database", value=f"```py\n{round(_, -int(floor(log10(abs(_)))))}ms```")
         
         with Timer() as t:
             m = await ctx.reply(embed=embed)
