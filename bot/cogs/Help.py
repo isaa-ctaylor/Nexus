@@ -1,21 +1,34 @@
-from typing import Optional, Union, Mapping, List
-from discord.ui import View
+from bot.utils import cmdtree
+from utils.subclasses.context import NexusContext
+from typing import List, Mapping, Optional, Union
 
-from discord.ext.commands.core import bot_has_permissions
-from discord.utils import MISSING
-from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, Group
-from utils.helpers import paginatorinput
-from discord.ext.commands.help import HelpCommand, _HelpCommandImpl
 from discord import Embed
 from discord.abc import Messageable
-
+from discord.ext.commands.core import bot_has_permissions, command
+from discord.ext.commands.help import HelpCommand, _HelpCommandImpl
+from discord.ui import View
+from utils.helpers import paginatorinput
 from utils.subclasses.bot import Nexus
-
-from discord.utils import MISSING
-
+from utils.subclasses.cog import Cog
+from utils.subclasses.command import Command, Group
 
 PER_PAGE = 10
+
+
+async def _show(ctx: NexusContext, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]):
+    if isinstance(item, (Command, Group, _HelpCommandImpl)):
+        item = item.cog
+
+    if not list(item.walk_commands()):
+        return False
+
+    if (
+        ctx.author.id == ctx.bot.owner_id
+        or ctx.author.id in ctx.bot.owner_ids
+    ):
+        return True
+
+    return not item.hidden
 
 
 class NexusHelp(HelpCommand):
@@ -34,20 +47,7 @@ class NexusHelp(HelpCommand):
 
         await self.context.paginate(items, destination=destination, view=view, **kwargs)
 
-    async def _show(self, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]):
-        if isinstance(item, (Command, Group, _HelpCommandImpl)):
-            item = item.cog
-
-        if not list(item.walk_commands()):
-            return False
-
-        if (
-            self.context.author.id == self.context.bot.owner_id
-            or self.context.author.id in self.context.bot.owner_ids
-        ):
-            return True
-
-        return not item.hidden
+    
 
     async def send_bot_help(
         self, mapping: Mapping[Optional[Cog], List[Command]]
@@ -58,7 +58,7 @@ class NexusHelp(HelpCommand):
         self, mapping: Mapping[Optional[Cog], List[Command]]
     ) -> paginatorinput:
         cogs: List[Cog] = sorted(
-            [cog for cog in mapping.keys() if cog and await self._show(cog)],
+            [cog for cog in mapping.keys() if cog and await _show(self.context, cog)],
             key=lambda c: c.qualified_name,
         )
 
@@ -73,7 +73,7 @@ class NexusHelp(HelpCommand):
         )
 
     async def send_cog_help(self, cog: Cog) -> None:
-        if not await self._show(cog):
+        if not await _show(self.context, cog):
             await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -139,7 +139,7 @@ class NexusHelp(HelpCommand):
         return embed
 
     async def send_command_help(self, command: Command) -> None:
-        if not await self._show(command):
+        if not await _show(self.context, command):
             return await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -153,7 +153,7 @@ class NexusHelp(HelpCommand):
         return await self._basic_command_help(command)
 
     async def send_group_help(self, group: Group):
-        if not await self._show(group):
+        if not await _show(self.context, group):
             return await self.send_error_message(
                 self.command_not_found(
                     self.context.message.content.removeprefix(
@@ -206,6 +206,17 @@ class Help(Cog):
     def cog_unload(self):
         self.bot.help_command = self._old_help_command
 
+
+    @command(name="commands", cls=Command)
+    async def _commands(self, ctx: NexusContext):
+        commands = {cog.qualified_name: [c for c in cog.get_commands() if await _show(ctx, c)] for cog in self.bot.cogs.values()}
+        
+        trees = {_name: cmdtree(_commands) for _name, _commands in commands.items()}
+        
+        embeds = [Embed(title=_name, description=tree) for _name, tree in trees.items()]
+        
+        await ctx.paginate(embeds)
+        
 
 def setup(bot: Nexus):
     bot.add_cog(Help(bot))
