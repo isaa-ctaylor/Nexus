@@ -152,7 +152,7 @@ class Utility(Cog):
     async def _ping(self, ctx: NexusContext):
         embed = Embed(title="Pong!", colour=self.bot.config.data.colours.neutral)
         
-        embed.add_field(name="Websocket", value=f"```py\n{self.bot.latency * 1000}ms```")
+        embed.add_field(name="Websocket", value=f"```py\n{round(self.bot.latency * 1000, 2)}ms```")
         embed.add_field(name="Typing", value=f"```py\nPinging...```")
         
         with Timer() as t:
@@ -160,7 +160,8 @@ class Utility(Cog):
             
             t.end()
             
-            embed.fields[1].value = f"```py\n{t.elapsed * 1000}```"
+            embed.remove_field(1)
+            embed.add_field(name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}```")
         
         await m.edit(embed=embed)
         
