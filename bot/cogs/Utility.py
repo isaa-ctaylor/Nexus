@@ -161,7 +161,7 @@ class Utility(Cog):
             t.end()
             
             embed.remove_field(1)
-            embed.add_field(name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}```")
+            embed.add_field(name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```")
         
         await m.edit(embed=embed)
         
