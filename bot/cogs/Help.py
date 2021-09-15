@@ -1,4 +1,4 @@
-from bot.utils import cmdtree
+from utils import cmdtree
 from utils.subclasses.context import NexusContext
 from typing import List, Mapping, Optional, Union
 
