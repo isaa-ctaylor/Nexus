@@ -1,3 +1,5 @@
+from typing import Optional
+from discord.channel import TextChannel
 from discord.ext.commands.core import has_guild_permissions
 from discord.message import Message
 from utils.subclasses.bot import Nexus
@@ -60,7 +62,7 @@ class Modlogs(Cog):
             Embed(
                 title="Done!",
                 description="Modlogs are now `enabled`!",
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
 
@@ -86,9 +88,21 @@ class Modlogs(Cog):
             Embed(
                 title="Done!",
                 description="Modlogs are now `disabled`!",
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
+        
+    @has_guild_permissions(manage_messages=True)
+    @_modlogs.command(name="channel")
+    async def _modlogs_channel(self, ctx: NexusContext, channel: Optional[TextChannel] = None):
+        channel = channel or ctx.channel
+        
+        if ctx.guild.id not in self.cache:
+            return await ctx.error("Modlogs are not set up!")
+        
+        await self.bot.db.execute("UPDATE modlogs SET channel = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
+        
+        await ctx.paginate(Embed(title="Done!", description=f"Set the modlogs channel to {channel.mention}!", colours=self.bot.config.colours.neutral))
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
