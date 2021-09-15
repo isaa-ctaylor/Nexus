@@ -143,6 +143,9 @@ class Developer(Cog, hidden=True):
         _to_load = []
 
         for cog in cogs:
+            if isinstance(cog, tuple):
+                cog = "".join(cog)
+
             if not cog.startswith("cogs.") and cog not in self.COG_NAMES:
                 maybe_cogs = get_close_matches(cog, options)
                 if not maybe_cogs:
@@ -182,7 +185,7 @@ class Developer(Cog, hidden=True):
             .removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
-        await ctx.send(cogs)
+        
         cogs = await self._operate_on_cogs(cogs, self.bot.load_extension, options)
 
         await ctx.paginate(
