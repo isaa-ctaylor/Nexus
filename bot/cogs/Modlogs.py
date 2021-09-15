@@ -102,7 +102,7 @@ class Modlogs(Cog):
         
         await self.bot.db.execute("UPDATE modlogs SET channel = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
         
-        await ctx.paginate(Embed(title="Done!", description=f"Set the modlogs channel to {channel.mention}!", colours=self.bot.config.colours.neutral))
+        await ctx.paginate(Embed(title="Done!", description=f"Set the modlogs channel to {channel.mention}!", colour=self.bot.config.colours.neutral))
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
