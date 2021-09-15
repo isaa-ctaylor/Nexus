@@ -64,7 +64,8 @@ class Nexus(Bot):
             self.db.execute(
                 r"""CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
-                CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');"""
+                CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
+                CREATE TABLE IF NOT EXISTS modlogs (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT);"""
             )
         )
 
