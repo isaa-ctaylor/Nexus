@@ -8,7 +8,7 @@ from aiohttp import ClientSession
 from discord.ext.commands import Bot
 from dotenv import load_dotenv
 
-from ..config import Config
+from ..config import CONFIG
 from ..logging import WebhookHandler
 from .context import NexusContext
 from ..database import Database
@@ -27,17 +27,17 @@ class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
-        self.config = Config()
+        self.config = CONFIG
 
         kwargs["command_prefix"] = get_prefix
         kwargs["case_insensitive"] = kwargs.pop("case_insensitive", True)
         kwargs["slash_commands"] = kwargs.pop("slash_commands", True)
 
-        cogs = self.config.data.cogs
+        cogs = self.config.cogs
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
 
-        self.owner_id = self.config.data.owner
+        self.owner_id = self.config.owner
         self.strip_after_prefix = True
 
         self.logger = getLogger("discord")

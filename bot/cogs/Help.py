@@ -62,14 +62,14 @@ class NexusHelp(HelpCommand):
             key=lambda c: c.qualified_name,
         )
 
-        _embed = Embed(colour=self.context.bot.config.data.colours.neutral).set_image(
+        _embed = Embed(colour=self.context.bot.config.colours.neutral).set_image(
             url="attachment://Banner.png"
         )
 
         _ = "\n".join(f"{cog.qualified_name}: {cog.doc}" for cog in cogs)
         _embed.description = f"```yaml\n{_.strip()}```"
         return paginatorinput(
-            embed=_embed, file=self.context.bot.config.data.assets.banner or "Test"
+            embed=_embed, file=self.context.bot.config.assets.banner or "Test"
         )
 
     async def send_cog_help(self, cog: Cog) -> None:
@@ -99,7 +99,7 @@ class NexusHelp(HelpCommand):
             embeds.append(
                 Embed(
                     title=cog.qualified_name if index == 0 else "",
-                    colour=self.context.bot.config.data.colours.neutral,
+                    colour=self.context.bot.config.colours.neutral,
                     description=f"{cog.description if index == 0 else ''}\n\n```yaml\n{desc}```",
                 )
             )
@@ -118,7 +118,7 @@ class NexusHelp(HelpCommand):
 
         embed = Embed(
             description="\n".join(desc),
-            colour=self.context.bot.config.data.colours.neutral,
+            colour=self.context.bot.config.colours.neutral,
         )
 
         if command.cog_name:
@@ -183,7 +183,7 @@ class NexusHelp(HelpCommand):
             Embed(
                 title="Error!",
                 description=f"```\n{error}```",
-                colour=self.context.bot.config.data.colours.bad,
+                colour=self.context.bot.config.colours.bad,
             )
         )
 

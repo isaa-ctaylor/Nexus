@@ -88,7 +88,7 @@ class Utility(Cog):
             await ctx.paginate(
                 Embed(
                     description=f"```\n{urls}```\n{message if '⚠' in urls else ''}".strip(),
-                    colour=self.bot.config.data.colours.neutral,
+                    colour=self.bot.config.colours.neutral,
                 )
             )
         else:
@@ -136,12 +136,12 @@ class Utility(Cog):
                 Embed(
                     title=f"Users with discriminator {discriminator}",
                     description="\n".join(f"`{codeblocksafe(m)} ({m.id})`" for m in _),
-                    colour=self.bot.config.data.colours.neutral,
+                    colour=self.bot.config.colours.neutral,
                 )
                 if i == 0
                 else Embed(
                     description="\n".join(f"`{codeblocksafe(m)} ({m.id})`" for m in _),
-                    colour=self.bot.config.data.colours.neutral,
+                    colour=self.bot.config.colours.neutral,
                 )
                 for i, _ in enumerate(
                     users[i : i + 10] for i in range(0, len(users), 10)
@@ -152,7 +152,7 @@ class Utility(Cog):
 
     @command(name="ping", cls=Command)
     async def _ping(self, ctx: NexusContext):
-        embed = Embed(title="Pong!", colour=self.bot.config.data.colours.neutral)
+        embed = Embed(title="Pong!", colour=self.bot.config.colours.neutral)
         _ = self.bot.latency
         embed.add_field(name="Websocket", value=f"```py\n{round(_ * 1000, 2)}ms```")
         embed.add_field(name="Typing", value=f"```py\nPinging...```")

@@ -198,7 +198,7 @@ class Errors(Cog, hidden=True):
             )
 
         else:
-            channel = self.bot.get_channel(self.bot.config.data.channels.errors)
+            channel = self.bot.get_channel(self.bot.config.channels.errors)
             message = (
                 f"**Server:** {ctx.guild.name}\n"
                 f"**Invoker:** {ctx.author}\n"
@@ -213,7 +213,7 @@ class Errors(Cog, hidden=True):
                 embed=Embed(
                     title="Error!",
                     description=message,
-                    colour=self.bot.config.data.colours.bad,
+                    colour=self.bot.config.colours.bad,
                 )
             )
 

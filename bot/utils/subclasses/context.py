@@ -8,7 +8,7 @@ from discord.errors import Forbidden
 
 class NexusContext(Context):
     async def embed(self, **kwargs):
-        kwargs["colour"] = kwargs.pop("colour", self.bot.config.data.colours.neutral)
+        kwargs["colour"] = kwargs.pop("colour", self.bot.config.colours.neutral)
 
         destination = kwargs.pop("destination", self)
         paginate = kwargs.pop("paginate", True)
@@ -54,7 +54,7 @@ class NexusContext(Context):
                 Embed(
                     title="Error!",
                     description=f"```\n{message}```",
-                    colour=self.bot.config.data.colours.bad,
+                    colour=self.bot.config.colours.bad,
                 )
             )
         except Forbidden:

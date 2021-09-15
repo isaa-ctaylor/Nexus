@@ -74,7 +74,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully banned {codeblocksafe(member)}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -123,7 +123,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully unbanned {codeblocksafe(member)}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -188,7 +188,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully muted {codeblocksafe(member)}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -238,7 +238,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully unmuted {codeblocksafe(member)}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -285,7 +285,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully kicked {codeblocksafe(member)}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -323,7 +323,7 @@ class Moderation(Cog):
                 Embed(
                     title="Done!",
                     description=f"```\nSuccessfully changed the slowmode to {rate}```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 )
             )
         except Forbidden:
@@ -343,7 +343,7 @@ class Moderation(Cog):
             await ctx.send(
                 embed=Embed(
                     description=f"```\nDeleted {len(messages)}/{limit} messages```",
-                    colour=self.bot.config.data.colours.good,
+                    colour=self.bot.config.colours.good,
                 ),
                 delete_after=2,
             )

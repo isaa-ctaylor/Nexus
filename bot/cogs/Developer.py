@@ -121,7 +121,7 @@ class Developer(Cog, hidden=True):
                     description=f"```py\n{result[i:i + 4087]}```".replace(
                         self.bot.http.token, "[TOKEN]"
                     ),
-                    colour=self.bot.config.data.colours.neutral,
+                    colour=self.bot.config.colours.neutral,
                 )
                 for i in range(0, len(result), 4087)
             ]
@@ -191,7 +191,7 @@ class Developer(Cog, hidden=True):
         await ctx.paginate(
             Embed(
                 description=f"```\n{cogs}```",
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
 
@@ -223,7 +223,7 @@ class Developer(Cog, hidden=True):
         await ctx.paginate(
             Embed(
                 description=f"```\n{cogs}```",
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
 
@@ -255,7 +255,7 @@ class Developer(Cog, hidden=True):
         await ctx.paginate(
             Embed(
                 description=f"```\n{cogs}```",
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
 
@@ -327,7 +327,7 @@ class Developer(Cog, hidden=True):
             Embed(
                 description=f"```sh\n$ git pull\n{_}```"
                 + (f"\n```\n{_cogs}```" if _cogs else ""),
-                colour=self.bot.config.data.colours.neutral,
+                colour=self.bot.config.colours.neutral,
             )
         )
 
