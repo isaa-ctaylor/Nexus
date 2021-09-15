@@ -60,7 +60,7 @@ class Modlogs(Cog):
             Embed(
                 title="Done!",
                 description="Modlogs are now `enabled`!",
-                colour=self.bot.config.colours.neutral,
+                colour=self.bot.config.data.colours.neutral,
             )
         )
 
@@ -86,7 +86,7 @@ class Modlogs(Cog):
             Embed(
                 title="Done!",
                 description="Modlogs are now `disabled`!",
-                colour=self.bot.config.colours.neutral,
+                colour=self.bot.config.data.colours.neutral,
             )
         )
 
