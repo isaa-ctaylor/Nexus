@@ -19,4 +19,4 @@ path = CONFIG_PATH
 with open(path, "r") as f:
     _raw_data = yamlload(f)
 
-CONFIG = DotDict(self._raw_data)
+CONFIG = DotDict(_raw_data)
