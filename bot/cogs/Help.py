@@ -207,15 +207,19 @@ class Help(Cog):
         self.bot.help_command = self._old_help_command
 
 
-    # @command(name="commands", cls=Command)
-    # async def _commands(self, ctx: NexusContext):
-    #     commands = {cog.qualified_name: [c for c in cog.get_commands() if await _show(ctx, c)] for cog in self.bot.cogs.values()}
+    @command(name="commands", cls=Command)
+    async def _commands(self, ctx: NexusContext):
+        commands = {}
         
-    #     trees = {_name: cmdtree(_commands) for _name, _commands in commands.items()}
+        for cog in self.bot.cogs.values():
+            
+            commands[cog.qualified_name] = [c for c in cog.get_commands() if await _show(ctx, c)]
         
-    #     embeds = [Embed(title=_name, description=tree) for _name, tree in trees.items()]
+        trees = {_name: cmdtree(_commands) for _name, _commands in commands.items()}
         
-    #     await ctx.paginate(embeds)
+        embeds = [Embed(title=_name, description=tree) for _name, tree in trees.items()]
+        
+        await ctx.paginate(embeds)
         
 
 def setup(bot: Nexus):
