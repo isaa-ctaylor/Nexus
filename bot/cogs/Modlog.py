@@ -36,7 +36,7 @@ class Modlogs(Cog):
             await ctx.send_help(ctx.command)
 
     @has_guild_permissions(manage_messages=True)
-    @_modlog.command(name="enable")
+    @_modlogs.command(name="enable")
     async def _modlogs_enable(self, ctx: NexusContext):
         """
         Enable modlogs.
@@ -65,7 +65,7 @@ class Modlogs(Cog):
         )
 
     @has_guild_permissions(manage_messages=True)
-    @_modlog.command(name="disable")
+    @_modlogs.command(name="disable")
     async def _modlogs_disable(self, ctx: NexusContext):
         """
         Disable modlogs.
