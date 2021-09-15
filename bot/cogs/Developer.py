@@ -182,7 +182,7 @@ class Developer(Cog, hidden=True):
             .removesuffix(".py")
             for file in COG_PATH.glob("./*.py")
         ]
-
+        await ctx.send(cogs)
         cogs = await self._operate_on_cogs(cogs, self.bot.load_extension, options)
 
         await ctx.paginate(
