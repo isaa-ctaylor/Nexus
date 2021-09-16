@@ -48,7 +48,7 @@ class Modlogs(Cog):
                 "INSERT INTO modlogs(guild_id) VALUES($1)", ctx.guild.id
             )
             self.cache[ctx.guild.id] = {"enabled": False, "channel": None}
-            
+
         if self.cache[ctx.guild.id]["enabled"]:
             return await ctx.error("Modlogs are already enabled!")
 
@@ -72,10 +72,7 @@ class Modlogs(Cog):
         """
         Disable modlogs.
         """
-        if (
-            ctx.guild.id not in self.cache
-            or not self.cache[ctx.guild.id]["enabled"]
-        ):
+        if ctx.guild.id not in self.cache or not self.cache[ctx.guild.id]["enabled"]:
             return await ctx.error("Modlogs are not enabled!")
 
         await self.bot.db.execute(
@@ -91,22 +88,52 @@ class Modlogs(Cog):
                 colour=self.bot.config.colours.neutral,
             )
         )
-        
+
     @has_guild_permissions(manage_messages=True)
     @_modlogs.command(name="channel")
-    async def _modlogs_channel(self, ctx: NexusContext, channel: Optional[TextChannel] = None):
+    async def _modlogs_channel(
+        self, ctx: NexusContext, channel: Optional[TextChannel] = None
+    ):
         channel = channel or ctx.channel
-        
+
         if ctx.guild.id not in self.cache:
             return await ctx.error("Modlogs are not set up!")
-        
-        await self.bot.db.execute("UPDATE modlogs SET channel = $1 WHERE guild_id = $2", channel.id, ctx.guild.id)
-        
-        await ctx.paginate(Embed(title="Done!", description=f"Set the modlogs channel to {channel.mention}!", colour=self.bot.config.colours.neutral))
+
+        await self.bot.db.execute(
+            "UPDATE modlogs SET channel = $1 WHERE guild_id = $2",
+            channel.id,
+            ctx.guild.id,
+        )
+
+        await self.__ainit__()
+
+        await ctx.paginate(
+            Embed(
+                title="Done!",
+                description=f"Set the modlogs channel to {channel.mention}!",
+                colour=self.bot.config.colours.neutral,
+            )
+        )
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
-        ...
+        channel = self.cache[message.guild.id]["channel"]
+
+        if not (
+            message.guild.id in self.cache
+            and self.cache[message.guild.id]["enabled"]
+            and channel
+        ):
+            return
+
+        channel = message.guild.get_channel(channel)
+
+        await channel.send(
+            embed=Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
+            .add_field(name="Channel", value=message.channel.mention)
+            .add_field(name="Author", value=message.author.mention)
+            .add_field(name="Content", value=message.content)
+        )
 
 
 def setup(bot: Nexus):
