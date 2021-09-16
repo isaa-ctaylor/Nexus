@@ -137,7 +137,7 @@ class Modlogs(Cog):
                 embed=Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
                 .add_field(name="Channel", value=message.channel.mention)
                 .add_field(name="Author", value=message.author.mention)
-                .add_field(name="Content", value=message.content, inline=False)
+                .add_field(name="Content", value=message.content or "This message contained no content", inline=False)
             )
         except Exception as e:
             self.bot.logger.info("".join(format_exception(type(e), e, e.__traceback__)))
