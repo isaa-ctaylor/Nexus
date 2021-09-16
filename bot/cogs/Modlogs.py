@@ -119,45 +119,35 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
-        if not (
-            message.guild.id in self.cache and self.cache[message.guild.id]["enabled"]
-        ):
-            return
+        with suppress(Exception):
+            if not (
+                message.guild.id in self.cache and self.cache[message.guild.id]["enabled"]
+            ):
+                return
 
-        channel = self.cache[message.guild.id]["channel"]
+            channel = self.cache[message.guild.id]["channel"]
 
-        if not channel:
-            return
+            if not channel:
+                return
 
-        channel = message.guild.get_channel(
-            channel
-        ) or await message.guild.fetch_channel(channel)
+            channel = message.guild.get_channel(
+                channel
+            ) or await message.guild.fetch_channel(channel)
 
-        embed = (
-            Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
-            .add_field(name="Channel", value=message.channel.mention)
-            .add_field(name="Author", value=message.author.mention)
-        )
-
-        if message.content:
-            embed.add_field(
-                name="Content",
-                value=message.content or "This message contained no content.",
-                inline=False,
+            embed = (
+                Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
+                .add_field(name="Channel", value=message.channel.mention)
+                .add_field(name="Author", value=message.author.mention)
+                .add_field(
+                    name="Content",
+                    value=message.content or "This message contained no content.",
+                    inline=False,
+                )
             )
 
-        await channel.send(embed=embed)
-
-        if message.embeds:
-            await channel.send(
-                f"Message also contained the following embed{'s' if len(message.embeds) > 1 else ''}.",
-                embeds=message.embeds,
-            )
-        if message.attachments:
-            await channel.send(
-                f"Message also contained the following attachment{'s' if len(message.attachments) > 1 else ''}.",
-                files=[await a.to_file() for a in message.attachments],
-            )
+            await channel.send(embed=embed)
+            
+        
 
 
 def setup(bot: Nexus):
