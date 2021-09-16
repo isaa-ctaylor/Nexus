@@ -130,7 +130,7 @@ class Modlogs(Cog):
         if not channel:
             return
 
-        channel = message.guild.get_channel(channel)
+        channel = message.guild.get_channel(channel) or await message.guild.fetch_channel(channel)
 
         try:
             await channel.send(
@@ -140,7 +140,7 @@ class Modlogs(Cog):
                 .add_field(name="Content", value=message.content, inline=False)
             )
         except Exception as e:
-            await message.guild.get_channel(channel).send(format_exception(type(e), e, e.__traceback__))
+            self.bot.logger.info("".join(format_exception(type(e), e, e.__traceback__)))
 
 def setup(bot: Nexus):
     bot.add_cog(Modlogs(bot))
