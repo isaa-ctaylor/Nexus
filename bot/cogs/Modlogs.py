@@ -158,6 +158,9 @@ class Modlogs(Cog):
                 f"Message also contained the following attachment{'s' if len(message.attachments) > 1 else ''}.",
                 files=message.attachments,
             )
+            
+        else:
+            await channel.send(str(message))
 
 
 def setup(bot: Nexus):
