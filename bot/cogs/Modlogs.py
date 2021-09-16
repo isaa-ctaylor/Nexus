@@ -1,3 +1,4 @@
+from traceback import format_exception
 from typing import Optional
 from discord.channel import TextChannel
 from discord.ext.commands.core import has_guild_permissions
@@ -118,25 +119,28 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
-        with suppress(Exception):
-            channel = self.cache[message.guild.id]["channel"]
+        if not (
+            message.guild.id in self.cache
+            and self.cache[message.guild.id]["enabled"]
+        ):
+            return
 
-            if not (
-                message.guild.id in self.cache
-                and self.cache[message.guild.id]["enabled"]
-                and channel
-            ):
-                return
+        channel = self.cache[message.guild.id]["channel"]
 
-            channel = message.guild.get_channel(channel)
+        if not channel:
+            return
 
+        channel = message.guild.get_channel(channel)
+
+        try:
             await channel.send(
                 embed=Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
                 .add_field(name="Channel", value=message.channel.mention)
                 .add_field(name="Author", value=message.author.mention)
                 .add_field(name="Content", value=message.content, inline=False)
             )
-
+        except Exception as e:
+            await message.guild.get_channel(channel).send(format_exception(type(e), e, e.__traceback__))
 
 def setup(bot: Nexus):
     bot.add_cog(Modlogs(bot))
