@@ -7,6 +7,7 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.command import group
 from utils.subclasses.context import NexusContext
 from discord.embeds import Embed
+from contextlib import suppress
 
 
 class Modlogs(Cog):
@@ -117,23 +118,24 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
-        channel = self.cache[message.guild.id]["channel"]
+        with suppress(Exception):
+            channel = self.cache[message.guild.id]["channel"]
 
-        if not (
-            message.guild.id in self.cache
-            and self.cache[message.guild.id]["enabled"]
-            and channel
-        ):
-            return
+            if not (
+                message.guild.id in self.cache
+                and self.cache[message.guild.id]["enabled"]
+                and channel
+            ):
+                return
 
-        channel = message.guild.get_channel(channel)
+            channel = message.guild.get_channel(channel)
 
-        await channel.send(
-            embed=Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
-            .add_field(name="Channel", value=message.channel.mention)
-            .add_field(name="Author", value=message.author.mention)
-            .add_field(name="Content", value=message.content)
-        )
+            await channel.send(
+                embed=Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
+                .add_field(name="Channel", value=message.channel.mention)
+                .add_field(name="Author", value=message.author.mention)
+                .add_field(name="Content", value=message.content, inline=False)
+            )
 
 
 def setup(bot: Nexus):
