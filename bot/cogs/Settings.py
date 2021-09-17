@@ -52,3 +52,7 @@ class Settings(Cog):
             description=f"```\nSet the prefix to {codeblocksafe(prefix)}```",
             colour=self.bot.config.colours.good,
         )
+
+
+def setup(bot: Nexus):
+    bot.add_cog(Settings(bot))
