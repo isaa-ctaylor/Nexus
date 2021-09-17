@@ -31,7 +31,7 @@ def get_prefix(bot, message):
         prefixes = bot.prefixes.get(message.guild.id, ["nxs"])
     else:
         prefixes = ["nxs"]
-        
+
     prefix = prefixes[0]
 
     comp = re.compile("^(" + "|".join(map(re.escape, [prefix])) + ").*", flags=re.I)
@@ -75,21 +75,19 @@ class Nexus(Bot):
 
         self.database = self.db = Database(self)
 
-        self.loop.create_task(
-            self.db.execute(
-                r"""CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
+        self.loop.create_task(self.__ainit__())
+
+    async def __ainit__(self):
+        await self.db.execute(
+            r"""CREATE TABLE IF NOT EXISTS prefixes (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
                 CREATE TABLE IF NOT EXISTS spamchecker (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
                 CREATE TABLE IF NOT EXISTS modlogs (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT);"""
-            )
         )
 
         self.prefixes = {
             r["guild_id"]: r["prefixes"]
-            for r in [
-                dict(r)
-                for r in self.loop.create_task(self.db.fetch("SELECT * FROM prefixes"))
-            ]
+            for r in [dict(r) for r in await self.db.fetch("SELECT * FROM prefixes")]
         }
 
     async def on_ready(self):
