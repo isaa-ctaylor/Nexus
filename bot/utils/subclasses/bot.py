@@ -1,5 +1,5 @@
+from discord.ext.commands.bot import when_mentioned_or, _FakeSlashMessage
 from discord.flags import Intents
-from ..helpers import get_prefix
 from logging import INFO, getLogger
 from traceback import format_exception
 from os import getenv
@@ -13,7 +13,7 @@ from ..logging import WebhookHandler
 from .context import NexusContext
 from ..database import Database
 
-from discord.ext.commands.core import _CaseInsensitiveDict
+import re
 
 load_dotenv()
 
@@ -21,6 +21,24 @@ load_dotenv()
 _intents = Intents.all()
 _intents.members = True
 _intents.presences = False
+
+
+def get_prefix(bot, message):
+    if isinstance(msg, _FakeSlashMessage):
+        return when_mentioned_or("/")(bot, message)
+
+    if hasattr(bot, "prefixes"):
+        prefixes = bot.prefixes.get(message.guild.id, ["nxs"])
+    else:
+        prefixes = ["nxs"]
+        
+    prefix = prefixes[0]
+
+    comp = re.compile("^(" + "|".join(map(re.escape, [prefix])) + ").*", flags=re.I)
+    match = comp.match(message.content)
+    if match is not None:
+        return when_mentioned_or(match.group(1))(bot, message)
+    return when_mentioned_or("nxs")(bot, message)
 
 
 class Nexus(Bot):
@@ -48,8 +66,6 @@ class Nexus(Bot):
             )
         )
 
-        self._BotBase__cogs = _CaseInsensitiveDict()
-
         if cogs:
             for cog in cogs:
                 try:
@@ -57,8 +73,7 @@ class Nexus(Bot):
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
 
-        self.database = Database(self)
-        self.db = self.database
+        self.database = self.db = Database(self)
 
         self.loop.create_task(
             self.db.execute(
@@ -68,6 +83,14 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS modlogs (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT);"""
             )
         )
+
+        self.prefixes = {
+            r["guild_id"]: r["prefixes"]
+            for r in [
+                dict(r)
+                for r in self.loop.create_task(self.db.fetch("SELECT * FROM prefixes"))
+            ]
+        }
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
