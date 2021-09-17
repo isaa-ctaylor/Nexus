@@ -24,7 +24,7 @@ _intents.presences = False
 
 
 def get_prefix(bot, message):
-    if isinstance(msg, _FakeSlashMessage):
+    if isinstance(message, _FakeSlashMessage):
         return when_mentioned_or("/")(bot, message)
 
     if hasattr(bot, "prefixes"):
