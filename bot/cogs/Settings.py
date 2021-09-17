@@ -23,6 +23,11 @@ class Settings(Cog):
 
     @command(name="prefix", cls=Command)
     async def _prefix(self, ctx: NexusContext, prefix: Optional[Prefix] = None):
+        """
+        Change/see the current prefix(es)
+        
+        You need Manage Messages server perms to change the prefix
+        """
         if not prefix:
             prefix = self.bot.prefixes.get(ctx.guild.id, ["Nxs"])[0]
 
@@ -34,6 +39,9 @@ class Settings(Cog):
                 )
             )
 
+        if not ctx.author.guild_permissions.manage_messages:
+            return await ctx.error("You do not have the Manage Messages server perm!")
+        
         if ctx.guild.id not in self.bot.prefixes:
             await self.bot.db.execute(
                 "INSERT INTO prefixes VALUES($1, $2)", ctx.guild.id, [prefix]
