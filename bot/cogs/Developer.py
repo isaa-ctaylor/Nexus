@@ -66,9 +66,9 @@ class Developer(Cog, hidden=True):
         result = eval("func()", variables)
 
         if isasyncgen(result):
-            return "\n".join([str(i) async for i in result]), True
+            return "\n".join([str(i) async for i in result])
 
-        return await result, False
+        return await result
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
@@ -102,20 +102,20 @@ class Developer(Cog, hidden=True):
         if result is None:
             embeds = []
 
-        elif isinstance(result[0], Exception):
+        elif isinstance(result, Exception):
             error = True
             result = "".join(
-                format_exception(type(result[0]), result[0], result[0].__traceback__)
+                format_exception(type(result), result, result.__traceback__)
             ).replace(self.bot.http.token, "[TOKEN]")
             embeds = [
                 f"```py\n{result[i : i + 2000]}```" for i in range(0, len(result), 2000)
             ]
 
-        elif isinstance(result[0], (File, Embed, paginatorinput)):
-            embeds = [result[0]]
+        elif isinstance(result, (File, Embed, paginatorinput)):
+            embeds = [result]
 
         else:
-            result = codeblocksafe(str(result[0]) if result[1] else repr(result[0]))
+            result = codeblocksafe(str(result))
             embeds = [
                 Embed(
                     description=f"```py\n{result[i:i + 4087]}```".replace(
