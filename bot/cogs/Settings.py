@@ -29,7 +29,7 @@ class Settings(Cog):
             return await ctx.paginate(
                 Embed(
                     title="Prefix",
-                    description=f"```\nThe prefix for {codeblocksafe(ctx.guild.name)} is {codeblocksafe(prefix)}",
+                    description=f"```\nThe prefix for {codeblocksafe(ctx.guild.name)} is {codeblocksafe(prefix)}```",
                     colour=self.bot.config.colours.neutral,
                 )
             )
