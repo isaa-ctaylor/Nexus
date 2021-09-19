@@ -175,6 +175,7 @@ class Modlogs(Cog):
             .add_field(
                 name="Authors",
                 value=utils.naturallist(set([m.author for m in messages])),
+                inline=False
             )
         )
         
