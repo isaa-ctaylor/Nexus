@@ -177,6 +177,8 @@ class Modlogs(Cog):
                 value=utils.naturallist(set([m.author for m in messages])),
             )
         )
+        
+        await channel.send(embed=embed)
 
 
 def setup(bot: Nexus):
