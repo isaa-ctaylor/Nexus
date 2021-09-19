@@ -97,7 +97,7 @@ class Developer(Cog, hidden=True):
                 code.code.replace("bot.http.token", '"[TOKEN]"'), variables
             )
         except Exception as e:
-            result = (e, False)
+            result = e
 
         if result is None:
             embeds = []
