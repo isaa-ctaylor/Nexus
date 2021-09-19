@@ -209,7 +209,7 @@ class Modlogs(Cog):
                 .add_field(name="Channel", value=after.channel.mention)
                 .add_field(name="Author", value=after.author.mention)
                 .add_field(name="Content before", value=before.content, inline=False)
-                .add_field(name="Content after", value=after.content)
+                .add_field(name="Content after", value=after.content, inline=True)
             )
 
             await channel.send(embed=embed)
