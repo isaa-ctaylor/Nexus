@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Iterable, Union
 from .config import *
 from .helpers import *
 from time import time
@@ -25,3 +25,11 @@ class Timer:
     def end(self):
         self._end = time()
         self.elapsed = self._end - self._start
+
+def naturallist(iterable: Iterable, delimiter: str = ", "):
+    if len(iterable) == 1:
+        return str(iterable[0])
+    
+    iterable = [str(i) for i in iterable]
+
+    return delimiter.join(iterable[:-1]) + f" and {iterable[-1]}"

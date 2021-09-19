@@ -151,33 +151,32 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_bulk_message_delete")
     async def _log_bulk_message_delete(self, messages: List[Message]):
-        with suppress(Exception):
-            if not (
-                messages[0].guild.id in self.cache
-                and self.cache[messages[0].guild.id]["enabled"]
-            ):
-                return
+        if not (
+            messages[0].guild.id in self.cache
+            and self.cache[messages[0].guild.id]["enabled"]
+        ):
+            return
 
-            channel = self.cache[messages[0].guild.id]["channel"]
+        channel = self.cache[messages[0].guild.id]["channel"]
 
-            if not channel:
-                return
+        if not channel:
+            return
 
-            channel = messages[0].guild.get_channel(channel) or await messages[
-                0
-            ].guild.fetch_channel(channel)
+        channel = messages[0].guild.get_channel(channel) or await messages[
+            0
+        ].guild.fetch_channel(channel)
 
-            embed = (
-                Embed(
-                    title="Modlog bulk delete", colour=self.bot.config.colours.neutral
-                )
-                .add_field(name="Channel", value=messages[0].channel.mention)
-                .add_field(name="Quantity", value=len(messages))
-                .add_field(
-                    name="Authors",
-                    value=utils.naturallist(set([m.author for m in messages])),
-                )
+        embed = (
+            Embed(
+                title="Modlog bulk delete", colour=self.bot.config.colours.neutral
             )
+            .add_field(name="Channel", value=messages[0].channel.mention)
+            .add_field(name="Quantity", value=len(messages))
+            .add_field(
+                name="Authors",
+                value=utils.naturallist(set([m.author for m in messages])),
+            )
+        )
 
 
 def setup(bot: Nexus):
