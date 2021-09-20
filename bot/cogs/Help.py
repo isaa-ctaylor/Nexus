@@ -14,17 +14,16 @@ from utils.subclasses.command import Command, Group
 PER_PAGE = 10
 
 
-async def _show(ctx: NexusContext, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]):
+async def _show(
+    ctx: NexusContext, item: Optional[Union[Cog, Command, Group, _HelpCommandImpl]]
+):
     if isinstance(item, (Command, Group, _HelpCommandImpl)):
         item = item.cog
 
     if not list(item.walk_commands()):
         return False
 
-    if (
-        ctx.author.id == ctx.bot.owner_id
-        or ctx.author.id in ctx.bot.owner_ids
-    ):
+    if ctx.author.id == ctx.bot.owner_id or ctx.author.id in ctx.bot.owner_ids:
         return True
 
     return not item.hidden
@@ -45,8 +44,6 @@ class NexusHelp(HelpCommand):
         destination = destination or self.get_destination()
 
         await self.context.paginate(items, destination=destination, view=view, **kwargs)
-
-    
 
     async def send_bot_help(
         self, mapping: Mapping[Optional[Cog], List[Command]]
@@ -204,7 +201,7 @@ class Help(Cog):
 
     def cog_unload(self):
         self.bot.help_command = self._old_help_command
-        
+
 
 def setup(bot: Nexus):
     bot.add_cog(Help(bot))

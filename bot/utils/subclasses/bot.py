@@ -87,7 +87,10 @@ class Nexus(Bot):
 
         self.prefixes = {
             r["guild_id"]: r["prefixes"]
-            for r in [dict(r) for r in await self.db.fetch("SELECT * FROM prefixes", one=False)]
+            for r in [
+                dict(r)
+                for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
+            ]
         }
 
     async def on_ready(self):

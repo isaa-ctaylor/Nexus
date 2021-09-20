@@ -329,7 +329,7 @@ class Moderation(Cog):
         except Forbidden:
             await ctx.error("I couldn't do that for some reason!")
         except HTTPException:
-            await ctx.error(f"Changing slowmode failed!")
+            await ctx.error("Changing slowmode failed!")
 
     async def _do_purge(
         self,
@@ -350,7 +350,7 @@ class Moderation(Cog):
         except Forbidden:
             return await ctx.error("I couldn't do that for some reason!")
         except HTTPException:
-            return await ctx.error(f"Purging failed!")
+            return await ctx.error("Purging failed!")
 
     @guild_only()
     @has_permissions(manage_messages=True)
