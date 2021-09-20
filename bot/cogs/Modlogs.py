@@ -1,6 +1,7 @@
 from traceback import format_exception
 from typing import List, Optional
 from discord.channel import TextChannel
+from discord.enums import AuditLogAction
 from discord.ext.commands.core import has_guild_permissions
 from discord.message import Message
 from utils.subclasses.bot import Nexus
@@ -167,6 +168,13 @@ class Modlogs(Cog):
                 0
             ].guild.fetch_channel(channel)
 
+            moderator = None
+            
+            async for log in channel.guild.audit_logs():
+                if log.action == AuditLogAction.message_bulk_delete:
+                    if log.extra.count == len(messages):
+                        moderator = log.user
+
             embed = (
                 Embed(
                     title="Modlog bulk delete", colour=self.bot.config.colours.neutral
@@ -179,6 +187,9 @@ class Modlogs(Cog):
                     inline=False,
                 )
             )
+            
+            if moderator:
+                embed.insert_field_at(1, name="Moderator", value=moderator.mention)
 
             await channel.send(embed=embed)
 
