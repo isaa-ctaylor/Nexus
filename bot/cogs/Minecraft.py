@@ -17,8 +17,8 @@ class Player(Converter):
             if resp.status == 200:
                 return await resp.json()
 
-        async with ctx.bot.session.get(
-            "https://api.mojang.com/profiles/minecraft", json=[str(query)]
+        async with ctx.bot.session.post(
+            "https://api.mojang.com/profiles/minecraft", data=str([str(query)])
         ) as resp:
             d = await resp.json()
 
