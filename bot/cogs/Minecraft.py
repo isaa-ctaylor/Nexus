@@ -18,7 +18,7 @@ class Player(Converter):
                 return await resp.json()
 
         async with ctx.bot.session.get(
-            "https://api.mojang.com/profiles/minecraft", data=[str(query)]
+            "https://api.mojang.com/profiles/minecraft", json=[str(query)]
         ) as resp:
             d = await resp.json()
 
