@@ -23,6 +23,7 @@ class Player(Converter):
             d = await resp.json()
 
             if d:
+                await ctx.send(d)
                 return {"id": d[0]["id"], "name": d[0]["name"]}
 
         return {"error": f"{codeblocksafe(query)} is not a valid name!"}
