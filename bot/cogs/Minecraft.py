@@ -18,13 +18,13 @@ class Player(Converter):
                 return await resp.json()
 
         async with ctx.bot.session.post(
-            "https://api.mojang.com/profiles/minecraft", json={"payload": [str(query)]}
+            f"https://api.mojang.com/user/profiles/{query}/names"
         ) as resp:
-            d = await resp.json()
+            if resp.status == 200:
+                d = await resp.json()
 
-            if d:
-                await ctx.send(d)
-                return {"id": d[0]["id"], "name": d[0]["name"]}
+                if d:
+                    return {"id": query, "name": d[-1]["name"]}
 
         return {"error": f"{codeblocksafe(query)} is not a valid name!"}
 
