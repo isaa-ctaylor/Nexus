@@ -1,19 +1,12 @@
 from typing import Any
 
 from discord.ext.commands.converter import Converter
-from discord.ext.commands.errors import CommandError
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command, group
 from utils.subclasses.bot import Nexus
 from utils.subclasses.context import NexusContext
 
-
-class InvalidPlayer(CommandError):
-    def __init__(self, player: str):
-        self.player = player
-
-    def __str__(self):
-        return f"{self.player} is not a valid player!"
+from utils import codeblocksafe
 
 
 class Player(Converter):
@@ -32,7 +25,7 @@ class Player(Converter):
             if d:
                 return {"id": d[0]["id"], "name": d[0]["name"]}
 
-        raise InvalidPlayer(query)
+        return {"error": f"{codeblocksafe(query)} is not a valid name!"}
 
 
 class Minecraft(Cog):
@@ -58,17 +51,10 @@ class Minecraft(Cog):
         """
         Get minecraft player info.
         """
+        if "error" in player:
+            return await ctx.error(player["error"])
+            
         await ctx.send(str(player))
-
-    @_minecraft_player.error
-    async def _minecraft_player_error(self, ctx: NexusContext, error: Exception):
-        """
-        Handles Player converter error
-        """
-        if isinstance(error, InvalidPlayer):
-            return await ctx.error(str(error))
-
-        raise error
 
 
 def setup(bot: Nexus):
