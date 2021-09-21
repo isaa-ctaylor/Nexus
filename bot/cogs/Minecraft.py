@@ -71,5 +71,5 @@ class Minecraft(Cog):
         raise error
 
 
-def setup(self, bot: Nexus):
+def setup(bot: Nexus):
     bot.add_cog(Minecraft(bot))
