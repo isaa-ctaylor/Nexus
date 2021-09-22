@@ -1,4 +1,5 @@
 from typing import Any
+from discord.embeds import Embed
 
 from discord.ext.commands.converter import Converter
 from utils.subclasses.cog import Cog
@@ -55,7 +56,11 @@ class Minecraft(Cog):
         if "error" in player:
             return await ctx.error(player["error"])
 
-        await ctx.send(str(player))
+        embed = Embed(title="Minecraft player info", colour=self.bot.config.colours.neutral)
+        
+        embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
+        
+        await ctx.paginate(embed)
 
 
 def setup(bot: Nexus):
