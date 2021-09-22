@@ -77,6 +77,8 @@ class Minecraft(Cog):
         
         embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
 
+        await ctx.paginate(embed)
+
 
 def setup(bot: Nexus):
     bot.add_cog(Minecraft(bot))
