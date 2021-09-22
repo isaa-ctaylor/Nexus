@@ -20,7 +20,6 @@ class Player(Converter):
         async with ctx.bot.session.get(
             f"https://api.mojang.com/user/profiles/{query}/names"
         ) as resp:
-            await ctx.send(await resp.text())
             if resp.status == 200:
                 d = await resp.json()
 
