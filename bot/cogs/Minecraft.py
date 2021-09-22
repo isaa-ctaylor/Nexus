@@ -60,10 +60,22 @@ class Minecraft(Cog):
         
         embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
         
-        embed.add_field(name="Name", value=player["name"])
-        embed.add_field(name="UUID", value=player["id"])
+        embed.add_field(name="Name", value=f'```\n{player["name"]}```')
+        embed.add_field(name="UUID", value=f'```\n{player["id"]}')
         
         await ctx.paginate(embed)
+        
+    @_minecraft.command(name="skin")
+    async def _minecraft_skin(self, ctx: NexusContext, player: Player):
+        """
+        See the skin of the given player
+        """
+        if "error" in player:
+            return await ctx.error(player["error"])
+        
+        embed = Embed(title=f"{player['name']}'s skin", colour=self.bot.config.colours.neutral)
+        
+        embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
 
 
 def setup(bot: Nexus):
