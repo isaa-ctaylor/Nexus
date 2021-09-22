@@ -20,10 +20,11 @@ class Player(Converter):
         async with ctx.bot.session.post(
             f"https://api.mojang.com/user/profiles/{query}/names"
         ) as resp:
+            await ctx.send(await resp.text())
             if resp.status == 200:
                 d = await resp.json()
 
-                if d:
+                if "errorMessage" not in d:
                     return {"id": query, "name": d[-1]["name"]}
 
         return {"error": f"{codeblocksafe(query)} is not a valid name!"}
