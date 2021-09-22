@@ -75,7 +75,7 @@ class Minecraft(Cog):
         
         embed = Embed(title=f"{player['name']}'s skin", colour=self.bot.config.colours.neutral)
         
-        embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
+        embed.set_image(url=f"https://crafatar.com/renders/body/{player['id']}")
 
         await ctx.paginate(embed)
 
