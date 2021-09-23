@@ -58,7 +58,7 @@ class Minecraft(Cog):
 
         embed = Embed(title="Minecraft player info", colour=self.bot.config.colours.neutral)
         
-        embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}")
+        embed.set_thumbnail(url=f"https://crafatar.com/renders/body/{player['id']}?overlay")
         
         embed.add_field(name="Name", value=f'```\n{player["name"]}```')
         embed.add_field(name="UUID", value=f'```\n{player["id"]}')
@@ -75,7 +75,7 @@ class Minecraft(Cog):
         
         embed = Embed(title=f"{player['name']}'s skin", colour=self.bot.config.colours.neutral)
         
-        embed.set_image(url=f"https://crafatar.com/renders/body/{player['id']}")
+        embed.set_image(url=f"https://crafatar.com/renders/body/{player['id']}?overlay")
 
         await ctx.paginate(embed)
 
