@@ -24,7 +24,7 @@ class Timer:
 
     def end(self):
         self._end = time()
-        self.elapsed = self._end - self._start
+        self.elapsed = (self._end - self._start) * 1000
 
 
 def naturallist(iterable: Iterable, delimiter: str = ", "):

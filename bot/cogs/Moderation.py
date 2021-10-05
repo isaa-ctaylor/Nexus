@@ -31,6 +31,20 @@ class Moderation(Cog):
     def __init__(self, bot: Nexus) -> None:
         self.bot = bot
 
+        bot.loop.run_until_complete(self.__ainit__())
+
+    async def __ainit__(self):
+        cache = {}
+
+        for g in self.bot.guilds:
+            data = await self.bot.db.fetch(
+                "SELECT * FROM chatlimit WHERE guild_id = $1", g.id, one=False
+            )
+
+            cache[g.id] = [dict(r) for r in data]
+
+        self.cache = cache
+
     @guild_only()
     @has_guild_permissions(ban_members=True)
     @bot_has_guild_permissions(ban_members=True)
@@ -397,6 +411,47 @@ class Moderation(Cog):
         user = user or ctx.author
 
         await self._do_purge(ctx, ctx.channel, limit, lambda m: m.author.id == user.id)
+
+    @guild_only()
+    @command(cls=Command, name="chatlimit")
+    async def _chatlimit(
+        self, ctx: NexusContext, channel: Optional[TextChannel] = None, limit: int = 100
+    ):
+        """
+        Set a limit to the number of messages in a channel
+        
+        Optionally specify the channel if it's not the current one
+        Limit defaults to 100
+        """
+        channel = channel or ctx.channel
+        
+        if limit == 0:
+            await self.bot.db.execute("DELETE FROM chatlimit WHERE channel_id = $1", channel.id)
+            return await ctx.embed(title="Done!", description=f"Disabled the chat limit for {channel.mention}.")
+        
+        if limit > 100 or limit < 5:
+            return await ctx.error("Limit must be between 5 and 100 inclusive!")
+        
+        _cache = self.cache.copy() # Prevent keys changing on iteration
+        
+        if channel.id in [r["id"] for r in _cache[ctx.guild.id]]:
+            await self.bot.db.execute(
+                "UPDATE chatlimit SET limit = $2 WHERE channel_id = $3 AND guild_id = $1",
+                ctx.guild.id,
+                limit,
+                channel.id,
+            )
+            
+        else:
+            await self.bot.db.execute(
+                "INSERT INTO chatlimit VALUES($1, $2, $3",
+                ctx.guild.id,
+                channel.id,
+            )
+            
+        await ctx.embed(title="Done!", description=f"Set the chat limit for {channel.mention} to {limit}.")
+        
+        await self.__ainit__()
 
 
 def setup(bot: Nexus):
