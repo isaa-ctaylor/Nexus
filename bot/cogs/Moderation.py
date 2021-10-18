@@ -1,3 +1,4 @@
+import asyncio
 from typing import Callable, Optional, Union
 
 from discord.channel import TextChannel
@@ -27,11 +28,11 @@ class Moderation(Cog):
     """
     Moderation commands
     """
-
+    
     def __init__(self, bot: Nexus) -> None:
         self.bot = bot
 
-        bot.loop.run_until_complete(self.__ainit__())
+        self.bot.loop.create_task(self.__ainit__())
 
     async def __ainit__(self):
         cache = {}
@@ -434,7 +435,7 @@ class Moderation(Cog):
         
         _cache = self.cache.copy() # Prevent keys changing on iteration
         
-        if channel.id in [r["id"] for r in _cache[ctx.guild.id]]:
+        if channel.id in [r["id"] for r in _cache.get(ctx.guild.id, [])]:
             await self.bot.db.execute(
                 "UPDATE chatlimit SET limit = $2 WHERE channel_id = $3 AND guild_id = $1",
                 ctx.guild.id,
