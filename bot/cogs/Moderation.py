@@ -445,7 +445,7 @@ class Moderation(Cog):
             
         else:
             await self.bot.db.execute(
-                "INSERT INTO chatlimit VALUES($1, $2, $3",
+                "INSERT INTO chatlimit VALUES($1, $2, $3)",
                 ctx.guild.id,
                 channel.id,
             )
