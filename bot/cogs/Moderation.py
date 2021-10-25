@@ -448,6 +448,7 @@ class Moderation(Cog):
                 "INSERT INTO chatlimit VALUES($1, $2, $3)",
                 ctx.guild.id,
                 channel.id,
+                limit
             )
             
         await ctx.embed(title="Done!", description=f"Set the chat limit for {channel.mention} to {limit}.")
