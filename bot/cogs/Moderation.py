@@ -445,7 +445,7 @@ class Moderation(Cog):
             return await ctx.error("Limit must be between 5 and 100 inclusive!")
         
         _cache = self.cache.copy() # Prevent keys changing on iteration
-        
+        await ctx.send(_cache.get(channel.guild.id, []))
         if channel.id in _cache.get(channel.guild.id, []):
             await ctx.send("Debug 1")
             await self.bot.db.execute(
