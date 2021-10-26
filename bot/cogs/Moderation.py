@@ -42,10 +42,10 @@ class Moderation(Cog):
         
         for record in data:
             if record["guild_id"] in cache:
-                if record["channel_id"] in cache["guild_id"]:
+                if record["channel_id"] in cache[record["guild_id"]]:
                     continue
             else:
-                cache["guild_id"] = {}
+                cache[record["guild_id"]] = {}
             cache[record["guild_id"]][record["channel_id"]] = record["num"]
 
         self.cache = cache
