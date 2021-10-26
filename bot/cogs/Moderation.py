@@ -14,6 +14,7 @@ from discord.ext.commands.core import (
     has_permissions,
 )
 from discord.member import Member
+from discord.message import Message
 from discord.permissions import Permissions
 from discord.user import User
 from discord.utils import MISSING, get
@@ -37,12 +38,15 @@ class Moderation(Cog):
     async def __ainit__(self):
         cache = {}
 
-        for g in self.bot.guilds:
-            data = await self.bot.db.fetch(
-                "SELECT * FROM chatlimit WHERE guild_id = $1", g.id, one=False
-            )
-
-            cache[g.id] = [dict(r) for r in data]
+        data = await self.bot.db.fetch("SELECT * FROM chatlimit", one=False)
+        
+        for record in data:
+            if record["guild_id"] in cache:
+                if record["channel_id"] in cache["guild_id"]:
+                    continue
+            else:
+                cache["guild_id"] = {}
+            cache["guild_id"][record["channel_id"]] = record["num"]
 
         self.cache = cache
 
@@ -414,6 +418,13 @@ class Moderation(Cog):
         await self._do_purge(ctx, ctx.channel, limit, lambda m: m.author.id == user.id)
 
     @guild_only()
+    @has_permissions(manage_messages=True)
+    @bot_has_permissions(
+        manage_messages=True,
+        read_message_history=True,
+        send_messages=True,
+        embed_links=True,
+    )
     @command(cls=Command, name="chatlimit")
     async def _chatlimit(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None, limit: int = 100
@@ -436,8 +447,9 @@ class Moderation(Cog):
         _cache = self.cache.copy() # Prevent keys changing on iteration
         
         if channel.id in [r["id"] for r in _cache.get(ctx.guild.id, [])]:
+            await ctx.send("Debug 1")
             await self.bot.db.execute(
-                "UPDATE chatlimit SET limit = $2 WHERE channel_id = $3 AND guild_id = $1",
+                "UPDATE chatlimit SET num = $2 WHERE channel_id = $3 AND guild_id = $1",
                 ctx.guild.id,
                 limit,
                 channel.id,
@@ -454,6 +466,15 @@ class Moderation(Cog):
         await ctx.embed(title="Done!", description=f"Set the chat limit for {channel.mention} to {limit}.")
         
         await self.__ainit__()
+        
+    # @Cog.listener(name="on_message")
+    # async def _limit_chat(self, message: Message):
+    #     _cache = self.cache.copy()
+        
+    #     if message.channel.id in [r["id"] for r in _cache.get(message.guild.id, [])]:
+    #         for c in _cache[message.guild.id]:
+    #             if c["id"] == message.channel.id:
+    #                 if c[""]
 
 
 def setup(bot: Nexus):
