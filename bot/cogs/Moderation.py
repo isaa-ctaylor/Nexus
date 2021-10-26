@@ -439,7 +439,8 @@ class Moderation(Cog):
         
         if limit == 0:
             await self.bot.db.execute("DELETE FROM chatlimit WHERE channel_id = $1", channel.id)
-            return await ctx.embed(title="Done!", description=f"Disabled the chat limit for {channel.mention}.")
+            await ctx.embed(title="Done!", description=f"Disabled the chat limit for {channel.mention}.")
+            return await self.__ainit__()
         
         if limit > 100 or limit < 5:
             return await ctx.error("Limit must be between 5 and 100 inclusive!")
