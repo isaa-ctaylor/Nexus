@@ -446,7 +446,7 @@ class Moderation(Cog):
         
         _cache = self.cache.copy() # Prevent keys changing on iteration
         
-        if channel.id in [r["id"] for r in _cache.get(ctx.guild.id, [])]:
+        if channel.id in _cache.get(channel.guild.id, []):
             await ctx.send("Debug 1")
             await self.bot.db.execute(
                 "UPDATE chatlimit SET num = $2 WHERE channel_id = $3 AND guild_id = $1",
