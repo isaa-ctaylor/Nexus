@@ -46,7 +46,7 @@ class Moderation(Cog):
                     continue
             else:
                 cache["guild_id"] = {}
-            cache["guild_id"][record["channel_id"]] = record["num"]
+            cache[record["guild_id"]][record["channel_id"]] = record["num"]
 
         self.cache = cache
 
