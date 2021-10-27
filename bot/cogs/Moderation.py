@@ -446,9 +446,8 @@ class Moderation(Cog):
             return await ctx.error("Limit must be between 5 and 100 inclusive!")
         
         _cache = self.cache.copy() # Prevent keys changing on iteration
-        await ctx.send(_cache.get(channel.guild.id, []))
+
         if channel.id in _cache.get(channel.guild.id, []):
-            await ctx.send("Debug 1")
             await self.bot.db.execute(
                 "UPDATE chatlimit SET num = $2 WHERE channel_id = $3 AND guild_id = $1",
                 ctx.guild.id,
@@ -468,14 +467,18 @@ class Moderation(Cog):
         
         await self.__ainit__()
         
-    # @Cog.listener(name="on_message")
-    # async def _limit_chat(self, message: Message):
-    #     _cache = self.cache.copy()
-        
-    #     if message.channel.id in [r["id"] for r in _cache.get(message.guild.id, [])]:
-    #         for c in _cache[message.guild.id]:
-    #             if c["id"] == message.channel.id:
-    #                 if c[""]
+    @Cog.listener(name="on_message")
+    async def limit_messages(self, message: Message):
+        """
+        Limits the messages in a channel according to limits set using the chatlimit command
+        """
+        if (
+            message.guild.id in self.cache
+            and message.channel.id in self.cache[message.guild.id]
+        ):
+            history = await message.channel.history(limit=100, oldest_first=True).flatten()
+            if len(history) >= self.cache[message.guild.id][message.channel.id]:
+                await history[0].delete()
 
 
 def setup(bot: Nexus):
