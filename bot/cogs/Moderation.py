@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import suppress
 from typing import Callable, Optional, Union
 
 from discord.channel import TextChannel
