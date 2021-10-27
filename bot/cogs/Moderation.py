@@ -29,7 +29,7 @@ class Moderation(Cog):
     """
     Moderation commands
     """
-    
+
     def __init__(self, bot: Nexus) -> None:
         self.bot = bot
 
@@ -39,7 +39,7 @@ class Moderation(Cog):
         cache = {}
 
         data = await self.bot.db.fetch("SELECT * FROM chatlimit", one=False)
-        
+
         for record in data:
             if record["guild_id"] in cache:
                 if record["channel_id"] in cache[record["guild_id"]]:
@@ -431,21 +431,28 @@ class Moderation(Cog):
     ):
         """
         Set a limit to the number of messages in a channel
-        
+
         Optionally specify the channel if it's not the current one
         Limit defaults to 100
         """
         channel = channel or ctx.channel
-        
+
         if limit == 0:
-            await self.bot.db.execute("DELETE FROM chatlimit WHERE channel_id = $1", channel.id)
-            self.bot.loop.create_task(ctx.embed(title="Done!", description=f"Disabled the chat limit for {channel.mention}."))
+            await self.bot.db.execute(
+                "DELETE FROM chatlimit WHERE channel_id = $1", channel.id
+            )
+            self.bot.loop.create_task(
+                ctx.embed(
+                    title="Done!",
+                    description=f"Disabled the chat limit for {channel.mention}.",
+                )
+            )
             return await self.__ainit__()
-        
+
         if limit > 100 or limit < 5:
             return await ctx.error("Limit must be between 5 and 100 inclusive!")
-        
-        _cache = self.cache.copy() # Prevent keys changing on iteration
+
+        _cache = self.cache.copy()  # Prevent keys changing on iteration
 
         if channel.id in _cache.get(channel.guild.id, []):
             await self.bot.db.execute(
@@ -454,19 +461,24 @@ class Moderation(Cog):
                 limit,
                 channel.id,
             )
-            
+
         else:
             await self.bot.db.execute(
                 "INSERT INTO chatlimit VALUES($1, $2, $3)",
                 ctx.guild.id,
                 channel.id,
-                limit
+                limit,
             )
-            
-        self.bot.loop.create_task(ctx.embed(title="Done!", description=f"Set the chat limit for {channel.mention} to {limit}."))
-        
+
+        self.bot.loop.create_task(
+            ctx.embed(
+                title="Done!",
+                description=f"Set the chat limit for {channel.mention} to {limit}.",
+            )
+        )
+
         await self.__ainit__()
-        
+
     @Cog.listener(name="on_message")
     async def limit_messages(self, message: Message):
         """
@@ -476,10 +488,19 @@ class Moderation(Cog):
             message.guild.id in self.cache
             and message.channel.id in self.cache[message.guild.id]
         ):
-            history = await message.channel.history(limit=100, oldest_first=True).flatten()
+            history = await message.channel.history(
+                limit=100, oldest_first=True
+            ).flatten()
             if len(history) >= self.cache[message.guild.id][message.channel.id] + 1:
-                for i in range(len(history) - self.cache[message.guild.id][message.channel.id] + 1):
-                    await history[i].delete()
+                if len(history) > self.cache[message.guild.id][message.channel.id] + 1:
+                    for i in range(
+                        len(history)
+                        - self.cache[message.guild.id][message.channel.id]
+                        + 1
+                    ):
+                        await history[i].delete()
+                else:
+                    await history[0].delete()
 
 
 def setup(bot: Nexus):
