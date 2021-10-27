@@ -484,23 +484,27 @@ class Moderation(Cog):
         """
         Limits the messages in a channel according to limits set using the chatlimit command
         """
-        if (
-            message.guild.id in self.cache
-            and message.channel.id in self.cache[message.guild.id]
-        ):
-            history = await message.channel.history(
-                limit=100, oldest_first=True
-            ).flatten()
-            if len(history) >= self.cache[message.guild.id][message.channel.id] + 1:
-                if len(history) > self.cache[message.guild.id][message.channel.id] + 1:
-                    for i in range(
+        with suppress(Exception):
+            if (
+                message.guild.id in self.cache
+                and message.channel.id in self.cache[message.guild.id]
+            ):
+                history = await message.channel.history(
+                    limit=100, oldest_first=True
+                ).flatten()
+                if len(history) >= self.cache[message.guild.id][message.channel.id] + 1:
+                    if (
                         len(history)
-                        - self.cache[message.guild.id][message.channel.id]
-                        + 1
+                        > self.cache[message.guild.id][message.channel.id] + 1
                     ):
-                        await history[i].delete()
-                else:
-                    await history[0].delete()
+                        for i in range(
+                            len(history)
+                            - self.cache[message.guild.id][message.channel.id]
+                            + 1
+                        ):
+                            await history[i].delete()
+                    else:
+                        await history[0].delete()
 
 
 def setup(bot: Nexus):
