@@ -478,7 +478,7 @@ class Moderation(Cog):
         ):
             history = await message.channel.history(limit=100, oldest_first=True).flatten()
             if len(history) >= self.cache[message.guild.id][message.channel.id] + 1:
-                for i in range(len(history - self.cache[message.guild.id][message.channel.id] + 1)):
+                for i in range(len(history) - self.cache[message.guild.id][message.channel.id] + 1):
                     await history[i].delete()
 
 
