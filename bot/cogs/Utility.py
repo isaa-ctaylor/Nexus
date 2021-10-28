@@ -193,6 +193,7 @@ class Utility(Cog):
                 image.replace("--invert", "")
             if image:
                 try:
+                    await ctx.send(image)
                     async with self.bot.session.get(image.strip()) as resp:
                         image = await resp.read()
                 except InvalidURL:
