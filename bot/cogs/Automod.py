@@ -46,19 +46,6 @@ class Automod(Cog):
 
         self.cache = DotDict(_cache)
 
-    @Cog.listener(name="on_message")
-    async def _auto_message_response(self, message: Message):
-        if not message.guild:
-            return
-
-        if message.author.id != self.bot.owner_id:
-            return
-
-        bucket = self.cooldown.get_bucket(message)
-
-        if bucket.update_rate_limit(message.created_at.timestamp()):
-            await message.reply("Stop spamming!")
-
 
 def setup(bot: Nexus):
     bot.add_cog(Automod(bot))

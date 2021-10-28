@@ -185,35 +185,37 @@ class Utility(Cog):
     async def _ocr(self, ctx: NexusContext, *, image: str = None):
         """
         Read text from an image
+        
+        If just supplying the image does not work, or the image is light text on a dark background, try adding "--invert" to the end of your message
         """
-        async with ctx.typing():
-            invert = False
+        invert = False
+        if image:
+            if "--invert" in image:
+                invert = True
+                image = image.replace("--invert", "")
             if image:
-                if "--invert" in image:
-                    invert = True
-                    image = image.replace("--invert", "")
-                if image:
-                    try:
-                        async with self.bot.session.get(image.strip()) as resp:
-                            image = await resp.read()
-                    except InvalidURL:
-                        return await ctx.error("Please attach a valid image!")
+                try:
+                    async with self.bot.session.get(image.strip()) as resp:
+                        image = await resp.read()
+                except InvalidURL:
+                    return await ctx.error("Please attach a valid image!")
 
-            if not image:
-                if ctx.message.attachments:
-                    image = await ctx.message.attachments[0].read()
-                if ref := ctx.message.reference:
-                    if attachments := ref.resolved.attachments:
-                        image = await attachments[0].read()
-                    
-            try:
-                image = Image.open(BytesIO(image)).convert("RGB")
-            except (TypeError, UnidentifiedImageError):
-                return await ctx.error("Please attach a valid image!")
-            
-            if invert:
-                image = ImageOps.invert(image)
-            
+        if not image:
+            if ctx.message.attachments:
+                image = await ctx.message.attachments[0].read()
+            if ref := ctx.message.reference:
+                if attachments := ref.resolved.attachments:
+                    image = await attachments[0].read()
+                
+        try:
+            image = Image.open(BytesIO(image)).convert("RGB")
+        except (TypeError, UnidentifiedImageError):
+            return await ctx.error("Please attach a valid image!")
+        
+        if invert:
+            image = ImageOps.invert(image)
+        
+        async with ctx.typing():
             embed = Embed(description=await self._do_ocr(image), colour=self.bot.config.colours.neutral)
             
         await ctx.paginate(embed)
