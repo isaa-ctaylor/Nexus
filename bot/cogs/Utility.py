@@ -177,7 +177,7 @@ class Utility(Cog):
         
     @executor
     def _do_ocr(self, image: Image):
-        config = r"--psm 12 --oem 1 --tessdata-dir /opt/tessdata"
+        config = r"--oem 1 --tessdata-dir /opt/tessdata"
         return pytesseract.image_to_string(image, config=config)
         
         
