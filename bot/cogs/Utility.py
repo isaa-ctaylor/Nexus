@@ -1,3 +1,4 @@
+from io import BytesIO
 from discord.embeds import Embed
 from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.errors import BadArgument
@@ -9,8 +10,10 @@ from async_timeout import timeout
 from aiohttp import InvalidURL
 from typing import Any, Optional
 from discord.ext.commands import Converter
-from utils import codeblocksafe, Timer
+from utils import codeblocksafe, Timer, executor
 from math import floor, log10
+from PIL import Image
+import pytesseract
 
 
 class InvalidDiscriminator(BadArgument):
@@ -171,6 +174,34 @@ class Utility(Cog):
             )
 
         await m.edit(embed=embed)
+        
+    @executor
+    def _do_ocr(self, image: Image):
+        config = r"--psm 12 --oem 1 --tessdata-dir /opt/tessdata"
+        return pytesseract.image_to_string(image, config=config)
+        
+        
+    @command(name="ocr")
+    async def _ocr(self, ctx: NexusContext, image: str = None):
+        """
+        Read text from an image
+        """
+        if image:
+            try:
+                async with self.bot.session.get(image) as resp:
+                    image = await resp.read()
+            except InvalidURL:
+                return await ctx.error("Please attach a valid image!")
+
+        elif ctx.message.attachments:
+            image = await ctx.message.attachments[0].read()
+        elif ref := ctx.message.reference:
+            if attachments := ref.resolved.attachments:
+                image = await attachments[0].read()
+                
+        image = Image.open(BytesIO(image)).convert("RGB")
+        
+        await ctx.paginate(await self._do_ocr(image))
 
 
 def setup(bot: Nexus):
