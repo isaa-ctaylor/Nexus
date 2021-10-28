@@ -12,7 +12,7 @@ from typing import Any, Optional
 from discord.ext.commands import Converter
 from utils import codeblocksafe, Timer, executor
 from math import floor, log10
-from PIL import Image
+from PIL import Image, ImageOps
 import pytesseract
 
 
@@ -176,7 +176,7 @@ class Utility(Cog):
         await m.edit(embed=embed)
         
     @executor
-    def _do_ocr(self, image: Image):
+    def _do_ocr(self, image):
         config = r"--oem 1 --tessdata-dir /opt/tessdata"
         return pytesseract.image_to_string(image, config=config)
         
@@ -186,22 +186,33 @@ class Utility(Cog):
         """
         Read text from an image
         """
+        invert = False
         if image:
-            try:
-                async with self.bot.session.get(image) as resp:
-                    image = await resp.read()
-            except InvalidURL:
-                return await ctx.error("Please attach a valid image!")
+            if "--invert" in image:
+                invert = True
+                image.replace("--invert", "")
+            if image:
+                try:
+                    async with self.bot.session.get(image) as resp:
+                        image = await resp.read()
+                except InvalidURL:
+                    return await ctx.error("Please attach a valid image!")
 
-        elif ctx.message.attachments:
-            image = await ctx.message.attachments[0].read()
-        elif ref := ctx.message.reference:
-            if attachments := ref.resolved.attachments:
-                image = await attachments[0].read()
+        if not image:
+            if ctx.message.attachments:
+                image = await ctx.message.attachments[0].read()
+            if ref := ctx.message.reference:
+                if attachments := ref.resolved.attachments:
+                    image = await attachments[0].read()
                 
         image = Image.open(BytesIO(image)).convert("RGB")
         
-        await ctx.paginate(await self._do_ocr(image))
+        if invert:
+            image = ImageOps.invert(image)
+        
+        embed = Embed(description=await self._do_ocr(image), colour=self.bot.config.colours.neutral)
+        
+        await ctx.paginate(embed)
 
 
 def setup(bot: Nexus):
