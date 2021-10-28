@@ -12,7 +12,7 @@ from typing import Any, Optional
 from discord.ext.commands import Converter
 from utils import codeblocksafe, Timer, executor
 from math import floor, log10
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, UnidentifiedImageError
 import pytesseract
 
 
@@ -208,7 +208,7 @@ class Utility(Cog):
                     
             try:
                 image = Image.open(BytesIO(image)).convert("RGB")
-            except TypeError:
+            except (TypeError, UnidentifiedImageError):
                 return await ctx.error("Please attach a valid image!")
             
             if invert:
