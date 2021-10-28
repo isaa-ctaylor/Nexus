@@ -155,7 +155,7 @@ class Utility(Cog):
         embed = Embed(title="Pong!", colour=self.bot.config.colours.neutral)
         _ = self.bot.latency
         embed.add_field(name="Websocket", value=f"```py\n{round(_ * 1000, 2)}ms```")
-        embed.add_field(name="Typing", value=f"```py\nPinging...```")
+        embed.add_field(name="Typing", value="```py\nPinging...```")
         _ = await self.bot.db.ping
         embed.add_field(
             name="Database", value=f"```py\n{round(_, -int(floor(log10(abs(_)))))}ms```"
@@ -167,7 +167,7 @@ class Utility(Cog):
 
             embed.remove_field(1)
             embed.insert_field_at(
-                1, name="Typing", value=f"```py\n{round(t.elapsed * 1000, 2)}ms```"
+                1, name="Typing", value=f"```py\n{round(t.elapsed, 2)}ms```"
             )
 
         await m.edit(embed=embed)
