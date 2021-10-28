@@ -182,7 +182,7 @@ class Utility(Cog):
         
         
     @command(name="ocr")
-    async def _ocr(self, ctx: NexusContext, image: str = None):
+    async def _ocr(self, ctx: NexusContext, *, image: str = None):
         """
         Read text from an image
         """
@@ -190,7 +190,7 @@ class Utility(Cog):
         if image:
             if "--invert" in image:
                 invert = True
-                image.replace("--invert", "")
+                image = image.replace("--invert", "")
             if image:
                 try:
                     await ctx.send(image)
