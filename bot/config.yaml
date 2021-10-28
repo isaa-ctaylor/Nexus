@@ -10,6 +10,7 @@ cogs:
   - cogs.Errors
   - cogs.Moderation
   - cogs.Utility
+  - cogs.Minecraft
   # - cogs.Listeners
   # - Jishaku
 
