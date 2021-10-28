@@ -437,8 +437,10 @@ class Moderation(Cog):
         channel = channel or ctx.channel
         
         c = await channel.clone(reason=f"Nuke command invoked by {ctx.author}")
+        await c.edit(position=channel.position)
+        await channel.delete()
         
-        await c.send(ctx.author.mention)
+        await c.send(ctx.author.mention, delete_after=5)
 
     @guild_only()
     @has_permissions(manage_messages=True)
