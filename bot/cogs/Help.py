@@ -108,7 +108,7 @@ class NexusHelp(HelpCommand):
         desc = [
             "```",
             self.get_command_signature(command),
-            f"```",
+            "```",
             command.help or "No help provided!",
         ]
 
