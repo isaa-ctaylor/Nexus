@@ -1,6 +1,7 @@
 import asyncio
 from contextlib import suppress
 from typing import Callable, Optional, Union
+from discord import guild
 
 from discord.channel import TextChannel
 from discord.embeds import Embed
@@ -417,6 +418,27 @@ class Moderation(Cog):
         user = user or ctx.author
 
         await self._do_purge(ctx, ctx.channel, limit, lambda m: m.author.id == user.id)
+        
+    @guild_only()
+    @has_permissions(manage_channels=True)
+    @bot_has_permissions(
+        manage_channels=True,
+        read_message_history=True,
+        send_messages=True,
+        embed_links=True,
+    )
+    @command(cls=Command, name="nuke")
+    async def _nuke(self, ctx: NexusContext, channel: TextChannel = None):
+        """
+        Completely clear a channel
+        
+        This happens by cloning the channel and deleteing the original
+        """
+        channel = channel or ctx.channel
+        
+        c = await channel.clone(reason=f"Nuke command invoked by {ctx.author}")
+        
+        await c.send(ctx.author.mention)
 
     @guild_only()
     @has_permissions(manage_messages=True)
