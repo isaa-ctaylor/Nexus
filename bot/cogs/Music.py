@@ -4,6 +4,7 @@ from typing import Optional, Union
 from discord.channel import VoiceChannel
 from discord.client import Client
 from discord.errors import ClientException
+from wavelink.errors import QueueEmpty
 from wavelink.utils import MISSING
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
@@ -62,12 +63,11 @@ class Music(Cog):
         if reason != "FINISHED":
             return
         
-        track = player.queue.get()
-        
-        if track is not None:
+        try:
+            track = player.queue.get()
             return await player.play(track)
-            
-        await player.disconnect(force=True)
+        except QueueEmpty:
+            await player.disconnect(force=True)
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
