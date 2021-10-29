@@ -3,6 +3,7 @@ from utils.subclasses.command import Command
 from utils.subclasses.bot import Nexus
 import discord
 import wavelink
+from discord.ext import commands
 
 
 class Music(Cog):
