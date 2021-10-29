@@ -4,6 +4,7 @@ from typing import Optional, Union
 from discord.channel import VoiceChannel
 from discord.errors import ClientException
 from discord.ext.commands.core import guild_only
+from discord.ext.commands.errors import BadArgument
 from dotenv import load_dotenv
 from wavelink.tracks import SoundCloudTrack
 from utils.subclasses.bot import Nexus
@@ -125,6 +126,12 @@ class Music(Cog):
         if track is None:
             try:
                 track = await YouTubeTrack.convert(ctx, query)
+            except BadArgument:
+                pass
+            
+        if track is None:
+            try:
+                track = await SoundCloudTrack.convert(ctx, query)
             except Exception as e:
                 await ctx.send(type(e))
 
