@@ -136,10 +136,8 @@ class Music(Cog):
         if not ctx.voice_client:
             _ = True
             await self._connect(ctx, invoked=True)
-            
-        __ = ctx.send if _ else ctx.reply
         
-        await __(f"🔍 Searching for `{codeblocksafe(query)}`")
+        await ctx.send(f"🔍 Searching for `{codeblocksafe(query)}`") if _ else ctx.reply(f"🔍 Searching for `{codeblocksafe(query)}`", mention_author=False)
         
         track = None
         try:
@@ -160,9 +158,11 @@ class Music(Cog):
                 return await ctx.error("Couldn't find any songs matching that query!")
             
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+            await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
             await ctx.voice_client.play(track)
             
         else:
+            await ctx.send(f"Enqueued `{codeblocksafe(track.title)}`")
             ctx.voice_client.queue.put(track)
 
     @guild_only()
@@ -179,6 +179,7 @@ class Music(Cog):
         
         await ctx.voice_client.stop()
         ctx.voice_client.queue.clear()
+        await ctx.message.add_reaction("👍")
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
