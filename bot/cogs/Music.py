@@ -8,7 +8,7 @@ from wavelink.utils import MISSING
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from dotenv import load_dotenv
-from wavelink.tracks import SoundCloudTrack
+from wavelink.tracks import SoundCloudTrack, Track
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
@@ -17,6 +17,7 @@ from wavelink import Node, NodePool, Player, YouTubeTrack, Queue
 from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
 from discord.ext.commands import command
 from discord.ext.tasks import loop
+from utils import codeblocksafe
 
 load_dotenv()
 
@@ -31,7 +32,6 @@ class Music(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
-        self._do_next_song.start()
         bot.loop.create_task(self.connect_nodes())
 
     async def connect_nodes(self):
@@ -56,6 +56,18 @@ class Music(Cog):
         Event fired when a node has finished connecting.
         """
         self.bot.logger.info(f"Node: <{node.identifier}> is ready!")
+        
+    @Cog.listener(name="on_wavelink_track_end")
+    async def _do_next_song(self, player: Player, track: Track, reason):
+        if reason != "FINISHED":
+            return
+        
+        track = player.queue.get()
+        
+        if track is not None:
+            return await player.play(track)
+            
+        await player.disconnect(force=True)
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
@@ -124,8 +136,7 @@ class Music(Cog):
             
         __ = ctx.send if _ else ctx.reply
         
-        await __(f"Searching {query}")
-        
+        await __(f"🔍 Searching for `{codeblocksafe(query)}`")
         
         track = None
         try:
@@ -145,11 +156,11 @@ class Music(Cog):
             except BadArgument:
                 return await ctx.error("Couldn't find any songs matching that query!")
             
-        ctx.voice_client.queue.put(track)
-        
-    @loop(seconds=1.0)
-    async def _do_next_song(self):
-        print("A")
+        if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
+            await ctx.voice_client.play(track)
+            
+        else:
+            ctx.voice_client.queue.put(track)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
