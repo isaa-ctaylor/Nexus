@@ -98,7 +98,7 @@ class Music(Cog):
                 return await ctx.error("Uh oh! I couldn't join, please")
             
     @guild_only()
-    @command(name="play")
+    @command(cls=Command, name="play")
     async def _play(self, ctx: NexusContext, *, query: Union[SpotifyTrack, YouTubeTrack, SoundCloudTrack]):
         """
         Play a song from Youtube
