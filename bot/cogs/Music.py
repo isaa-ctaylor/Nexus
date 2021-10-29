@@ -196,7 +196,7 @@ class Music(Cog):
         if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
             return await ctx.error("You are not in the same channel as me!")
         
-        await ctx.voice_client.disconnect()
+        await ctx.voice_client.disconnect(force=True)
         await ctx.message.add_reaction("👍")
 
 def setup(bot: Nexus):
