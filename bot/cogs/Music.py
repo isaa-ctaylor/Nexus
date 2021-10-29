@@ -10,6 +10,7 @@ from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
 from wavelink import Node, NodePool, Player, YouTubeTrack
 from wavelink.ext import spotify
+from discord.ext.commands import command
 
 load_dotenv()
 
