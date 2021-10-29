@@ -65,6 +65,7 @@ class Nexus(Bot):
                 level=INFO, bot=self, url=getenv("LOGGING"), session=self.session
             )
         )
+        self.database = self.db = Database(self)
 
         if cogs:
             for cog in cogs:
@@ -72,8 +73,6 @@ class Nexus(Bot):
                     self.load_extension(cog)
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
-
-        self.database = self.db = Database(self)
 
         self.loop.create_task(self.__ainit__())
 
