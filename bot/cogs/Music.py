@@ -1,3 +1,4 @@
+import asyncio
 from os import getenv
 from typing import Optional, Union
 
@@ -67,6 +68,7 @@ class Music(Cog):
             track = player.queue.get()
             return await player.play(track)
         except QueueEmpty:
+            await asyncio.sleep(2)
             await player.disconnect(force=True)
 
     @guild_only()
