@@ -48,7 +48,7 @@ class Music(Cog):
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
-    async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None):
+    async def _connect(self, ctx: NexusContext, *, channel: Optional[VoiceChannel] = None, invoked=False):
         """
         Connect to a voice channel
 
@@ -93,21 +93,29 @@ class Music(Cog):
                 return await ctx.error("I do not have permission to join that channel!")
             try:
                 await channel.connect(cls=Player)
-                await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
+                if not invoked:
+                    await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
+                else:
+                    await ctx.reply(f"Joined {channel.mention}")
             except:
                 return await ctx.error("Uh oh! I couldn't join, please")
             
     @guild_only()
     @command(cls=Command, name="play")
-    async def _play(self, ctx: NexusContext, *, query: Union[SpotifyTrack, YouTubeTrack, SoundCloudTrack]):
+    async def _play(self, ctx: NexusContext, *, query: str):
         """
         Play a song from Youtube
         """
+        _ = False
         if not ctx.voice_client:
-            await self._connect(ctx)
+            _ = True
+            await self._connect(ctx, invoked=True)
             
-        await ctx.voice_client.play(query)
-
+        __ = ctx.send if _ else ctx.reply
+        
+        await __(f"Searching {query}")
+        
+        await SpotifyTrack.convert(ctx, query)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
