@@ -11,17 +11,25 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
-from wavelink import Node, NodePool, Player, YouTubeTrack
+from wavelink import Node, NodePool, Player, YouTubeTrack, Queue
 from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
 from discord.ext.commands import command
+from discord.ext.tasks import loop
 
 load_dotenv()
+
+
+class Player(Player):
+    def __init__(self, client: discord.Client = ..., channel: VoiceChannel = ..., *, node: Node = ...):
+        self.queue = Queue()
+        super().__init__(client=client, channel=channel, node=node)
 
 
 class Music(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
+        self._do_next_song.start()
         bot.loop.create_task(self.connect_nodes())
 
     async def connect_nodes(self):
@@ -135,7 +143,18 @@ class Music(Cog):
             except BadArgument:
                 return await ctx.error("Couldn't find any songs matching that query!")
             
-        await ctx.voice_client.play(track)
+        ctx.voice_client.queue.put(track)
+        
+    @loop(seconds=1)
+    async def _do_next_song(self):
+        for vc in self.bot.voice_clients:
+            if not vc.is_playing and not vc.is_paused:
+                track = vc.queue.get()
+                if track is not None:
+                    await vc.play(track)
+                    continue
+                await vc.stop()
+                await vc.disconnect(force=True)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
