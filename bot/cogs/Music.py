@@ -132,8 +132,10 @@ class Music(Cog):
         if track is None:
             try:
                 track = await SoundCloudTrack.convert(ctx, query)
-            except Exception as e:
-                await ctx.send(type(e))
+            except BadArgument:
+                return await ctx.error("Couldn't find any songs matching that query!")
+            
+        await ctx.voice_client.play(track)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
