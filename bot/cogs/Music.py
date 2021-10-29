@@ -147,16 +147,9 @@ class Music(Cog):
             
         ctx.voice_client.queue.put(track)
         
-    @loop(seconds=1)
+    @loop(seconds=1.0)
     async def _do_next_song(self):
-        for vc in self.bot.voice_clients:
-            if not vc.is_playing and not vc.is_paused:
-                track = vc.queue.get()
-                if track is not None:
-                    await vc.play(track)
-                    continue
-                await vc.stop()
-                await vc.disconnect(force=True)
+        print("A")
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
