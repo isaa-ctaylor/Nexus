@@ -72,7 +72,7 @@ class Music(Cog):
             return await ctx.error("I am already connected to that channel!")
 
         if ctx.voice_client and not ctx.author.voice:
-            return await ctx.error("Please join a channel!")
+            return await ctx.error("Please join a channel in order to connect me!")
 
         if (
             ctx.voice_client
@@ -88,7 +88,10 @@ class Music(Cog):
             await ctx.voice_client.move_to(channel)
             
         elif not ctx.voice_client:
+            if not channel.permissions_for(ctx.guild.me).connect:
+                return await ctx.error("I do not have permission to join that channel!")
             await channel.connect(cls=Player)
+            await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
 
 
 def setup(bot: Nexus):
