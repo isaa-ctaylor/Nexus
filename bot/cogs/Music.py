@@ -107,8 +107,8 @@ class Music(Cog):
                     await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
                 else:
                     await ctx.reply(f"Joined {channel.mention}")
-            except:
-                return await ctx.error("Uh oh! I couldn't join, please")
+            except Exception as e:
+                return await ctx.error(f"Uh oh! I couldn't join, please try again later\n\nError: {type(e)}: {e}")
             
     @guild_only()
     @command(cls=Command, name="play")
