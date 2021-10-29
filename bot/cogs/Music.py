@@ -4,6 +4,7 @@ from typing import Optional, Union
 from discord.channel import VoiceChannel
 from discord.client import Client
 from discord.errors import ClientException
+from wavelink.utils import MISSING
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from dotenv import load_dotenv
@@ -21,7 +22,7 @@ load_dotenv()
 
 
 class Player(Player):
-    def __init__(self, client: Client = ..., channel: VoiceChannel = ..., *, node: Node = ...):
+    def __init__(self, client: Client = MISSING, channel: VoiceChannel = MISSING, *, node: Node = MISSING):
         self.queue = Queue()
         super().__init__(client=client, channel=channel, node=node)
 
