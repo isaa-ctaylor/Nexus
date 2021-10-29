@@ -174,7 +174,7 @@ class Music(Cog):
         """
         Stops the player and clears the queue
         """
-        if not ctx.voice_client:
+        if not ctx.voice_client or (ctx.voice_client and not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused()):
             return await ctx.error("I am not playing anything at the moment!")
         
         if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
@@ -182,6 +182,21 @@ class Music(Cog):
         
         await ctx.voice_client.stop()
         ctx.voice_client.queue.clear()
+        await ctx.message.add_reaction("👍")
+        
+    @guild_only()
+    @command(cls=Command, name="leave")
+    async def _leave(self, ctx: NexusContext):
+        """
+        Leave the current voice channel
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+        
+        if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+        
+        await ctx.voice_client.disconnect()
         await ctx.message.add_reaction("👍")
 
 def setup(bot: Nexus):
