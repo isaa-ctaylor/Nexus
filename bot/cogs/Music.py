@@ -165,5 +165,20 @@ class Music(Cog):
         else:
             ctx.voice_client.queue.put(track)
 
+    @guild_only()
+    @command(cls=Command, name="stop")
+    async def _stop(self, ctx: NexusContext):
+        """
+        Stops the player and clears the queue
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+        
+        if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+        
+        await ctx.voice_client.stop()
+        ctx.voice_client.queue.clear()
+
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
