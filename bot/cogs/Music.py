@@ -123,7 +123,10 @@ class Music(Cog):
             pass
         
         if track is None:
-            track = await YouTubeTrack.convert(ctx, query)
+            try:
+                track = await YouTubeTrack.convert(ctx, query)
+            except Exception as e:
+                await ctx.send(e)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
