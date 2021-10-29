@@ -137,7 +137,10 @@ class Music(Cog):
             _ = True
             await self._connect(ctx, invoked=True)
         
-        await ctx.send(f"🔍 Searching for `{codeblocksafe(query)}`") if _ else ctx.reply(f"🔍 Searching for `{codeblocksafe(query)}`", mention_author=False)
+        if _:
+            await ctx.send(f"🔍 Searching for `{codeblocksafe(query)}`")
+        else: 
+            await ctx.reply(f"🔍 Searching for `{codeblocksafe(query)}`", mention_author=False)
         
         track = None
         try:
