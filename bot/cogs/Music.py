@@ -1,16 +1,17 @@
 from os import getenv
-from typing import Optional
+from typing import Optional, Union
 
 from discord.channel import VoiceChannel
 from discord.errors import ClientException
 from discord.ext.commands.core import guild_only
 from dotenv import load_dotenv
+from wavelink.tracks import SoundCloudTrack
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
 from wavelink import Node, NodePool, Player, YouTubeTrack
-from wavelink.ext import spotify
+from wavelink.ext.spotify import SpotifyClient, SpotifyTrack
 from discord.ext.commands import command
 
 load_dotenv()
@@ -33,7 +34,7 @@ class Music(Cog):
             host="127.0.0.1",
             port=2333,
             password="youshallnotpass",
-            spotify_client=spotify.SpotifyClient(
+            spotify_client=SpotifyClient(
                 client_id=getenv("SPOTIFY_ID"), client_secret=getenv("SPOTIFY_SECRET")
             ),
         )
@@ -46,7 +47,7 @@ class Music(Cog):
         self.bot.logger.info(f"Node: <{node.identifier}> is ready!")
 
     @guild_only()
-    @command(cls=Command, name="connect")
+    @command(cls=Command, name="connect", aliases=["join"])
     async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None):
         """
         Connect to a voice channel
@@ -90,8 +91,22 @@ class Music(Cog):
         else:
             if not channel.permissions_for(ctx.guild.me).connect:
                 return await ctx.error("I do not have permission to join that channel!")
-            await channel.connect(cls=Player)
-            await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
+            try:
+                await channel.connect(cls=Player)
+                await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
+            except:
+                return await ctx.error("Uh oh! I couldn't join, please")
+            
+    @guild_only()
+    @command(name="play")
+    async def _play(self, ctx: NexusContext, *, query: Union[SpotifyTrack, YouTubeTrack, SoundCloudTrack]):
+        """
+        Play a song from Youtube
+        """
+        if not ctx.voice_client:
+            await self._connect(ctx)
+            
+        await ctx.voice_client.play(query)
 
 
 def setup(bot: Nexus):
