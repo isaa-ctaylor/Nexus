@@ -11,7 +11,7 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
 from wavelink import Node, NodePool, Player, YouTubeTrack
-from wavelink.ext.spotify import SpotifyClient, SpotifyTrack
+from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
 from discord.ext.commands import command
 
 load_dotenv()
@@ -115,7 +115,15 @@ class Music(Cog):
         
         await __(f"Searching {query}")
         
-        await SpotifyTrack.convert(ctx, query)
+        
+        track = None
+        try:
+            track = await SpotifyTrack.convert(ctx, query)
+        except SpotifyRequestError:
+            pass
+        
+        if track is None:
+            track = await YouTubeTrack.convert(ctx, query)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
