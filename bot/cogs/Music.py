@@ -87,7 +87,7 @@ class Music(Cog):
         ):
             await ctx.voice_client.move_to(channel)
             
-        elif not ctx.voice_client:
+        else:
             if not channel.permissions_for(ctx.guild.me).connect:
                 return await ctx.error("I do not have permission to join that channel!")
             await channel.connect(cls=Player)
