@@ -66,6 +66,7 @@ class Music(Cog):
         
         try:
             track = player.queue.get()
+            await asyncio.sleep(1)
             return await player.play(track)
         except QueueEmpty:
             await asyncio.sleep(2)
