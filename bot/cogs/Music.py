@@ -2,6 +2,7 @@ from os import getenv
 from typing import Optional
 
 from discord.channel import VoiceChannel
+from discord.errors import ClientException
 from discord.ext.commands.core import guild_only
 from dotenv import load_dotenv
 from utils.subclasses.bot import Nexus
@@ -33,9 +34,8 @@ class Music(Cog):
             port=2333,
             password="youshallnotpass",
             spotify_client=spotify.SpotifyClient(
-                client_id=getenv("SPOTIFY_ID"),
-                client_secret=getenv("SPOTIFY_SECRET")
-            )
+                client_id=getenv("SPOTIFY_ID"), client_secret=getenv("SPOTIFY_SECRET")
+            ),
         )
 
     @Cog.listener(name="on_wavelink_node_ready")
@@ -50,7 +50,7 @@ class Music(Cog):
     async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None):
         """
         Connect to a voice channel
-        
+
         Defaults to your current channel if not specified
         """
         if (
@@ -58,8 +58,7 @@ class Music(Cog):
             and len(ctx.voice_client.channel.members) > 1
             and (
                 len(ctx.voice_client.channel.members) != 2
-                or ctx.author.id
-                not in [m.id for m in ctx.voice_client.channel.members]
+                or ctx.author.id not in [m.id for m in ctx.voice_client.channel.members]
             )
         ):
             return await ctx.error("I am already connected to a voice channel!")
@@ -69,8 +68,27 @@ class Music(Cog):
         except AttributeError:
             return await ctx.error("Please specify a channel or join one!")
 
-        await channel.connect(cls=Player)
-                
+        if ctx.voice_client and channel.id == ctx.voice_client.channel.id:
+            return await ctx.error("I am already connected to that channel!")
+
+        if ctx.voice_client and not ctx.author.voice:
+            return await ctx.error("Please join a channel!")
+
+        if (
+            ctx.voice_client
+            and ctx.author.voice
+            and (
+                (len(ctx.voice_client.channel.members) == 1)
+                or (
+                    len(ctx.voice_client.channel.members) == 2
+                    and ctx.voice_client.channel.id == ctx.author.voice.channel.id
+                )
+            )
+        ):
+            await ctx.voice_client.move_to(channel)
+            
+        elif not ctx.voice_client:
+            await channel.connect(cls=Player)
 
 
 def setup(bot: Nexus):
