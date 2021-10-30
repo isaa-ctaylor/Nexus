@@ -268,6 +268,9 @@ class Music(Cog):
             f"**Now playing**: {hyperlink(ctx.voice_client.track.title, ctx.voice_client.track.uri)}\n\n"
             + embeds[0].description.strip()
         )
+        
+        if thumb := getattr(ctx.voice_client.track, "thumbnail", None):
+            embeds[0].set_thumbnail(url=thumb)
 
         await ctx.paginate(embeds)
 
