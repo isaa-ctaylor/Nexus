@@ -203,6 +203,7 @@ class Music(Cog):
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
             await ctx.voice_client.play(track)
+            await ctx.send("a")
 
         else:
             await ctx.send(f"Enqueued `{codeblocksafe(track.title)}`")
@@ -303,7 +304,7 @@ class Music(Cog):
             return await ctx.error("You did not request this song!")
 
         ctx.voice_client.queue._queue.remove(track)
-        await ctx.reply(f"👍 Removed `{track.title}` from the queue")
+        await ctx.reply(f"👍 Removed `{track.title}` from the queue", mention_author=False)
 
 
 def setup(bot: Nexus):
