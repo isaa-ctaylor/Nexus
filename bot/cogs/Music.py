@@ -76,11 +76,15 @@ class Music(Cog):
             track = player.queue.get()
             await asyncio.sleep(1)
             await player.play(track)
-            return await player.control_channel.send(f"Playing `{track.title}`")
+            return await player.control_channel.send(
+                f"Now playing `{track.title}`", delete_after=3
+            )
         except QueueEmpty:
             await asyncio.sleep(2)
             await player.disconnect(force=True)
-            return await player.control_channel.send("👋 Disconnected - queue finished")
+            return await player.control_channel.send(
+                "👋 Disconnected - queue finished", delete_after=3
+            )
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
@@ -194,6 +198,8 @@ class Music(Cog):
             except BadArgument:
                 return await ctx.error("Couldn't find any songs matching that query!")
 
+        track.requester = ctx.author
+
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
             await ctx.voice_client.play(track)
@@ -208,15 +214,14 @@ class Music(Cog):
         """
         Stops the player and clears the queue
         """
-        if not ctx.voice_client or (
-            ctx.voice_client
-            and not ctx.voice_client.is_playing()
-            and not ctx.voice_client.is_paused()
-        ):
+        if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
 
         if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
             return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
 
         await ctx.voice_client.stop()
         ctx.voice_client.queue.clear()
@@ -231,8 +236,14 @@ class Music(Cog):
         if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+        if (
+            ctx.author.voice
+            and ctx.author.voice.channel.id != ctx.voice_client.channel.id
+        ):
             return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
 
         await ctx.voice_client.disconnect(force=True)
         await ctx.message.add_reaction("👍")
@@ -258,7 +269,10 @@ class Music(Cog):
 
         embeds = [
             Embed(
-                description="\n".join(f"{list(ctx.voice_client.queue._queue).index(t) + 1}) {hyperlink(f'`{t.title}`', t.uri)}" for t in l),
+                description="\n".join(
+                    f"{list(ctx.voice_client.queue._queue).index(t) + 1}) {hyperlink(f'`{t.title}`', t.uri)}"
+                    for t in l
+                ),
                 colour=self.bot.config.colours.neutral,
             )
             for l in pages
@@ -268,11 +282,28 @@ class Music(Cog):
             f"**Now playing**: {hyperlink(ctx.voice_client.track.title, ctx.voice_client.track.uri)}\n\n"
             + embeds[0].description.strip()
         )
-        
+
         if thumb := getattr(ctx.voice_client.track, "thumbnail", None):
             embeds[0].set_thumbnail(url=thumb)
 
         await ctx.paginate(embeds)
+
+    @guild_only()
+    @command(cls=Command, name="remove")
+    async def _remove(self, ctx: NexusContext, index: int):
+        """
+        Remove a song from the queue
+        """
+        try:
+            track = list(ctx.voice_client.queue._queue)[index - 1]
+        except IndexError:
+            return await ctx.error("Please provide a valid song index!")
+
+        if track.requester.id != ctx.author.id:
+            return await ctx.error("You did not request this song!")
+
+        ctx.voice_client.queue._queue.remove(track)
+        await ctx.reply(f"👍 Removed `{track.title}` from the queue")
 
 
 def setup(bot: Nexus):
