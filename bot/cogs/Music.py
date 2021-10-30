@@ -225,7 +225,7 @@ class Music(Cog):
                 return text
             return f"[{text}]({uri})"
         
-        pages = [ctx.voice_client.queue._queue[i:i + 10] for i in range(0, len(ctx.voice_client.queue._queue), 10)]
+        pages = [list(ctx.voice_client.queue._queue)[i:i + 10] for i in range(0, len(ctx.voice_client.queue._queue), 10)]
         
         embeds = [Embed(description="\n".join(f"{hyperlink(f'`{t.title}`', t.uri)}" for t in l)) for l in pages]
         
