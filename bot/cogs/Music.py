@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from discord.channel import VoiceChannel
 from discord.client import Client
+from discord.embeds import Embed
 from discord.errors import ClientException
 from wavelink.errors import QueueEmpty
 from wavelink.utils import MISSING
@@ -27,6 +28,7 @@ load_dotenv()
 class Player(Player):
     def __init__(self, client: Client = MISSING, channel: VoiceChannel = MISSING, *, node: Node = MISSING):
         self.queue = Queue()
+        self.control_channel = None
         super().__init__(client=client, channel=channel, node=node)
 
 
@@ -67,10 +69,12 @@ class Music(Cog):
         try:
             track = player.queue.get()
             await asyncio.sleep(1)
-            return await player.play(track)
+            await player.play(track)
+            return await player.control_channel.send(f"Playing `{track.title}`")
         except QueueEmpty:
             await asyncio.sleep(2)
             await player.disconnect(force=True)
+            return await player.control_channel.send("Disconnected - queue finished")
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
@@ -119,6 +123,7 @@ class Music(Cog):
                 return await ctx.error("I do not have permission to join that channel!")
             try:
                 await channel.connect(cls=Player)
+                ctx.voice_client.control_channel = ctx.channel
                 if not invoked:
                     await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
                 else:
@@ -132,6 +137,15 @@ class Music(Cog):
         """
         Play a song from Youtube
         """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+        
+        if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
         _ = False
         if not ctx.voice_client:
             _ = True
@@ -198,6 +212,26 @@ class Music(Cog):
         
         await ctx.voice_client.disconnect(force=True)
         await ctx.message.add_reaction("👍")
+        
+    @guild_only()
+    @command(cls=Command, name="queue")
+    async def _queue(self, ctx: NexusContext):
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+        
+        if not len(ctx.voice_client.queue._queue):
+            return await ctx.error("Nothing in the queue!")
+        
+        def hyperlink(text, uri):
+            if uri is None:
+                return text
+            return f"[{text}]({uri})"
+        
+        pages = [ctx.voice_client.queue._queue[i:i + 10] for i in range(0, len(ctx.voice_client.queue._queue), 10)]
+        
+        embeds = [Embed(description="\n".join(f"{hyperlink(f'`{t.title}`', t.uri)}" for t in l)) for l in pages]
+        
+        await ctx.paginate(embeds)
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
