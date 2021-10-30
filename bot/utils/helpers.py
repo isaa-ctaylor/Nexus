@@ -9,7 +9,7 @@ from discord import Embed, File, Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 from discord.colour import Colour
 from discord.ext.commands import Bot, Context
-from discord.ext.commands.bot import when_mentioned_or, _FakeSlashMessage
+from discord.ext.commands.bot import when_mentioned_or
 from discord.ext.commands.converter import Converter
 from discord.interactions import InteractionResponse
 from discord.mentions import AllowedMentions
@@ -399,7 +399,7 @@ prefixes = ["nxs"]
 
 
 def get_prefix(bot, msg: Message):
-    if isinstance(msg, _FakeSlashMessage):
+    if not isinstance(msg, Message):
         return when_mentioned_or("/")(bot, msg)
 
     comp = re.compile("^(" + "|".join(map(re.escape, prefixes)) + ").*", flags=re.I)
