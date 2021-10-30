@@ -137,7 +137,7 @@ class Music(Cog):
         """
         Play a song from Youtube
         """
-        if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+        if ctx.voice_client and ctx.author.voice.channel.id != ctx.voice_client.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
