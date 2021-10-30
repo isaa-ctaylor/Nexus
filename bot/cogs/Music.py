@@ -26,7 +26,13 @@ load_dotenv()
 
 
 class Player(Player):
-    def __init__(self, client: Client = MISSING, channel: VoiceChannel = MISSING, *, node: Node = MISSING):
+    def __init__(
+        self,
+        client: Client = MISSING,
+        channel: VoiceChannel = MISSING,
+        *,
+        node: Node = MISSING,
+    ):
         self.queue = Queue()
         self.control_channel = None
         super().__init__(client=client, channel=channel, node=node)
@@ -60,12 +66,12 @@ class Music(Cog):
         Event fired when a node has finished connecting.
         """
         self.bot.logger.info(f"Node: <{node.identifier}> is ready!")
-        
+
     @Cog.listener(name="on_wavelink_track_end")
     async def _do_next_song(self, player: Player, track: Track, reason):
         if reason != "FINISHED":
             return
-        
+
         try:
             track = player.queue.get()
             await asyncio.sleep(1)
@@ -74,11 +80,17 @@ class Music(Cog):
         except QueueEmpty:
             await asyncio.sleep(2)
             await player.disconnect(force=True)
-            return await player.control_channel.send("Disconnected - queue finished")
+            return await player.control_channel.send("👋 Disconnected - queue finished")
 
     @guild_only()
     @command(cls=Command, name="connect", aliases=["join"])
-    async def _connect(self, ctx: NexusContext, *, channel: Optional[VoiceChannel] = None, invoked=False):
+    async def _connect(
+        self,
+        ctx: NexusContext,
+        *,
+        channel: Optional[VoiceChannel] = None,
+        invoked=False,
+    ):
         """
         Connect to a voice channel
 
@@ -117,7 +129,7 @@ class Music(Cog):
             )
         ):
             await ctx.voice_client.move_to(channel)
-            
+
         else:
             if not channel.permissions_for(ctx.guild.me).connect:
                 return await ctx.error("I do not have permission to join that channel!")
@@ -125,12 +137,18 @@ class Music(Cog):
                 await channel.connect(cls=Player)
                 ctx.voice_client.control_channel = ctx.channel
                 if not invoked:
-                    await ctx.embed(title="Done!", description=f"Joined {channel.mention}", colour=self.bot.config.colours.good)
+                    await ctx.embed(
+                        title="Done!",
+                        description=f"Joined {channel.mention}",
+                        colour=self.bot.config.colours.good,
+                    )
                 else:
                     await ctx.reply(f"Joined {channel.mention}")
             except Exception as e:
-                return await ctx.error(f"Uh oh! I couldn't join, please try again later\n\nError: {type(e)}: {e}")
-            
+                return await ctx.error(
+                    f"Uh oh! I couldn't join, please try again later\n\nError: {type(e)}: {e}"
+                )
+
     @guild_only()
     @command(cls=Command, name="play")
     async def _play(self, ctx: NexusContext, *, query: str):
@@ -140,42 +158,46 @@ class Music(Cog):
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
 
-        if ctx.voice_client and ctx.author.voice.channel.id != ctx.voice_client.channel.id:
+        if (
+            ctx.voice_client
+            and ctx.author.voice.channel.id != ctx.voice_client.channel.id
+        ):
             return await ctx.error("You are not in the same channel as me!")
 
-        
         _ = False
         if not ctx.voice_client:
             _ = True
             await self._connect(ctx, invoked=True)
-        
+
         if _:
             await ctx.send(f"🔍 Searching for `{codeblocksafe(query)}`")
-        else: 
-            await ctx.reply(f"🔍 Searching for `{codeblocksafe(query)}`", mention_author=False)
-        
+        else:
+            await ctx.reply(
+                f"🔍 Searching for `{codeblocksafe(query)}`", mention_author=False
+            )
+
         track = None
         try:
             track = await SpotifyTrack.convert(ctx, query)
         except SpotifyRequestError:
             pass
-        
+
         if track is None:
             try:
                 track = await YouTubeTrack.convert(ctx, query)
             except BadArgument:
                 pass
-            
+
         if track is None:
             try:
                 track = await SoundCloudTrack.convert(ctx, query)
             except BadArgument:
                 return await ctx.error("Couldn't find any songs matching that query!")
-            
+
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
             await ctx.voice_client.play(track)
-            
+
         else:
             await ctx.send(f"Enqueued `{codeblocksafe(track.title)}`")
             ctx.voice_client.queue.put(track)
@@ -186,16 +208,20 @@ class Music(Cog):
         """
         Stops the player and clears the queue
         """
-        if not ctx.voice_client or (ctx.voice_client and not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused()):
+        if not ctx.voice_client or (
+            ctx.voice_client
+            and not ctx.voice_client.is_playing()
+            and not ctx.voice_client.is_paused()
+        ):
             return await ctx.error("I am not playing anything at the moment!")
-        
+
         if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
             return await ctx.error("You are not in the same channel as me!")
-        
+
         await ctx.voice_client.stop()
         ctx.voice_client.queue.clear()
         await ctx.message.add_reaction("👍")
-        
+
     @guild_only()
     @command(cls=Command, name="leave")
     async def _leave(self, ctx: NexusContext):
@@ -204,32 +230,47 @@ class Music(Cog):
         """
         if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
-        
+
         if ctx.author.voice.channel.id != ctx.voice_client.channel.id:
             return await ctx.error("You are not in the same channel as me!")
-        
+
         await ctx.voice_client.disconnect(force=True)
         await ctx.message.add_reaction("👍")
-        
+
     @guild_only()
     @command(cls=Command, name="queue")
     async def _queue(self, ctx: NexusContext):
         if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
-        
+
         if not len(ctx.voice_client.queue._queue):
             return await ctx.error("Nothing in the queue!")
-        
+
         def hyperlink(text, uri):
             if uri is None:
                 return text
             return f"[{text}]({uri})"
-        
-        pages = [list(ctx.voice_client.queue._queue)[i:i + 10] for i in range(0, len(ctx.voice_client.queue._queue), 10)]
-        
-        embeds = [Embed(description="\n".join(f"{hyperlink(f'`{t.title}`', t.uri)}" for t in l)) for l in pages]
-        
+
+        pages = [
+            list(ctx.voice_client.queue._queue)[i : i + 10]
+            for i in range(0, len(ctx.voice_client.queue._queue), 10)
+        ]
+
+        embeds = [
+            Embed(
+                description="\n".join(f"{hyperlink(f'`{t.title}`', t.uri)}" for t in l),
+                colour=self.bot.config.colours.neutral,
+            )
+            for l in pages
+        ]
+
+        embeds[0].description = (
+            f"**Now playing**: {hyperlink(ctx.voice_client.track.title, ctx.voice_client.track.uri)}\n\n"
+            + embeds[0].description.strip()
+        )
+
         await ctx.paginate(embeds)
+
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
