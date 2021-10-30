@@ -258,7 +258,7 @@ class Music(Cog):
 
         embeds = [
             Embed(
-                description="\n".join(f"{hyperlink(f'`{t.title}`', t.uri)}" for t in l),
+                description="\n".join(f"{list(ctx.voice_client.queue._queue).index(t) + 1}) {hyperlink(f'`{t.title}`', t.uri)}" for t in l),
                 colour=self.bot.config.colours.neutral,
             )
             for l in pages
