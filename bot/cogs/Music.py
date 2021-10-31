@@ -203,7 +203,6 @@ class Music(Cog):
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
             await ctx.voice_client.play(track)
-            await ctx.send("a")
 
         else:
             await ctx.send(f"Enqueued `{codeblocksafe(track.title)}`")
@@ -305,6 +304,54 @@ class Music(Cog):
 
         ctx.voice_client.queue._queue.remove(track)
         await ctx.reply(f"👍 Removed `{track.title}` from the queue", mention_author=False)
+        
+    @guild_only()
+    @command(cls=Command, name="pause")
+    async def _pause(self, ctx: NexusContext):
+        """
+        Pause the current song
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if (
+            ctx.author.voice
+            and ctx.author.voice.channel.id != ctx.voice_client.channel.id
+        ):
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+        
+        if ctx.voice_client.is_paused():
+            return await ctx.error("The player is already paused!")
+        
+        await ctx.voice_client.pause()
+        await ctx.message.add_reaction("👍")
+        
+    @guild_only()
+    @command(cls=Command, name="resume")
+    async def _resume(self, ctx: NexusContext):
+        """
+        Resume the paused song
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if (
+            ctx.author.voice
+            and ctx.author.voice.channel.id != ctx.voice_client.channel.id
+        ):
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+        
+        if not ctx.voice_client.is_paused():
+            return await ctx.error("The player is not paused!")
+        
+        await ctx.voice_client.resume()
+        await ctx.message.add_reaction("👍")
 
 
 def setup(bot: Nexus):
