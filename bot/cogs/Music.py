@@ -251,6 +251,9 @@ class Music(Cog):
     @guild_only()
     @command(cls=Command, name="queue")
     async def _queue(self, ctx: NexusContext):
+        """
+        See the current queue
+        """
         if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
 
