@@ -74,7 +74,7 @@ class Music(Cog):
             return
 
         try:
-            with async_timeout.timeout(10):
+            with async_timeout.timeout(300):
                 track = await player.queue.get()
                 await player.play(track)
                 return await player.control_channel.send(
