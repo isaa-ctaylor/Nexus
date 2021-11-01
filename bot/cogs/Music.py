@@ -69,6 +69,7 @@ class Music(Cog):
 
     @Cog.listener(name="on_wavelink_track_end")
     async def _do_next_song(self, player: Player, track: Track, reason):
+        await player.control_channel.send(reason)
         if reason != "FINISHED":
             return
 
