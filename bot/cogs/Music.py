@@ -9,6 +9,7 @@ from discord.embeds import Embed
 from discord.ext.commands import command
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
+from discord.mentions import AllowedMentions
 from dotenv import load_dotenv
 from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
@@ -16,8 +17,7 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
 from wavelink import Node, NodePool, Player, YouTubeTrack
-from wavelink.ext.spotify import (SpotifyClient, SpotifyRequestError,
-                                  SpotifyTrack)
+from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
 from wavelink.tracks import SoundCloudTrack, Track
 from wavelink.utils import MISSING
 import async_timeout
@@ -69,7 +69,6 @@ class Music(Cog):
 
     @Cog.listener(name="on_wavelink_track_end")
     async def _do_next_song(self, player: Player, track: Track, reason):
-        await player.control_channel.send(reason)
         if reason not in ["FINISHED", "STOPPED"]:
             return
 
@@ -78,12 +77,14 @@ class Music(Cog):
                 track = await player.queue.get()
                 await player.play(track)
                 return await player.control_channel.send(
-                    f"Now playing `{track.title}`", delete_after=3
+                    f"Now playing `{track.title}` | {track.requester.mention}",
+                    delete_after=10,
+                    allowed_mentions=AllowedMentions.none(),
                 )
         except asyncio.TimeoutError:
             await player.disconnect(force=True)
             return await player.control_channel.send(
-                "👋 Disconnected - queue finished", delete_after=3
+                "👋 Disconnected - queue finished", delete_after=10
             )
 
     @guild_only()
@@ -301,8 +302,10 @@ class Music(Cog):
             return await ctx.error("You did not request this song!")
 
         ctx.voice_client.queue._queue.remove(track)
-        await ctx.reply(f"👍 Removed `{track.title}` from the queue", mention_author=False)
-        
+        await ctx.reply(
+            f"👍 Removed `{track.title}` from the queue", mention_author=False
+        )
+
     @guild_only()
     @command(cls=Command, name="pause")
     async def _pause(self, ctx: NexusContext):
@@ -320,13 +323,13 @@ class Music(Cog):
 
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
-        
+
         if ctx.voice_client.is_paused():
             return await ctx.error("The player is already paused!")
-        
+
         await ctx.voice_client.pause()
         await ctx.message.add_reaction("👍")
-        
+
     @guild_only()
     @command(cls=Command, name="resume")
     async def _resume(self, ctx: NexusContext):
@@ -344,13 +347,13 @@ class Music(Cog):
 
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
-        
+
         if not ctx.voice_client.is_paused():
             return await ctx.error("The player is not paused!")
-        
+
         await ctx.voice_client.resume()
         await ctx.message.add_reaction("👍")
-        
+
     @guild_only()
     @command(cls=Command, name="now")
     async def _now(self, ctx: NexusContext):
@@ -360,7 +363,10 @@ class Music(Cog):
         if not ctx.voice_client:
             return await ctx.error("I am not playing anything at the moment!")
 
-        await ctx.embed(title="Currently playing", description=f"{hyperlink(f'`{ctx.voice_client.track.title}`', ctx.voice_client.track.uri)} requested by {ctx.voice_client.track.requester.mention}")
+        await ctx.embed(
+            title="Currently playing",
+            description=f"{hyperlink(f'`{ctx.voice_client.track.title}`', ctx.voice_client.track.uri)} requested by {ctx.voice_client.track.requester.mention}",
+        )
 
 
 def setup(bot: Nexus):
