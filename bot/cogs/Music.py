@@ -33,9 +33,9 @@ class Player(Player):
         *,
         node: Node = MISSING,
     ):
-        self.queue = Queue()
         self.control_channel = None
         super().__init__(client=client, channel=channel, node=node)
+        self.queue = Queue()
 
 
 class Music(Cog):
