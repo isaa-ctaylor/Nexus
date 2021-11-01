@@ -78,13 +78,12 @@ class Music(Cog):
                 await player.play(track)
                 return await player.control_channel.send(
                     f"Now playing `{track.title}` | {track.requester.mention}",
-                    delete_after=10,
                     allowed_mentions=AllowedMentions.none(),
                 )
         except asyncio.TimeoutError:
             await player.disconnect(force=True)
             return await player.control_channel.send(
-                "👋 Disconnected - queue finished", delete_after=10
+                "👋 Disconnected - queue finished"
             )
 
     @guild_only()
