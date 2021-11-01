@@ -49,3 +49,8 @@ def executor(sync_function):
         return await loop.run_in_executor(None, internal_function)
 
     return sync_wrapper
+
+def hyperlink(text, uri):
+    if uri is None:
+        return text
+    return f"[{text}]({uri})"
