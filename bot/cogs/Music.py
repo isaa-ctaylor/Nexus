@@ -1,26 +1,26 @@
 import asyncio
+from asyncio import Queue
 from os import getenv
-from typing import Optional, Union
+from typing import Optional
 
 from discord.channel import VoiceChannel
 from discord.client import Client
 from discord.embeds import Embed
-from discord.errors import ClientException
-from wavelink.errors import QueueEmpty
-from wavelink.utils import MISSING
+from discord.ext.commands import command
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from dotenv import load_dotenv
-from wavelink.tracks import SoundCloudTrack, Track
+from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
-from wavelink import Node, NodePool, Player, YouTubeTrack, Queue
-from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
-from discord.ext.commands import command
-from discord.ext.tasks import loop
-from utils import codeblocksafe
+from wavelink import Node, NodePool, Player, YouTubeTrack
+from wavelink.ext.spotify import (SpotifyClient, SpotifyRequestError,
+                                  SpotifyTrack)
+from wavelink.tracks import SoundCloudTrack, Track
+from wavelink.utils import MISSING
+import async_timeout
 
 load_dotenv()
 
@@ -73,14 +73,13 @@ class Music(Cog):
             return
 
         try:
-            track = player.queue.get()
-            await asyncio.sleep(1)
-            await player.play(track)
-            return await player.control_channel.send(
-                f"Now playing `{track.title}`", delete_after=3
-            )
-        except QueueEmpty:
-            await asyncio.sleep(2)
+            with async_timeout.timeout(10):
+                track = await player.queue.get()
+                await player.play(track)
+                return await player.control_channel.send(
+                    f"Now playing `{track.title}`", delete_after=3
+                )
+        except asyncio.TimeoutError:
             await player.disconnect(force=True)
             return await player.control_channel.send(
                 "👋 Disconnected - queue finished", delete_after=3
@@ -206,7 +205,7 @@ class Music(Cog):
 
         else:
             await ctx.send(f"Enqueued `{codeblocksafe(track.title)}`")
-            ctx.voice_client.queue.put(track)
+            await ctx.voice_client.queue.put(track)
 
     @guild_only()
     @command(cls=Command, name="stop")
@@ -224,7 +223,7 @@ class Music(Cog):
             return await ctx.error("You are not in a voice channel!")
 
         await ctx.voice_client.stop()
-        ctx.voice_client.queue.clear()
+        ctx.voice_client.queue._queue.clear()
         await ctx.message.add_reaction("👍")
 
     @guild_only()
@@ -259,11 +258,6 @@ class Music(Cog):
 
         if not len(ctx.voice_client.queue._queue):
             return await ctx.error("Nothing in the queue!")
-
-        def hyperlink(text, uri):
-            if uri is None:
-                return text
-            return f"[{text}]({uri})"
 
         pages = [
             list(ctx.voice_client.queue._queue)[i : i + 10]
@@ -355,6 +349,17 @@ class Music(Cog):
         
         await ctx.voice_client.resume()
         await ctx.message.add_reaction("👍")
+        
+    @guild_only()
+    @command(cls=Command, name="now")
+    async def _now(self, ctx: NexusContext):
+        """
+        See what song is currently playing
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        await ctx.embed(title="Currently playing", description=f"{hyperlink(f'`{ctx.voice_client.track.title}`', ctx.voice_client.track.uri)} requested by {ctx.voice_client.track.requester.mention}")
 
 
 def setup(bot: Nexus):
