@@ -384,7 +384,7 @@ class Music(Cog):
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
 
-        if ctx.author.id != ctx.voice_client.requester.id and (
+        if ctx.author.id != ctx.voice_client.track.requester.id and (
             len(ctx.voice_client.channel.members) - 1 / 2
             <= len(ctx.voice_client.track.skippers)
         ):
