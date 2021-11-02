@@ -21,6 +21,7 @@ from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrac
 from wavelink.tracks import SoundCloudTrack, Track
 from wavelink.utils import MISSING
 import async_timeout
+import math
 
 load_dotenv()
 
@@ -43,6 +44,11 @@ class Music(Cog):
         self.bot = bot
 
         bot.loop.create_task(self.connect_nodes())
+
+    def required(self, ctx: NexusContext):
+        player: Player = ctx.voice_client
+        channel = self.bot.get_channel(int(player.channel.id))
+        return math.ceil((len(channel.members) - 1) / 2.5)
 
     async def connect_nodes(self):
         """
@@ -200,7 +206,7 @@ class Music(Cog):
                 return await ctx.error("Couldn't find any songs matching that query!")
 
         track.requester = ctx.author
-        track.skippers = []
+        track.skippers = {}
 
         if not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused():
             await ctx.send(f"Playing `{codeblocksafe(track.title)}`")
@@ -387,26 +393,20 @@ class Music(Cog):
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
 
-        if ctx.author.id != ctx.voice_client.track.requester.id and (
-            len(ctx.voice_client.channel.members) - 1 / 2
-            <= len(ctx.voice_client.track.skippers)
-        ):
-            if ctx.author.id in ctx.voice_client.track.skippers:
-                return await ctx.reply(
-                    "You have already voted to skip!", mention_author=False
-                )
+        if ctx.author.id != ctx.voice_client.track.requester.id or not ctx.author.guild_permissions.manage_guild:
+            required = self.required(ctx)
 
-            ctx.voice_client.track.skippers.append(ctx.author.id)
-            if not (
-                len(ctx.voice_client.channel.members) - 1 / 2
-                <= len(ctx.voice_client.track.skippers)
-            ):
-                return await ctx.reply(
-                    f"Voted to skip ({len(ctx.voice_client.track.skippers)}/{len(ctx.voice_client.channel.members) - 1 / 2})"
-                )
+            _ = ctx.voice_client.track.skippers.copy()
+            ctx.voice_client.track.skippers.add(ctx.author.id)
+
+            if ctx.voice_client.track.skippers == _:
+                return await ctx.send("You have already voted to skip!", mention_author=False)
+
+            if len(ctx.voice_client.track.skippers) < required:
+                return await ctx.reply(f"Voted to skip ({len(ctx.voice_client.track.skippers)}/{required})")
 
         await ctx.send("⏭ Skipping")
-        
+
         self.bot.dispatch(
             "wavelink_track_end", ctx.voice_client, ctx.voice_client.track, "SKIPPED"
         )
