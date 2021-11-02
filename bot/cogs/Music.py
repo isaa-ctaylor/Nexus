@@ -72,6 +72,9 @@ class Music(Cog):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
 
+        if reason == "SKIPPED":
+            await player.stop()
+        
         try:
             with async_timeout.timeout(300):
                 track = await player.queue.get()
@@ -403,6 +406,7 @@ class Music(Cog):
                 )
 
         await ctx.send("⏭ Skipping")
+        
         self.bot.dispatch(
             "wavelink_track_end", ctx.voice_client, ctx.voice_client.track, "SKIPPED"
         )
