@@ -291,6 +291,9 @@ class Music(Cog):
             for l in pages
         ]
 
+        if not embeds:
+            embeds = [Embed(colour=self.bot.config.colours.neutral)]
+
         embeds[0].description = (
             f"**Now playing**: {hyperlink(player.current.title, player.current.uri)}\n\n"
             + embeds[0].description.strip()
