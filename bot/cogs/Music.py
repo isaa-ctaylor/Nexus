@@ -64,11 +64,13 @@ class Music(Cog):
 
         await self.bot.pomice.create_node(
             bot=self.bot,
+            identifier="MAIN",
             host="127.0.0.1",
             port=2333,
             password="youshallnotpass",
             spotify_client_id=getenv("SPOTIFY_ID"),
-            spotify_client_secret=getenv("SPOTIFY_SECRET")
+            spotify_client_secret=getenv("SPOTIFY_SECRET"),
+            session=self.bot.session
         )
 
     @Cog.listener(name="on_pomice_track_end")
