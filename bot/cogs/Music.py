@@ -75,7 +75,7 @@ class Music(Cog):
 
     @Cog.listener(name="on_pomice_track_end")
     async def _do_next_song(
-        self, event: pomice.PomiceEvent, player: Player, track: pomice.Track, reason
+        self, player: Player, track: pomice.Track, reason
     ):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
