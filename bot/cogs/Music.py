@@ -22,6 +22,7 @@ from wavelink.tracks import SoundCloudTrack, Track
 from wavelink.utils import MISSING
 import async_timeout
 import math
+from typing import Union
 
 load_dotenv()
 
@@ -410,6 +411,36 @@ class Music(Cog):
         self.bot.dispatch(
             "wavelink_track_end", ctx.voice_client, ctx.voice_client.track, "SKIPPED"
         )
+        
+    @guild_only()
+    @command(cls=Command, name="volume")
+    async def _volume(self, ctx: NexusContext, volume: Union[int, str]):
+        """
+        Set the volume of the player
+        """
+        if not ctx.voice_client:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if (
+            ctx.author.voice
+            and ctx.author.voice.channel.id != ctx.voice_client.channel.id
+        ):
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+        
+        if isinstance(volume, str):
+            if volume.lower() == "reset":
+                volume = 100
+            else:
+                return await ctx.error("Please specify a number between 1 and 200, or \"reset\"")
+            
+        if volume > 200 or volume < 1:
+            return await ctx.error("Please specify a number between 1 and 200, or \"reset\"")
+        
+        ctx.voice_client.set_volume(volume)
+        await ctx.message.add_reaction("👍")
 
 
 def setup(bot: Nexus):
