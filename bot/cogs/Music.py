@@ -67,9 +67,8 @@ class Music(Cog):
             host="127.0.0.1",
             port=2333,
             password="youshallnotpass",
-            spotify_client=SpotifyClient(
-                client_id=getenv("SPOTIFY_ID"), client_secret=getenv("SPOTIFY_SECRET")
-            ),
+            spotify_client_id=getenv("SPOTIFY_ID"),
+            spotify_client_secret=getenv("SPOTIFY_SECRET")
         )
 
     @Cog.listener(name="on_pomice_track_end")
