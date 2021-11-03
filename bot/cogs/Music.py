@@ -448,7 +448,7 @@ class Music(Cog):
         await ctx.send("⏭ Skipping")
 
         self.bot.dispatch(
-            "pomice_track_end", ctx.voice_client, ctx.voice_client.track, "SKIPPED"
+            "pomice_track_end", player, player.current, "SKIPPED"
         )
 
     @guild_only()
