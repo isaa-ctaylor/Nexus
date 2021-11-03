@@ -296,7 +296,7 @@ class Music(Cog):
 
         embeds[0].description = (
             f"**Now playing**: {hyperlink(player.current.title, player.current.uri)}\n\n"
-            + embeds[0].description.strip()
+            + (embeds[0].description.strip() if isinstance(embeds[0].description, str) else "")
         )
 
         if thumb := getattr(player.current, "thumbnail", None):
