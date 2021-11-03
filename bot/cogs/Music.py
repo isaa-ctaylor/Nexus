@@ -484,7 +484,7 @@ class Music(Cog):
                 'Please specify a number between 1 and 200, or "reset"'
             )
 
-        player.set_volume(volume)
+        await player.set_volume(volume)
         await ctx.message.add_reaction("👍")
 
 
