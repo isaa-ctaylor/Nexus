@@ -96,7 +96,7 @@ class Music(Cog):
             with async_timeout.timeout(300):
                 track = await player.queue.get()
             await player.play(track)
-            player.current = track
+            player._current = track
             return await player.control_channel.send(
                 f"Now playing `{track.title}` | {track.requester.mention}",
                 allowed_mentions=AllowedMentions.none(),
