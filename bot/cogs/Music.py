@@ -79,9 +79,16 @@ class Music(Cog):
     ):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
-
+        
+        if reason == "STOPPED" and player.is_skipping == True:
+            player.is_skipping = False
+        
         if reason == "SKIPPED":
-            await player.stop()
+            try:
+                player.queue._queue[0]
+            except IndexError:
+                player.is_skipping = True
+                await player.stop()
 
         try:
             with async_timeout.timeout(300):
