@@ -446,7 +446,7 @@ class Music(Cog):
 
         player.skippers.clear()
 
-        await ctx.send("⏭ Skipping")
+        await ctx.message.add_reaction("👍")
 
         self.bot.dispatch("pomice_track_end", player, player.current, "SKIPPED")
 
