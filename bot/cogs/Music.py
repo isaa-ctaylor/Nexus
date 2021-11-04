@@ -401,7 +401,7 @@ class Music(Cog):
 
         await ctx.embed(
             title="Currently playing",
-            description=f"{hyperlink(f'`{player.current.title}`', player.current.uri)} requested by {player.current.requester.mention}",
+            description=f"{hyperlink(f'`{player.current.title}`', player.current.uri)} requested by {player.current.ctx.author.mention}",
         )
 
     @guild_only()
@@ -425,7 +425,7 @@ class Music(Cog):
             return await ctx.error("You are not in a voice channel!")
 
         if (
-            ctx.author.id != player.current.requester.id
+            ctx.author.id != player.current.ctx.author.id
             or not ctx.author.guild_permissions.manage_guild
         ):
             required = self.required(ctx)
