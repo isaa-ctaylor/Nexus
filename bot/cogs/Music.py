@@ -387,7 +387,7 @@ class Music(Cog):
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
 
-        if not player.is_paused():
+        if not player.is_paused:
             return await ctx.error("The player is not paused!")
 
         await player.set_pause(False)
