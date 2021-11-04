@@ -70,19 +70,21 @@ class Music(Cog):
             password="youshallnotpass",
             spotify_client_id=getenv("SPOTIFY_ID"),
             spotify_client_secret=getenv("SPOTIFY_SECRET"),
-            session=self.bot.session
+            session=self.bot.session,
         )
 
     @Cog.listener(name="on_pomice_track_end")
-    async def _do_next_song(
-        self, player: Player, track: pomice.Track, reason
-    ):
+    async def _do_next_song(self, player: Player, track: pomice.Track, reason):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
-        
-        if reason == "STOPPED" and player.is_skipping == True:
+
+        if (
+            reason == "STOPPED"
+            and hasattr(player, "is_skipping")
+            and player.is_skipping == True
+        ):
             player.is_skipping = False
-        
+
         if reason == "SKIPPED":
             try:
                 player.queue._queue[0]
@@ -303,7 +305,11 @@ class Music(Cog):
 
         embeds[0].description = (
             f"**Now playing**: {hyperlink(player.current.title, player.current.uri)}\n\n"
-            + (embeds[0].description.strip() if isinstance(embeds[0].description, str) else "")
+            + (
+                embeds[0].description.strip()
+                if isinstance(embeds[0].description, str)
+                else ""
+            )
         )
 
         if thumb := getattr(player.current, "thumbnail", None):
@@ -318,14 +324,11 @@ class Music(Cog):
         Remove a song from the queue
         """
         player: Player = ctx.voice_client
-        
+
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if (
-            ctx.author.voice
-            and ctx.author.voice.channel.id != player.channel.id
-        ):
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
@@ -355,10 +358,7 @@ class Music(Cog):
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if (
-            ctx.author.voice
-            and ctx.author.voice.channel.id != player.channel.id
-        ):
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
@@ -377,14 +377,11 @@ class Music(Cog):
         Resume the paused song
         """
         player: Player = ctx.voice_client
-        
+
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if (
-            ctx.author.voice
-            and ctx.author.voice.channel.id != player.channel.id
-        ):
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
@@ -418,14 +415,11 @@ class Music(Cog):
         Skip the current song
         """
         player: Player = ctx.voice_client
-        
+
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if (
-            ctx.author.voice
-            and ctx.author.voice.channel.id != player.channel.id
-        ):
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
@@ -454,9 +448,7 @@ class Music(Cog):
 
         await ctx.send("⏭ Skipping")
 
-        self.bot.dispatch(
-            "pomice_track_end", player, player.current, "SKIPPED"
-        )
+        self.bot.dispatch("pomice_track_end", player, player.current, "SKIPPED")
 
     @guild_only()
     @command(cls=Command, name="volume")
@@ -469,10 +461,7 @@ class Music(Cog):
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        if (
-            ctx.author.voice
-            and ctx.author.voice.channel.id != player.channel.id
-        ):
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
             return await ctx.error("You are not in the same channel as me!")
 
         if not ctx.author.voice:
