@@ -85,7 +85,9 @@ class NexusHelp(HelpCommand):
         commands: List[Command] = cog.get_commands()
 
         grouped: List[List[Command]] = [
-            commands[i:PER_PAGE] for i in range(0, len(commands), PER_PAGE)
+            i
+            for i in [commands[i:PER_PAGE] for i in range(0, len(commands), PER_PAGE)]
+            if i
         ]
 
         embeds = []
