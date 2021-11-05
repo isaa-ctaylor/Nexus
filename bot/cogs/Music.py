@@ -112,7 +112,6 @@ class Music(Cog):
         ctx: NexusContext,
         *,
         channel: Optional[VoiceChannel] = None,
-        invoked=False,
     ):
         """
         Connect to a voice channel
@@ -159,14 +158,7 @@ class Music(Cog):
             try:
                 await channel.connect(cls=Player)
                 ctx.voice_client.control_channel = ctx.channel
-                if not invoked:
-                    await ctx.embed(
-                        title="Done!",
-                        description=f"Joined {channel.mention}",
-                        colour=self.bot.config.colours.good,
-                    )
-                else:
-                    await ctx.reply(f"Joined {channel.mention}")
+                await ctx.reply(f"Joined {channel.mention}", )
             except Exception as e:
                 return await ctx.error(
                     f"Uh oh! I couldn't join, please try again later\n\nError: {type(e)}: {e}"
