@@ -44,8 +44,6 @@ def get_prefix(bot, message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
-        self._BotBase__cogs = _CaseInsensitiveDict()
-
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
         self.config = CONFIG
@@ -57,6 +55,8 @@ class Nexus(Bot):
         cogs = self.config.cogs
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
+
+        self._BotBase__cogs = _CaseInsensitiveDict()
 
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
