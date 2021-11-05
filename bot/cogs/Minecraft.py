@@ -38,17 +38,7 @@ class Minecraft(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
-    @group(name="minecraft", aliases=["mc"], invoke_without_command=True)
-    async def _minecraft(self, ctx: NexusContext):
-        """
-        Minecraft commands.
-
-        Functionality is within the subcommands.
-        """
-        if not ctx.invoked_subcommand:
-            return await ctx.send_help(ctx.command)
-
-    @_minecraft.command(name="player")
+    @command(name="player")
     async def _minecraft_player(self, ctx: NexusContext, player: Player):
         """
         Get minecraft player info.
@@ -69,7 +59,7 @@ class Minecraft(Cog):
 
         await ctx.paginate(embed)
 
-    @_minecraft.command(name="skin")
+    @command(name="skin")
     async def _minecraft_skin(self, ctx: NexusContext, player: Player):
         """
         See the skin of the given player
