@@ -65,7 +65,7 @@ class Settings(Cog):
             r["guild_id"]: r["prefixes"]
             for r in [
                 dict(r)
-                for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
+                for r in await self.bot.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
 
