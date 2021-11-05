@@ -40,7 +40,7 @@ class Settings(Cog):
             )
 
         if not ctx.author.guild_permissions.manage_messages:
-            return await ctx.error("You do not have the Manage Messages server perm!")
+            return await ctx.error("You do not have the Manage Messages server permission!")
 
         if ctx.guild.id not in self.bot.prefixes:
             await self.bot.db.execute(
@@ -60,6 +60,14 @@ class Settings(Cog):
             description=f"```\nSet the prefix to {codeblocksafe(prefix)}```",
             colour=self.bot.config.colours.good,
         )
+        
+        self.bot.prefixes = {
+            r["guild_id"]: r["prefixes"]
+            for r in [
+                dict(r)
+                for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
+            ]
+        }
 
 
 def setup(bot: Nexus):
