@@ -1,8 +1,11 @@
 import asyncio
+import math
 from asyncio import Queue
 from os import getenv
-from typing import Optional
+from typing import Optional, Union
 
+import async_timeout
+import pomice
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.embeds import Embed
@@ -10,20 +13,13 @@ from discord.ext.commands import command
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from discord.mentions import AllowedMentions
+from discord.utils import MISSING
 from dotenv import load_dotenv
 from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command
 from utils.subclasses.context import NexusContext
-from wavelink import Node, NodePool, Player, YouTubeTrack
-from wavelink.ext.spotify import SpotifyClient, SpotifyRequestError, SpotifyTrack
-from wavelink.tracks import SoundCloudTrack, Track
-from wavelink.utils import MISSING
-import async_timeout
-import math
-from typing import Union
-import pomice
 
 load_dotenv()
 
@@ -43,6 +39,9 @@ class Player(pomice.Player):
 
 
 class Music(Cog):
+    """
+    Music... what more can I say!
+    """
     def __init__(self, bot: Nexus):
         self.bot = bot
 
@@ -328,7 +327,7 @@ class Music(Cog):
             return await ctx.error("You are not in a voice channel!")
 
         try:
-            track: Track = list(player.queue._queue)[index - 1]
+            track: pomice.Track = list(player.queue._queue)[index - 1]
         except IndexError:
             return await ctx.error("Please provide a valid song index!")
 

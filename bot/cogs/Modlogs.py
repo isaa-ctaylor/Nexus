@@ -14,6 +14,9 @@ import utils
 
 
 class Modlogs(Cog):
+    """
+    Log moderation actions in your server
+    """
     def __init__(self, bot: Nexus):
         self.bot = bot
 

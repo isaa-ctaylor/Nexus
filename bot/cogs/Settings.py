@@ -18,6 +18,9 @@ class Prefix(Converter):
 
 
 class Settings(Cog):
+    """
+    Settings for your server
+    """
     def __init__(self, bot: Nexus):
         self.bot = bot
 
