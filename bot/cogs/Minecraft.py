@@ -3,7 +3,7 @@ from discord.embeds import Embed
 
 from discord.ext.commands.converter import Converter
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, group
+from utils.subclasses.command import Command, group, command
 from utils.subclasses.bot import Nexus
 from utils.subclasses.context import NexusContext
 
@@ -38,7 +38,7 @@ class Minecraft(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
-    @command(name="player")
+    @command(cls=Command, name="player")
     async def _minecraft_player(self, ctx: NexusContext, player: Player):
         """
         Get minecraft player info.
@@ -59,7 +59,7 @@ class Minecraft(Cog):
 
         await ctx.paginate(embed)
 
-    @command(name="skin")
+    @command(cls=Command, name="skin")
     async def _minecraft_skin(self, ctx: NexusContext, player: Player):
         """
         See the skin of the given player
