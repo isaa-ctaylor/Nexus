@@ -1,4 +1,5 @@
 from discord.ext.commands.bot import when_mentioned_or, _FakeSlashMessage
+from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.flags import Intents
 from logging import INFO, getLogger
 from traceback import format_exception
@@ -43,6 +44,8 @@ def get_prefix(bot, message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
+        self._BotBase__cogs = _CaseInsensitiveDict()
+
         self.session: ClientSession = kwargs.pop("session", ClientSession())
 
         self.config = CONFIG
