@@ -181,7 +181,7 @@ class Music(Cog):
         _ = False
         if not ctx.voice_client:
             _ = True
-            await self._connect(ctx, invoked=True)
+            await self._connect(ctx)
 
         if _:
             await ctx.send(f"🔍 Searching for `{codeblocksafe(query)}`")
