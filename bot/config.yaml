@@ -11,6 +11,9 @@ cogs:
   - cogs.Moderation
   - cogs.Utility
   - cogs.Modlogs
+  - cogs.Settings
+  - cogs.Music
+  - cogs.Minecraft
   # - cogs.Listeners
   # - Jishaku
 
