@@ -360,7 +360,7 @@ class Moderation(Cog):
         check: Optional[Callable] = MISSING,
     ):
         try:
-            messages = await channel.purge(limit=limit, check=check)
+            messages = await channel.purge(limit=limit + 1, check=check)
             await ctx.send(
                 embed=Embed(
                     description=f"```\nDeleted {len(messages)}/{limit} messages```",
