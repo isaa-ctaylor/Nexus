@@ -182,7 +182,8 @@ class Paginator:
         try:
             reaction, user = done.pop().result()
         except asyncio.TimeoutError:
-            await self._clear_reactions()
+            with suppress(Exception):
+                await self._clear_reactions()
         for future in done:
             future.exception()
         for future in pending:
@@ -218,7 +219,8 @@ class Paginator:
         self.current_page = len(self.items) - 1
 
     async def stop(self):
-        await self._clear_reactions()
+        with suppress(Exception):
+            await self._clear_reactions()
         return False
 
     async def delete(self):
