@@ -223,7 +223,7 @@ class Settings(Cog):
         self.bot.loop.create_task(self.__ainit__())
         return await ctx.embed(
             title="Done!",
-            description='Set the welcome message!',
+            description=f'Set the welcome message to {codeblocksafe(message)}!',
             colour=self.bot.config.colours.good,
         )
     
