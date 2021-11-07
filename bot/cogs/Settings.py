@@ -239,7 +239,7 @@ class Settings(Cog):
         
         message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
         
-        await self.bot.get_channel(self._welcome_cache[member.guild.id]["channel"]).send(message)
+        await self._welcome_cache[member.guild.id]["channel"].send(message)
         
 
 def setup(bot: Nexus):
