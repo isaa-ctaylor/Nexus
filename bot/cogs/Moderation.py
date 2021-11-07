@@ -363,7 +363,7 @@ class Moderation(Cog):
             messages = await channel.purge(limit=limit + 1, check=check)
             await ctx.send(
                 embed=Embed(
-                    description=f"```\nDeleted {len(messages)}/{limit} messages```",
+                    description=f"```\nDeleted {len(messages) - 1}/{limit} messages```",
                     colour=self.bot.config.colours.good,
                 ),
                 delete_after=2,
