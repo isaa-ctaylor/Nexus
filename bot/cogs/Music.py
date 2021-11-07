@@ -74,22 +74,13 @@ class Music(Cog):
 
     @Cog.listener(name="on_pomice_track_end")
     async def _do_next_song(self, player: Player, track: pomice.Track, reason):
-        if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
+        if reason not in ["FINISHED", "STOPPED"]:
             return
-
-        _ = None
-
-        if reason == "SKIPPED":
-            try:
-                _ = player.queue.get_nowait()
-            except QueueEmpty:
-                await player.disconnect(force=True)
 
         try:
             with async_timeout.timeout(300):
-                track = _ or await player.queue.get()
+                track = await player.queue.get()
             await player.play(track)
-            player._current = track
             return await player.control_channel.send(
                 f"Now playing `{track.title}` | {track.requester.mention}",
                 allowed_mentions=AllowedMentions.none(),
@@ -232,8 +223,8 @@ class Music(Cog):
 
         player: Player = ctx.voice_client
 
-        await player.stop()
         player.queue._queue.clear()
+        await player.stop()
         await ctx.message.add_reaction("👍")
 
     @guild_only()
@@ -433,8 +424,7 @@ class Music(Cog):
         player.skippers.clear()
 
         await ctx.message.add_reaction("👍")
-
-        self.bot.dispatch("pomice_track_end", player, player.current, "SKIPPED")
+        player.stop()
 
     @guild_only()
     @command(cls=Command, name="volume")
