@@ -424,7 +424,7 @@ class Music(Cog):
         player.skippers.clear()
 
         await ctx.message.add_reaction("👍")
-        player.stop()
+        await player.stop()
 
     @guild_only()
     @command(cls=Command, name="volume")
