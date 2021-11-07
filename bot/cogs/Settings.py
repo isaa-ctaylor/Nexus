@@ -151,7 +151,7 @@ class Settings(Cog):
             await self.bot.db.execute("UPDATE welcome SET enabled = $1 WHERE guild_id = $2", True, ctx.guild.id)
         else:
             _ = True
-            await self.bot.db.execute("INSERT INTO welcome (guild_id, message) VALUES ($1, $2)", ctx.guild.id, r"Welcome {member.mention} to {server.name}!")
+            await self.bot.db.execute("INSERT INTO welcome (guild_id, message, enabled) VALUES ($1, $2, $3)", ctx.guild.id, r"Welcome {member.mention} to {server.name}!", True)
         
         self.bot.loop.create_task(self.__ainit__())
         
@@ -229,18 +229,17 @@ class Settings(Cog):
     
     @Cog.listener(name="on_member_join")
     async def _send_member_join_messages(self, member: Member):
-        with suppress(Exception):
-            if (
-                member.guild.id not in self._welcome_cache
-                or not self._welcome_cache[member.guild.id]["enabled"]
-                or not self._welcome_cache[member.guild.id]["channel"]
-                or not self._welcome_cache[member.guild.id]["message"]
-            ):
-                return
-            
-            message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
-            
-            await self.bot.get_channel(self._welcome_cache[member.guild.id]["channel"]).send(message)
+        if (
+            member.guild.id not in self._welcome_cache
+            or not self._welcome_cache[member.guild.id]["enabled"]
+            or not self._welcome_cache[member.guild.id]["channel"]
+            or not self._welcome_cache[member.guild.id]["message"]
+        ):
+            return
+        
+        message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
+        
+        await self.bot.get_channel(self._welcome_cache[member.guild.id]["channel"]).send(message)
         
 
 def setup(bot: Nexus):
