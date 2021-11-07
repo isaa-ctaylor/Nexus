@@ -1,6 +1,6 @@
 import asyncio
 import math
-from asyncio import Queue
+from asyncio import Queue, QueueEmpty
 from os import getenv
 from typing import Optional, Union
 
@@ -77,15 +77,17 @@ class Music(Cog):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
 
+        _ = None
+
         if reason == "SKIPPED":
             try:
-                player.queue._queue[0]
-            except IndexError:
+                _ = player.queue.get_nowait()
+            except QueueEmpty:
                 await player.disconnect(force=True)
 
         try:
             with async_timeout.timeout(300):
-                track = await player.queue.get()
+                track = _ or await player.queue.get()
             await player.play(track)
             player._current = track
             return await player.control_channel.send(
