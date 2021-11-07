@@ -385,11 +385,13 @@ class Developer(Cog, hidden=True):
     async def _log_guild_leaves(self, guild: Guild):
         embed = Embed(title="Guild loss!", colour=self.bot.config.colours.neutral)
         embed.add_field(
-            name="Name", value=getattr(guild, "name", "Unavailable"), inline=True
+            name="Name",
+            value=f"```\n{getattr(guild, 'name', 'Unavailable')}```",
+            inline=True,
         )
         embed.add_field(
             name="Members lost",
-            value=getattr(guild, "member_count", "Unavailable"),
+            value=f"```\n{getattr(guild, 'member_count', 'Unavailable')}```",
             inline=True,
         )
 
