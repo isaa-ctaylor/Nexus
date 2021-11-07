@@ -346,6 +346,11 @@ class Music(Cog):
 
         await player.set_pause(True)
         await ctx.message.add_reaction("👍")
+        
+        try:
+            await self.bot.wait_for("command", check=lambda ctx: ctx.command.name == "resume", timeout=300)
+        except TimeoutError:
+            await ctx.voice_client.disconnect(force=True)
 
     @guild_only()
     @command(cls=Command, name="resume")
