@@ -378,7 +378,21 @@ class Developer(Cog, hidden=True):
         )
         if guild.icon:
             embed.set_thumbnail(url=guild.icon.url)
-        
+
+        await self.bot.get_channel(self.bot.config.channels.guilds).send(embed=embed)
+
+    @Cog.listener(name="on_guild_remove")
+    async def _log_guild_leaves(self, guild: Guild):
+        embed = Embed(title="Guild loss!", colour=self.bot.config.colours.neutral)
+        embed.add_field(
+            name="Name", value=getattr(guild, "name", "Unavailable"), inline=True
+        )
+        embed.add_field(
+            name="Members lost",
+            value=getattr(guild, "member_count", "Unavailable"),
+            inline=True,
+        )
+
         await self.bot.get_channel(self.bot.config.channels.guilds).send(embed=embed)
 
 
