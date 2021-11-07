@@ -10,11 +10,13 @@ from textwrap import indent
 from traceback import format_exception
 from typing import Callable, List, Tuple
 
+import humanize
 from discord.embeds import Embed
 from discord.errors import NotFound
 from discord.ext.commands import command, is_owner
 from discord.ext.commands.core import bot_has_permissions
 from discord.file import File
+from discord.guild import Guild
 from discord.member import Member
 from import_expression import eval, exec
 from utils import codeblocksafe
@@ -351,6 +353,33 @@ class Developer(Cog, hidden=True):
         _ctx: NexusContext = await ctx.copy_with(content=f"{ctx.prefix}{command}")
 
         await _ctx.reinvoke()
+
+    @Cog.listener(name="on_guild_join")
+    async def _log_guild_joins(self, guild: Guild):
+        embed = Embed(title="New guild!", colour=self.bot.config.colours.neutral)
+        embed.add_field(name="Guild name", value=f"```\n{guild.name}```", inline=True)
+        embed.add_field(
+            name="Guild owner",
+            value=f"```\n{guild.owner} - ({guild.owner.id})```",
+            inline=True,
+        )
+        embed.add_field(
+            name="Guild members", value=f"```\n{guild.member_count}```", inline=True
+        )
+        embed.add_field(
+            name="Guild region",
+            value=f"```\n{str(guild.region).capitalize()}```",
+            inline=True,
+        )
+        embed.add_field(
+            name="Guild created",
+            value=f"```\n{humanize.naturaldate(guild.created_at)}```",
+            inline=True,
+        )
+        if guild.icon:
+            embed.set_thumbnail(url=guild.icon.url)
+        
+        await self.bot.get_channel(self.bot.config.channels.guilds).send(embed=embed)
 
 
 def setup(bot: Nexus) -> None:
