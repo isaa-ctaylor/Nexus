@@ -195,7 +195,7 @@ class Settings(Cog):
         return await ctx.embed(title="Done!", description=f"Set the welcome message channel to {channel.mention}", colour=self.bot.config.colours.good)
 
     @_welcome.command(name="message")
-    async def _welcome_message(self, ctx: NexusContext, message: str):
+    async def _welcome_message(self, ctx: NexusContext, *, message: str):
         """
         Set the welcome message for your server
         
@@ -223,7 +223,7 @@ class Settings(Cog):
         self.bot.loop.create_task(self.__ainit__())
         return await ctx.embed(
             title="Done!",
-            description=f'Set the welcome message to {codeblocksafe(message)}!',
+            description=f'Set the welcome message to {message}!',
             colour=self.bot.config.colours.good,
         )
     
