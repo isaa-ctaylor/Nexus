@@ -77,19 +77,11 @@ class Music(Cog):
         if reason not in ["FINISHED", "STOPPED", "SKIPPED"]:
             return
 
-        if (
-            reason == "STOPPED"
-            and hasattr(player, "is_skipping")
-            and player.is_skipping == True
-        ):
-            player.is_skipping = False
-
         if reason == "SKIPPED":
             try:
                 player.queue._queue[0]
             except IndexError:
-                player.is_skipping = True
-                await player.stop()
+                await player.disconnect(force=True)
 
         try:
             with async_timeout.timeout(300):
