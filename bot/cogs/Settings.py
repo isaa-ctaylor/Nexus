@@ -1,7 +1,9 @@
 from typing import Any, Optional
 from discord.channel import TextChannel
 from discord.embeds import Embed
+from discord.errors import Forbidden, HTTPException
 from discord.ext.commands.converter import Converter
+from discord.ext.commands.core import has_permissions
 from discord.member import Member
 from discord.role import Role
 from utils.subclasses.bot import Nexus
@@ -76,6 +78,7 @@ class Settings(Cog):
                 "enabled": record["enabled"],
                 "channel": self.bot.get_channel(record["channel"]),
                 "message": record["message"],
+                "role": record["role"]
             }
             for record in data
         }
@@ -128,6 +131,8 @@ class Settings(Cog):
             ]
         }
     
+    @has_permissions(manage_guild=True)
+    @has_permissions(manage_roles=True, manage_members=True)
     @group(name="welcome", invoke_without_command=True)
     async def _welcome(self, ctx: NexusContext):
         """
@@ -137,7 +142,10 @@ class Settings(Cog):
         """
         if not ctx.invoked_subcommand:
             return await ctx.send_help(ctx.command)
-        
+    
+        @has_permissions(manage_guild=True)
+    
+    @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="enable")
     async def _welcome_enable(self, ctx: NexusContext):
         """
@@ -157,6 +165,8 @@ class Settings(Cog):
         
         return await ctx.embed(title="Done!", description=f"Enabled the welcome message!{f' Use the `{codeblocksafe(ctx.clean_prefix)}welcome message` command to set a custom message!' if _ else ''}", colour=self.bot.config.colours.good)
     
+    @has_permissions(manage_guild=True)
+    @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="disable")
     async def _welcome_disable(self, ctx: NexusContext):
         """
@@ -176,6 +186,8 @@ class Settings(Cog):
 
         return await ctx.error("The welcome message is not enabled!")
     
+    @has_permissions(manage_guild=True)
+    @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="channel")
     async def _welcome_channel(self, ctx: NexusContext, channel: Optional[TextChannel] = None):
         """
@@ -194,6 +206,8 @@ class Settings(Cog):
         self.bot.loop.create_task(self.__ainit__())
         return await ctx.embed(title="Done!", description=f"Set the welcome message channel to {channel.mention}", colour=self.bot.config.colours.good)
 
+    @has_permissions(manage_guild=True)
+    @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="message")
     async def _welcome_message(self, ctx: NexusContext, *, message: str):
         """
@@ -226,7 +240,9 @@ class Settings(Cog):
             description=f'Set the welcome message to "{message}"!',
             colour=self.bot.config.colours.good,
         )
-        
+
+    @has_permissions(manage_guild=True)
+    @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="role")
     async def _welcome_role(self, ctx: NexusContext, role: Role):
         """
@@ -263,6 +279,12 @@ class Settings(Cog):
             message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
             
             await self._welcome_cache[member.guild.id]["channel"].send(message)
+            
+            if role := self._welcome_cache[member.guild.id]["role"]:
+                role = member.guild.get_role(role)
+                
+                if role:
+                    await member.add_roles(role)
         
 
 def setup(bot: Nexus):
