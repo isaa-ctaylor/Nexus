@@ -2,7 +2,7 @@ from io import BytesIO
 from math import floor, log10
 from typing import Any, Optional
 
-from topgg.types import BotVoteData
+# from topgg.types import BotVoteData
 
 import pytesseract
 from aiohttp import InvalidURL
