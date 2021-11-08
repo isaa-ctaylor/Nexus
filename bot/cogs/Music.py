@@ -9,7 +9,6 @@ import pomice
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
 from discord.embeds import Embed
-from discord.ext.commands import command
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from discord.mentions import AllowedMentions
@@ -18,7 +17,7 @@ from dotenv import load_dotenv
 from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command
+from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 
 load_dotenv()
@@ -90,7 +89,7 @@ class Music(Cog):
             return await player.control_channel.send("👋 Disconnected - queue finished")
 
     @guild_only()
-    @command(cls=Command, name="connect", aliases=["join"])
+    @command( name="connect", aliases=["join"])
     async def _connect(
         self,
         ctx: NexusContext,
@@ -149,7 +148,7 @@ class Music(Cog):
                 )
 
     @guild_only()
-    @command(cls=Command, name="play")
+    @command( name="play")
     async def _play(self, ctx: NexusContext, *, query: str):
         """
         Play a song from Youtube
@@ -207,7 +206,7 @@ class Music(Cog):
                 await ctx.send(f"Enqueued `{codeblocksafe(tracks[0].title)}`")
 
     @guild_only()
-    @command(cls=Command, name="stop")
+    @command( name="stop")
     async def _stop(self, ctx: NexusContext):
         """
         Stops the player and clears the queue
@@ -228,7 +227,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command(cls=Command, name="leave")
+    @command( name="leave")
     async def _leave(self, ctx: NexusContext):
         """
         Leave the current voice channel
@@ -251,7 +250,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command(cls=Command, name="queue")
+    @command( name="queue")
     async def _queue(self, ctx: NexusContext):
         """
         See the current queue
@@ -295,7 +294,7 @@ class Music(Cog):
         await ctx.paginate(embeds)
 
     @guild_only()
-    @command(cls=Command, name="remove")
+    @command( name="remove")
     async def _remove(self, ctx: NexusContext, index: int):
         """
         Remove a song from the queue
@@ -325,7 +324,7 @@ class Music(Cog):
         )
 
     @guild_only()
-    @command(cls=Command, name="pause")
+    @command( name="pause")
     async def _pause(self, ctx: NexusContext):
         """
         Pause the current song
@@ -353,7 +352,7 @@ class Music(Cog):
             await ctx.voice_client.disconnect(force=True)
 
     @guild_only()
-    @command(cls=Command, name="resume")
+    @command( name="resume")
     async def _resume(self, ctx: NexusContext):
         """
         Resume the paused song
@@ -376,7 +375,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command(cls=Command, name="now")
+    @command( name="now")
     async def _now(self, ctx: NexusContext):
         """
         See what song is currently playing
@@ -391,7 +390,7 @@ class Music(Cog):
         )
 
     @guild_only()
-    @command(cls=Command, name="skip")
+    @command( name="skip")
     async def _skip(self, ctx: NexusContext):
         """
         Skip the current song
@@ -432,7 +431,7 @@ class Music(Cog):
         await player.stop()
 
     @guild_only()
-    @command(cls=Command, name="volume")
+    @command( name="volume")
     async def _volume(self, ctx: NexusContext, volume: Union[int, str]):
         """
         Set the volume of the player

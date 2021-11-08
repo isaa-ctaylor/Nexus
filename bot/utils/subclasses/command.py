@@ -4,6 +4,7 @@ from discord.ext.commands import (
     command,
     group,
 )
+from typing import Any
 
 
 class Command(DiscordCommand):
@@ -78,3 +79,14 @@ class Group(DiscordGroup):
             return result
 
         return wrapper
+
+def command(name: str = MISSING, cls: object = Command, **attrs: Any):
+    def decorator(func):
+        if isinstance(func, Command):
+            raise TypeError('Callback is already a command.')
+        return cls(func, name=name, **attrs)
+
+    return decorator
+
+def group(name: str = MISSING, cls: DiscordGroup = Group, **attrs: Any):
+    return command(name=name, cls=cls, **attrs)

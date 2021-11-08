@@ -2,11 +2,10 @@ from typing import Any, Optional
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext.commands.converter import Converter
-from discord.ext.commands.core import command
 from discord.member import Member
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, group
+from utils.subclasses.command import group, command
 from utils.subclasses.context import NexusContext
 from utils import codeblocksafe
 from tagformatter import Parser
@@ -80,7 +79,7 @@ class Settings(Cog):
             for record in data
         }
 
-    @command(name="prefix", cls=Command)
+    @command(name="prefix")
     async def _prefix(self, ctx: NexusContext, prefix: Optional[Prefix] = None):
         """
         Change/see the current prefix(es)
@@ -229,17 +228,18 @@ class Settings(Cog):
     
     @Cog.listener(name="on_member_join")
     async def _send_member_join_messages(self, member: Member):
-        if (
-            member.guild.id not in self._welcome_cache
-            or not self._welcome_cache[member.guild.id]["enabled"]
-            or not self._welcome_cache[member.guild.id]["channel"]
-            or not self._welcome_cache[member.guild.id]["message"]
-        ):
-            return
-        
-        message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
-        
-        await self._welcome_cache[member.guild.id]["channel"].send(message)
+        with suppress(Exception):
+            if (
+                member.guild.id not in self._welcome_cache
+                or not self._welcome_cache[member.guild.id]["enabled"]
+                or not self._welcome_cache[member.guild.id]["channel"]
+                or not self._welcome_cache[member.guild.id]["message"]
+            ):
+                return
+            
+            message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
+            
+            await self._welcome_cache[member.guild.id]["channel"].send(message)
         
 
 def setup(bot: Nexus):

@@ -1,12 +1,12 @@
 import asyncio
 from discord.embeds import Embed
 from discord.ext.commands.cooldowns import BucketType, CooldownMapping
-from discord.ext.commands.core import bot_has_permissions, group, has_guild_permissions
+from discord.ext.commands.core import bot_has_permissions, has_guild_permissions
 from discord.message import Message
 from utils.helpers import DotDict
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, Group, command
+from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
 
 

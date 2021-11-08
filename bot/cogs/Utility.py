@@ -17,7 +17,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from utils import Timer, codeblocksafe, executor
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, command
+from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 
 
@@ -59,7 +59,7 @@ class Utility(Cog):
 
     @command(
         name="redirectcheck",
-        cls=Command,
+        
         aliases=["redirects", "linkcheck"],
         examples=["https://youtu.be/"],
     )
@@ -104,7 +104,7 @@ class Utility(Cog):
 
     @command(
         name="discriminator",
-        cls=Command,
+        
         aliases=["discrim"],
         examples=["0000", "1234"],
     )
@@ -158,7 +158,7 @@ class Utility(Cog):
 
         await ctx.paginate(pages)
 
-    @command(name="ping", cls=Command)
+    @command(name="ping")
     async def _ping(self, ctx: NexusContext):
         embed = Embed(title="Pong!", colour=self.bot.config.colours.neutral)
         _ = self.bot.latency
@@ -185,7 +185,7 @@ class Utility(Cog):
         config = r"--oem 1 --tessdata-dir /opt/tessdata"
         return pytesseract.image_to_string(image, config=config)
 
-    @command(name="ocr", cls=Command)
+    @command(name="ocr")
     async def _ocr(self, ctx: NexusContext, *, image: str = None):
         """
         Read text from an image
@@ -227,7 +227,7 @@ class Utility(Cog):
 
         await ctx.paginate(embed)
 
-    @command(cls=Command, name="vote")
+    @command( name="vote")
     async def _vote(self, ctx: NexusContext):
         """
         Vote for Nexus!

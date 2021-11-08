@@ -9,8 +9,6 @@ from discord.errors import Forbidden, HTTPException
 from discord.ext.commands.core import (
     bot_has_guild_permissions,
     bot_has_permissions,
-    command,
-    group,
     guild_only,
     has_guild_permissions,
     has_permissions,
@@ -23,7 +21,7 @@ from discord.utils import MISSING, get
 from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command, Group
+from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
 
 
@@ -58,7 +56,7 @@ class Moderation(Cog):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="ban",
-        cls=Command,
+        
         usage="<member> [days to delete messages] [reason]",
         examples=["@isaa_ctaylor#2494 Swearing", "718087881087910018"],
     )
@@ -109,7 +107,7 @@ class Moderation(Cog):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="unban",
-        cls=Command,
+        
         examples=["718087881087910018 Appeal approved", "718087881087910018"],
     )
     async def _unban(
@@ -157,7 +155,7 @@ class Moderation(Cog):
     @bot_has_guild_permissions(manage_roles=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
-        name="mute", cls=Command, examples=["718087881087910018", "@Person#0123 spam"]
+        name="mute",  examples=["718087881087910018", "@Person#0123 spam"]
     )
     async def _mute(
         self,
@@ -221,7 +219,7 @@ class Moderation(Cog):
     @has_guild_permissions(manage_messages=True)
     @bot_has_guild_permissions(manage_roles=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="unmute", cls=Command)
+    @command(name="unmute")
     async def _unmute(
         self,
         ctx: NexusContext,
@@ -273,7 +271,7 @@ class Moderation(Cog):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="kick",
-        cls=Command,
+        
         examples=["@Someone#1234", "718087881087910018 Swearing"],
     )
     async def _kick(
@@ -317,7 +315,7 @@ class Moderation(Cog):
     @guild_only()
     @has_permissions(manage_messages=True)
     @bot_has_permissions(manage_channels=True, send_messages=True, embed_links=True)
-    @command(name="slowmode", cls=Command, examples=["#general 4", "10"])
+    @command(name="slowmode",  examples=["#general 4", "10"])
     async def _slowmode(
         self,
         ctx: NexusContext,
@@ -383,7 +381,6 @@ class Moderation(Cog):
     )
     @group(
         name="purge",
-        cls=Group,
         aliases=["clear", "cleanup"],
         examples=["#general 4", "@Someone#1234 15", "10"],
         invoke_without_command=True,
@@ -427,7 +424,7 @@ class Moderation(Cog):
         send_messages=True,
         embed_links=True,
     )
-    @command(cls=Command, name="nuke")
+    @command( name="nuke")
     async def _nuke(self, ctx: NexusContext, channel: TextChannel = None):
         """
         Completely clear a channel
@@ -450,7 +447,7 @@ class Moderation(Cog):
         send_messages=True,
         embed_links=True,
     )
-    @command(cls=Command, name="chatlimit")
+    @command( name="chatlimit")
     async def _chatlimit(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None, limit: int = 100
     ):

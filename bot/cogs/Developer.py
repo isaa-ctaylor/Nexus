@@ -13,7 +13,7 @@ from typing import Callable, List, Tuple
 import humanize
 from discord.embeds import Embed
 from discord.errors import NotFound
-from discord.ext.commands import command, is_owner
+from discord.ext.commands import is_owner
 from discord.ext.commands.core import bot_has_permissions
 from discord.file import File
 from discord.guild import Guild
@@ -23,7 +23,7 @@ from utils import codeblocksafe
 from utils.helpers import CodeblockConverter, paginatorinput
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import Command
+from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 
 COG_PATH = Path(path.dirname(__file__))
@@ -74,7 +74,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="eval", cls=Command, examples=["print('Hello world!')"])
+    @command(name="eval",  examples=["print('Hello world!')"])
     async def _eval(self, ctx: NexusContext, *, code: CodeblockConverter):
         """
         Evaluate python code
@@ -169,7 +169,7 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="load",
-        cls=Command,
+        
         examples=["cogs.Developer", "Jishaku", "cogs.Help cogs.Developer"],
     )
     async def _load(self, ctx: NexusContext, *cogs: Tuple[str]):
@@ -201,7 +201,7 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="unload",
-        cls=Command,
+        
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
     async def _unload(self, ctx: NexusContext, *cogs: str):
@@ -233,7 +233,7 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="reload",
-        cls=Command,
+        
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
     async def _reload(self, ctx: NexusContext, *cogs: str):
@@ -263,7 +263,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="as", cls=Command, examples=["@isaa_ctaylor#2494 help"])
+    @command(name="as",  examples=["@isaa_ctaylor#2494 help"])
     async def _as(self, ctx: NexusContext, user: Member, *, command: str):
         """
         Run the specified command as someone else
@@ -284,7 +284,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="sync", cls=Command, aliases=["pull"])
+    @command(name="sync",  aliases=["pull"])
     async def _sync(self, ctx: NexusContext):
         """
         Sync with github.
@@ -335,7 +335,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="restart", cls=Command)
+    @command(name="restart")
     async def _restart(self, ctx: NexusContext):
         """
         Restart the bot
@@ -345,7 +345,7 @@ class Developer(Cog, hidden=True):
         await self.bot.close()
 
     @is_owner()
-    @command(name="sudo", cls=Command)
+    @command(name="sudo")
     async def _sudo(self, ctx: NexusContext, *, command: str):
         """
         Run a command bypassing all checks
