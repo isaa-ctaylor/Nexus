@@ -143,8 +143,7 @@ class Settings(Cog):
         if not ctx.invoked_subcommand:
             return await ctx.send_help(ctx.command)
     
-        @has_permissions(manage_guild=True)
-    
+    @has_permissions(manage_guild=True)
     @has_permissions(manage_roles=True, manage_members=True)
     @_welcome.command(name="enable")
     async def _welcome_enable(self, ctx: NexusContext):
