@@ -2,6 +2,8 @@ from io import BytesIO
 from math import floor, log10
 from typing import Any, Optional
 
+from topgg.types import BotVoteData
+
 import pytesseract
 from aiohttp import InvalidURL
 from async_timeout import timeout
@@ -183,7 +185,7 @@ class Utility(Cog):
         config = r"--oem 1 --tessdata-dir /opt/tessdata"
         return pytesseract.image_to_string(image, config=config)
 
-    @command(name="ocr")
+    @command(name="ocr", cls=Command)
     async def _ocr(self, ctx: NexusContext, *, image: str = None):
         """
         Read text from an image
