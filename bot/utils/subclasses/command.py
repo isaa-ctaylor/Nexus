@@ -5,6 +5,7 @@ from discord.ext.commands import (
     group,
 )
 from typing import Any
+from discord.utils import MISSING
 
 
 class Command(DiscordCommand):
