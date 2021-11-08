@@ -279,7 +279,8 @@ class Settings(Cog):
             message = self.parser.parse(self._welcome_cache[member.guild.id]["message"], {"member": member, "server": member.guild})
             
             await self._welcome_cache[member.guild.id]["channel"].send(message)
-            
+        
+        with suppress(Exception):
             if role := self._welcome_cache[member.guild.id]["role"]:
                 role = member.guild.get_role(role)
                 
