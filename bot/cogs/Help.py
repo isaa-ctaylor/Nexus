@@ -30,6 +30,11 @@ async def _show(
 
 
 class NexusHelp(HelpCommand):
+    def __init__(self, *args, **kwargs):
+        self.examples = []
+        
+        super().__init__(*args, **kwargs)
+        
     def get_command_signature(self, c: Command):
         return f"{self.context.clean_prefix}{c.qualified_name} {c.signature}"
 
