@@ -101,6 +101,9 @@ class Modlogs(Cog):
     async def _modlogs_channel(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None
     ):
+        """
+        Set the channel for modlogs to go to
+        """
         channel = channel or ctx.channel
 
         if ctx.guild.id not in self.cache:
