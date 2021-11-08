@@ -3,6 +3,7 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext.commands.converter import Converter
 from discord.member import Member
+from discord.role import Role
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import group, command
@@ -223,6 +224,28 @@ class Settings(Cog):
         return await ctx.embed(
             title="Done!",
             description=f'Set the welcome message to "{message}"!',
+            colour=self.bot.config.colours.good,
+        )
+        
+    @_welcome.command(name="role")
+    async def _welcome_role(self, ctx: NexusContext, role: Role):
+        """
+        Set the welcome role
+        
+        This role is automatically given to someone when they join
+        """
+        if (
+            ctx.guild.id not in self._welcome_cache
+            or not self._welcome_cache[ctx.guild.id]["enabled"]
+        ):
+            return await ctx.error("The welcome message is not enabled!")
+        
+        await self.bot.db.execute("UPDATE welcome SET role = $1 WHERE guild_id = $2", role.id, ctx.guild.id)
+        
+        self.bot.loop.create_task(self.__ainit__())
+        return await ctx.embed(
+            title="Done!",
+            description=f'Set the welcome message to {role.mention}!',
             colour=self.bot.config.colours.good,
         )
     

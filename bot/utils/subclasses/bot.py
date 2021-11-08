@@ -16,6 +16,8 @@ from ..database import Database
 
 import re
 
+import topgg
+
 load_dotenv()
 
 
@@ -77,6 +79,8 @@ class Nexus(Bot):
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
 
+        self.topgg = topgg.DBLClient(self, getenv("TOPGG"), True, True)
+
         self.loop.create_task(self.__ainit__())
 
     async def __ainit__(self):
@@ -86,7 +90,7 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS spamchecker  (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
                 CREATE TABLE IF NOT EXISTS modlogs      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT);
                 CREATE TABLE IF NOT EXISTS chatlimit    (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
-                CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL);"""
+                CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);"""
         )
 
         self.prefixes = {
