@@ -1,19 +1,22 @@
 from io import BytesIO
+from math import floor, log10
+from typing import Any, Optional
+
+import pytesseract
+from aiohttp import InvalidURL
+from async_timeout import timeout
+from discord import ButtonStyle
 from discord.embeds import Embed
+from discord.ext.commands import Converter
 from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.errors import BadArgument
-from utils.subclasses.cog import Cog
-from utils.subclasses.bot import Nexus
-from utils.subclasses.context import NexusContext
-from utils.subclasses.command import command, Command
-from async_timeout import timeout
-from aiohttp import InvalidURL
-from typing import Any, Optional
-from discord.ext.commands import Converter
-from utils import codeblocksafe, Timer, executor
-from math import floor, log10
+from discord.ui import Button, View
 from PIL import Image, ImageOps, UnidentifiedImageError
-import pytesseract
+from utils import Timer, codeblocksafe, executor
+from utils.subclasses.bot import Nexus
+from utils.subclasses.cog import Cog
+from utils.subclasses.command import Command, command
+from utils.subclasses.context import NexusContext
 
 
 class InvalidDiscriminator(BadArgument):
@@ -174,18 +177,17 @@ class Utility(Cog):
             )
 
         await m.edit(embed=embed)
-        
+
     @executor
     def _do_ocr(self, image):
         config = r"--oem 1 --tessdata-dir /opt/tessdata"
         return pytesseract.image_to_string(image, config=config)
-        
-        
+
     @command(name="ocr")
     async def _ocr(self, ctx: NexusContext, *, image: str = None):
         """
         Read text from an image
-        
+
         If just supplying the image does not work, or the image is light text on a dark background, try adding "--invert" to the end of your message
         """
         invert = False
@@ -206,19 +208,43 @@ class Utility(Cog):
             if ref := ctx.message.reference:
                 if attachments := ref.resolved.attachments:
                     image = await attachments[0].read()
-                
+
         try:
             image = Image.open(BytesIO(image)).convert("RGB")
         except (TypeError, UnidentifiedImageError):
             return await ctx.error("Please attach a valid image!")
-        
+
         if invert:
             image = ImageOps.invert(image)
-        
+
         async with ctx.typing():
-            embed = Embed(description=await self._do_ocr(image), colour=self.bot.config.colours.neutral)
-            
+            embed = Embed(
+                description=await self._do_ocr(image),
+                colour=self.bot.config.colours.neutral,
+            )
+
         await ctx.paginate(embed)
+
+    @command(cls=Command, name="vote")
+    async def _vote(self, ctx: NexusContext):
+        """
+        Vote for Nexus!
+        """
+        embed = Embed(
+            title="Thanks!",
+            description="Thanks for voting for Nexus!",
+            colour=self.bot.config.colours.neutral,
+        )
+        view = View()
+        view.add_item(
+            Button(
+                style=ButtonStyle.gray,
+                label="Top.gg",
+                url=f"https://top.gg/{self.bot.user.id}/vote",
+            )
+        )
+
+        await ctx.reply(embed=embed, view=view, mention_author=False)
 
 
 def setup(bot: Nexus):
