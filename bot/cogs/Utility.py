@@ -240,7 +240,7 @@ class Utility(Cog):
             Button(
                 style=ButtonStyle.gray,
                 label="Top.gg",
-                url=f"https://top.gg/{self.bot.user.id}/vote",
+                url=f"https://top.gg/bot/{self.bot.user.id}/vote",
             )
         )
 
