@@ -58,8 +58,6 @@ class Nexus(Bot):
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
 
-        self._BotBase__cogs = _CaseInsensitiveDict()
-
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
 
