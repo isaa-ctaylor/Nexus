@@ -144,7 +144,7 @@ class NexusHelp(HelpCommand):
         for ptype, perms in command.permissions.items():
             with suppress(AttributeError):
                 if perms:
-                    embed.add_field(name=ptype, value=f"```\n{naturallist(p.replace('_', ' ').capitalize() for p in perms)}```", inline=False)
+                    embed.add_field(name=ptype, value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in perms])}```", inline=False)
         
         return embed
 
