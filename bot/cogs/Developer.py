@@ -352,7 +352,7 @@ class Developer(Cog, hidden=True):
         """
         _ctx: NexusContext = await ctx.copy_with(content=f"{ctx.prefix}{command}")
 
-        await _ctx.reinvoke()
+        await _ctx.command.reinvoke(_ctx)
 
     @Cog.listener(name="on_guild_join")
     async def _log_guild_joins(self, guild: Guild):
