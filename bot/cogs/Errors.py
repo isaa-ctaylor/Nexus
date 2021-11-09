@@ -1,3 +1,4 @@
+import re
 from traceback import format_exception
 from discord.embeds import Embed
 from discord.errors import Forbidden
@@ -193,6 +194,11 @@ class Errors(Cog, hidden=True):
             )
 
         elif isinstance(error, commands.BadArgument):
+            match = re.match(r"Couldn't find the (?P<name>[a-zA-Z ]+)!", error.args[0])
+            
+            if match is not None:
+                return await ctx.error(f"{match.group('name')} is not a valid command!")
+                
             return await ctx.error(
                 error.args[0],
             )
