@@ -30,8 +30,6 @@ class Command(DiscordCommand):
         usage=None,
         hidden=False,
         examples=(),
-        permissions=("send_messages"),
-        bot_permissions=("send_messages", "embed_links"),
         **kwargs
     ):
         super().__init__(
@@ -64,9 +62,10 @@ class Command(DiscordCommand):
                 else []
             )
 
-            perms.add("send_messages")
-            if "bot" in ptype.lower():
-                perms.add("embed_links")
+            if "channel" in ptype.lower():
+                perms.add("send_messages")
+                if "bot" in ptype.lower():
+                    perms.add("embed_links")
 
             self.permissions[ptype] = sorted(perms)
 
@@ -83,8 +82,6 @@ class Group(DiscordGroup):
         usage=None,
         hidden=False,
         examples=(),
-        permissions=("send_messages"),
-        bot_permissions=("send_messages", "embed_links"),
         **kwargs
     ):
         super().__init__(
@@ -117,9 +114,10 @@ class Group(DiscordGroup):
                 else []
             )
 
-            perms.add("send_messages")
-            if "bot" in ptype.lower():
-                perms.add("embed_links")
+            if "channel" in ptype.lower():
+                perms.add("send_messages")
+                if "bot" in ptype.lower():
+                    perms.add("embed_links")
 
             self.permissions[ptype] = sorted(perms)
 
