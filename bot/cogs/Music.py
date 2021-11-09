@@ -86,6 +86,7 @@ class Music(Cog):
             )
         except asyncio.TimeoutError:
             await player.disconnect(force=True)
+            await player.destroy()
             return await player.control_channel.send("👋 Disconnected - queue finished")
 
     @guild_only()
@@ -349,7 +350,8 @@ class Music(Cog):
         try:
             await self.bot.wait_for("command", check=lambda ctx: ctx.command.name == "resume", timeout=300)
         except TimeoutError:
-            await ctx.voice_client.disconnect(force=True)
+            await player.disconnect(force=True)
+            await player.destroy()
 
     @guild_only()
     @command( name="resume")
