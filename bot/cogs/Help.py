@@ -1,3 +1,4 @@
+from contextlib import suppress
 from utils.subclasses.context import NexusContext
 from typing import List, Mapping, Optional, Union
 
@@ -7,6 +8,7 @@ from discord.ext.commands.core import bot_has_permissions, command
 from discord.ext.commands.help import HelpCommand, _HelpCommandImpl
 from discord.ui import View
 from utils.helpers import paginatorinput
+from utils import naturallist
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command, Group
@@ -70,7 +72,7 @@ class NexusHelp(HelpCommand):
         _ = "\n".join(f"{cog.qualified_name}: {cog.doc}" for cog in cogs)
         _embed.description = f"```yaml\n{_.strip()}```"
         return paginatorinput(
-            embed=_embed, file=self.context.bot.config.assets.banner or "Test"
+            embed=_embed, file=self.context.bot.config.assets.banner
         )
 
     async def send_cog_help(self, cog: Cog) -> None:
@@ -139,6 +141,11 @@ class NexusHelp(HelpCommand):
             )
             embed.add_field(name="Examples", value=f"```\n{examples}```", inline=False)
 
+        for ptype, perms in command.permissions.items():
+            with suppress(AttributeError):
+                if perms:
+                    embed.add_field(name=ptype, value=f"```\n{naturallist(p.replace('_', ' ').capitalize() for p in perms)}```", inline=False)
+        
         return embed
 
     async def send_command_help(self, command: Command) -> None:
