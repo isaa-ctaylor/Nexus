@@ -32,7 +32,7 @@ class Modlogs(Cog):
         self.cache = {
             record["guild_id"]: {
                 "enabled": record["enabled"],
-                "channel": Webhook.from_url(record["channel"], session=self.bot.session),
+                "channel": Webhook.from_url(str(record["channel"]), session=self.bot.session),
             }
             for record in data
         }
