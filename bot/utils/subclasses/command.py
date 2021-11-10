@@ -102,7 +102,7 @@ class Group(DiscordGroup):
         source = getsource(self.callback)
 
         for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.match(pattern, source, re.I)
+            _m = re.match(pattern, source, re.M)
 
             print(_m)
             
