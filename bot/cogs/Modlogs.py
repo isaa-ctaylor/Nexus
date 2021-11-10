@@ -149,10 +149,6 @@ class Modlogs(Cog):
         if not channel:
             return
 
-        channel = message.guild.get_channel(
-            channel
-        ) or await message.guild.fetch_channel(channel)
-
         embed = (
             Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
             .add_field(name="Channel", value=message.channel.mention)
@@ -179,10 +175,6 @@ class Modlogs(Cog):
 
         if not channel:
             return
-
-        channel = messages[0].guild.get_channel(channel) or await messages[
-            0
-        ].guild.fetch_channel(channel)
 
         embed = (
             Embed(
@@ -214,10 +206,6 @@ class Modlogs(Cog):
 
         if not channel:
             return
-
-        channel = after.guild.get_channel(
-            channel
-        ) or await after.guild.fetch_channel(channel)
 
         embed = (
             Embed(
