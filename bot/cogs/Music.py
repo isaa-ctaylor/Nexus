@@ -349,7 +349,7 @@ class Music(Cog):
         
         try:
             await self.bot.wait_for("command", check=lambda ctx: ctx.command.name == "resume", timeout=300)
-        except TimeoutError:
+        except asyncio.TimeoutError:
             await player.disconnect(force=True)
             await player.destroy()
 
