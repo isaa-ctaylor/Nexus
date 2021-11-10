@@ -189,7 +189,7 @@ class Modlogs(Cog):
                 )
             )
 
-            await self._send(channel.guild, embed=embed)
+            await self._send(messages[0].guild, embed=embed)
 
     @Cog.listener(name="on_message_edit")
     async def _log_message_edit(self, before: Message, after: Message):
