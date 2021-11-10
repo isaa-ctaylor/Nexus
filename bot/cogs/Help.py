@@ -34,9 +34,9 @@ async def _show(
 class NexusHelp(HelpCommand):
     def __init__(self, *args, **kwargs):
         self.examples = []
-        
+
         super().__init__(*args, **kwargs)
-        
+
     def get_command_signature(self, c: Command):
         return f"{self.context.clean_prefix}{c.qualified_name} {c.signature}"
 
@@ -71,9 +71,7 @@ class NexusHelp(HelpCommand):
 
         _ = "\n".join(f"{cog.qualified_name}: {cog.doc}" for cog in cogs)
         _embed.description = f"```yaml\n{_.strip()}```"
-        return paginatorinput(
-            embed=_embed, file=self.context.bot.config.assets.banner
-        )
+        return paginatorinput(embed=_embed, file=self.context.bot.config.assets.banner)
 
     async def send_cog_help(self, cog: Cog) -> None:
         if not await _show(self.context, cog):
@@ -141,11 +139,20 @@ class NexusHelp(HelpCommand):
             )
             embed.add_field(name="Examples", value=f"```\n{examples}```", inline=False)
 
-        for ptype, perms in command.permissions.items():
-            with suppress(AttributeError):
-                if perms:
-                    embed.add_field(name=ptype, value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in perms])}```", inline=False)
-        
+        if command.permissions:
+            embed.add_field(
+                name="User permissions",
+                value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in command.permissions])}```",
+                inline=False,
+            )
+
+        if command.bot_permissions:
+            embed.add_field(
+                name="Bot permissions",
+                value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in command.bot_permissions])}```",
+                inline=False,
+            )
+
         return embed
 
     async def send_command_help(self, command: Command) -> None:

@@ -1,5 +1,3 @@
-from inspect import getsource
-import re
 from discord.ext.commands import (
     Command as DiscordCommand,
     Group as DiscordGroup,
@@ -8,14 +6,6 @@ from discord.ext.commands import (
 )
 from typing import Any, Tuple
 from discord.utils import MISSING
-
-
-PERM_PATTERNS = {
-    "User channel permissions": r"@has_permissions\((?P<perms>[a-zA-Z_=, \n]+)\)",
-    "User guild permissions": r"@has_guild_permissions\((?P<perms>[a-zA-Z_=, \n]+)\)",
-    "Bot channel permissions": r"@bot_has_permissions\((?P<perms>[a-zA-Z_=, \n]+)\)",
-    "Bot guild permissions": r"@bot_has_guild_permissions\((?P<perms>[a-zA-Z_=, \n]+)\)",
-}
 
 
 class Command(DiscordCommand):
@@ -30,6 +20,8 @@ class Command(DiscordCommand):
         usage=None,
         hidden=False,
         examples=(),
+        permissions=("send_messages"),
+        bot_permissions=("send_messages", "embed_links"),
         **kwargs
     ):
         super().__init__(
@@ -44,30 +36,18 @@ class Command(DiscordCommand):
         )
 
         self.examples = tuple(examples)
-
-        self.permissions = {}
-
-        source = getsource(self.callback)
-
-        for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.match(pattern, source, re.I)
-
-            perms = set(
-                _m.group("perms")
-                .replace(" ", "")
-                .replace("\n", "")
-                .replace("=True", "")
-                .split(",")
-                if _m is not None
-                else []
-            )
-
-            if "channel" in ptype.lower():
-                perms.add("send_messages")
-                if "bot" in ptype.lower():
-                    perms.add("embed_links")
-
-            self.permissions[ptype] = sorted(perms)
+        
+        _p = set(permissions)
+        _p.add("send_messages")
+        permissions = sorted(_p)
+        
+        _bp = set(bot_permissions)
+        _p.add("send_messages")
+        _p.add("embed_links")
+        bot_permissions = sorted(_bp)
+            
+        self.permissions: Tuple[str] = tuple(permissions)
+        self.bot_permissions: Tuple[str] = tuple(bot_permissions)
 
 
 class Group(DiscordGroup):
@@ -82,6 +62,8 @@ class Group(DiscordGroup):
         usage=None,
         hidden=False,
         examples=(),
+        permissions=("send_messages"),
+        bot_permissions=("send_messages", "embed_links"),
         **kwargs
     ):
         super().__init__(
@@ -96,38 +78,18 @@ class Group(DiscordGroup):
         )
 
         self.examples: Tuple[str] = tuple(examples)
-
-        self.permissions = {}
-
-        source = getsource(self.callback)
-
-        for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.search(pattern, source, re.M)
-
-            print(self.qualified_name)
-            print("Group: "+str(_m))
+        
+        _p = set(permissions)
+        _p.add("send_messages")
+        permissions = sorted(_p)
+        
+        _bp = set(bot_permissions)
+        _p.add("send_messages")
+        _p.add("embed_links")
+        bot_permissions = sorted(_bp)
             
-            perms = set(
-                _m.group("perms")
-                .replace(" ", "")
-                .replace("\n", "")
-                .replace("=True", "")
-                .split(",")
-                if _m is not None
-                else []
-            )
-            
-            print(perms)
-
-            if "channel" in ptype.lower():
-                perms.add("send_messages")
-                if "bot" in ptype.lower():
-                    perms.add("embed_links")
-
-            print(perms)
-            print("\n")
-
-            self.permissions[ptype] = sorted(perms)
+        self.permissions: Tuple[str] = tuple(permissions)
+        self.bot_permissions: Tuple[str] = tuple(bot_permissions)
 
     def command(self, *args, **kwargs):
         def wrapper(func):
@@ -147,15 +109,13 @@ class Group(DiscordGroup):
 
         return wrapper
 
-
 def command(name: str = MISSING, cls: object = Command, **attrs: Any):
     def decorator(func):
         if isinstance(func, Command):
-            raise TypeError("Callback is already a command.")
+            raise TypeError('Callback is already a command.')
         return cls(func, name=name, **attrs)
 
     return decorator
-
 
 def group(name: str = MISSING, cls: DiscordGroup = Group, **attrs: Any):
     return command(name=name, cls=cls, **attrs)
