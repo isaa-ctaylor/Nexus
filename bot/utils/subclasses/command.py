@@ -50,7 +50,7 @@ class Command(DiscordCommand):
         source = getsource(self.callback)
 
         for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.match(pattern, source)
+            _m = re.match(pattern, source, re.I)
 
             perms = set(
                 _m.group("perms")
@@ -102,8 +102,10 @@ class Group(DiscordGroup):
         source = getsource(self.callback)
 
         for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.match(pattern, source)
+            _m = re.match(pattern, source, re.I)
 
+            print(_m)
+            
             perms = set(
                 _m.group("perms")
                 .replace(" ", "")
@@ -113,11 +115,15 @@ class Group(DiscordGroup):
                 if _m is not None
                 else []
             )
+            
+            print(perms)
 
             if "channel" in ptype.lower():
                 perms.add("send_messages")
                 if "bot" in ptype.lower():
                     perms.add("embed_links")
+
+            print(perms)
 
             self.permissions[ptype] = sorted(perms)
 
