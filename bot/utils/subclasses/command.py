@@ -102,9 +102,9 @@ class Group(DiscordGroup):
         source = getsource(self.callback)
 
         for ptype, pattern in PERM_PATTERNS.items():
-            _m = re.match(pattern, source, re.M)
+            _m = re.finditer(pattern, source, re.M)
 
-            print(_m)
+            print("Group: "+_m)
             
             perms = set(
                 _m.group("perms")
