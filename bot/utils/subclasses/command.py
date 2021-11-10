@@ -78,7 +78,7 @@ class Group(DiscordGroup):
         )
 
         self.examples: Tuple[str] = tuple(examples)
-        
+        print(permissions)
         _p = set(permissions)
         _p.add("send_messages")
         permissions = sorted(_p)
