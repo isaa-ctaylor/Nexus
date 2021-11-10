@@ -217,7 +217,7 @@ class Modlogs(Cog):
                 .add_field(name="Content after", value=after.content, inline=True)
             )
 
-            await self._send(channel.guild, embed=embed)
+            await self._send(after.guild, embed=embed)
 
 
 def setup(bot: Nexus):
