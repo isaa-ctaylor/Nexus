@@ -104,6 +104,7 @@ class Group(DiscordGroup):
         for ptype, pattern in PERM_PATTERNS.items():
             _m = re.search(pattern, source, re.M)
 
+            print(self.qualified_name)
             print("Group: "+str(_m))
             
             perms = set(
@@ -124,6 +125,7 @@ class Group(DiscordGroup):
                     perms.add("embed_links")
 
             print(perms)
+            print("\n")
 
             self.permissions[ptype] = sorted(perms)
 
