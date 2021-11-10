@@ -2,8 +2,11 @@ from traceback import format_exception
 from typing import List, Optional
 from discord.channel import TextChannel
 from discord.enums import AuditLogAction
+from discord.errors import Forbidden, HTTPException
 from discord.ext.commands.core import has_guild_permissions
+from discord.guild import Guild
 from discord.message import Message
+from discord.webhook.async_ import Webhook
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import group
@@ -29,12 +32,11 @@ class Modlogs(Cog):
         self.cache = {
             record["guild_id"]: {
                 "enabled": record["enabled"],
-                "channel": record["channel"],
+                "channel": Webhook.from_url(record["channel"], session=self.bot.session),
             }
             for record in data
         }
 
-    @has_guild_permissions(manage_messages=True)
     @group(name="modlogs", invoke_without_command=True)
     async def _modlogs(self, ctx: NexusContext):
         """
@@ -44,8 +46,8 @@ class Modlogs(Cog):
         if not ctx.invoked_subcommand:
             await ctx.send_help(ctx.command)
 
-    @has_guild_permissions(manage_messages=True)
-    @_modlogs.command(name="enable")
+    @has_guild_permissions(manage_guild=True)
+    @_modlogs.command(name="enable", permissions=["manage_server"])
     async def _modlogs_enable(self, ctx: NexusContext):
         """
         Enable modlogs.
@@ -63,7 +65,7 @@ class Modlogs(Cog):
             "UPDATE modlogs SET enabled = 'true' WHERE guild_id = $1", ctx.guild.id
         )
 
-        await self.__ainit__()
+        self.bot.loop.create_task(self.__ainit__())
 
         await ctx.paginate(
             Embed(
@@ -73,8 +75,8 @@ class Modlogs(Cog):
             )
         )
 
-    @has_guild_permissions(manage_messages=True)
-    @_modlogs.command(name="disable")
+    @has_guild_permissions(manage_guild=True)
+    @_modlogs.command(name="disable", permissions=["manage_server"])
     async def _modlogs_disable(self, ctx: NexusContext):
         """
         Disable modlogs.
@@ -86,7 +88,7 @@ class Modlogs(Cog):
             "UPDATE modlogs SET enabled = 'false' WHERE guild_id = $1", ctx.guild.id
         )
 
-        await self.__ainit__()
+        self.bot.loop.create_task(self.__ainit__())
 
         await ctx.paginate(
             Embed(
@@ -96,8 +98,8 @@ class Modlogs(Cog):
             )
         )
 
-    @has_guild_permissions(manage_messages=True)
-    @_modlogs.command(name="channel")
+    @has_guild_permissions(manage_guild=True)
+    @_modlogs.command(name="channel", permissions=["manage_server"])
     async def _modlogs_channel(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None
     ):
@@ -109,13 +111,18 @@ class Modlogs(Cog):
         if ctx.guild.id not in self.cache:
             return await ctx.error("Modlogs are not set up!")
 
+        try:
+            wh = await channel.create_webhook(name="Nexus", avatar=await self.bot.user.avatar.read(), reason="Logging")
+        except (Forbidden, HTTPException):
+            return await ctx.error(f"I need the Manage webhooks permission in {channel.name}!")
+
         await self.bot.db.execute(
             "UPDATE modlogs SET channel = $1 WHERE guild_id = $2",
-            channel.id,
+            wh.url,
             ctx.guild.id,
         )
 
-        await self.__ainit__()
+        self.bot.loop.create_task(self.__ainit__())
 
         await ctx.paginate(
             Embed(
@@ -124,6 +131,9 @@ class Modlogs(Cog):
                 colour=self.bot.config.colours.neutral,
             )
         )
+
+    async def _send(self, guild: Guild, *args, **kwargs):
+        await self.cache[guild.id]["channel"].send(*args, **kwargs)
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
@@ -154,7 +164,7 @@ class Modlogs(Cog):
                 )
             )
 
-            await channel.send(embed=embed)
+            await self._send(message.guild, embed=embed)
 
     @Cog.listener(name="on_bulk_message_delete")
     async def _log_bulk_message_delete(self, messages: List[Message]):
@@ -187,7 +197,7 @@ class Modlogs(Cog):
                 )
             )
 
-            await channel.send(embed=embed)
+            await self._send(channel.guild, embed=embed)
 
     @Cog.listener(name="on_message_edit")
     async def _log_message_edit(self, before: Message, after: Message):
@@ -219,7 +229,7 @@ class Modlogs(Cog):
                 .add_field(name="Content after", value=after.content, inline=True)
             )
 
-            await channel.send(embed=embed)
+            await self._send(channel.guild, embed=embed)
 
 
 def setup(bot: Nexus):
