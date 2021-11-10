@@ -36,16 +36,18 @@ class Command(DiscordCommand):
         )
 
         self.examples = tuple(examples)
-        
+        print(self.name)
+        print(permissions)
+        print(bot_permissions)
         _p = set(permissions)
         _p.add("send_messages")
         permissions = sorted(_p)
         
         _bp = set(bot_permissions)
-        _p.add("send_messages")
-        _p.add("embed_links")
+        _bp.add("send_messages")
+        _bp.add("embed_links")
         bot_permissions = sorted(_bp)
-            
+        print("\n")
         self.permissions: Tuple[str] = tuple(permissions)
         self.bot_permissions: Tuple[str] = tuple(bot_permissions)
 
@@ -79,17 +81,14 @@ class Group(DiscordGroup):
 
         self.examples: Tuple[str] = tuple(examples)
         
-        try:
-            _p = set(permissions)
-            _p.add("send_messages")
-            permissions = sorted(_p)
-            
-            _bp = set(bot_permissions)
-            _p.add("send_messages")
-            _p.add("embed_links")
-            bot_permissions = sorted(_bp)
-        except Exception as e:
-            print(e)
+        _p = set(permissions)
+        _p.add("send_messages")
+        permissions = sorted(_p)
+        
+        _bp = set(bot_permissions)
+        _bp.add("send_messages")
+        _bp.add("embed_links")
+        bot_permissions = sorted(_bp)
         
         self.permissions: Tuple[str] = tuple(permissions)
         self.bot_permissions: Tuple[str] = tuple(bot_permissions)
