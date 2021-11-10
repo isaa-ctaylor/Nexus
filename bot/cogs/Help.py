@@ -139,20 +139,6 @@ class NexusHelp(HelpCommand):
             )
             embed.add_field(name="Examples", value=f"```\n{examples}```", inline=False)
 
-        if command.permissions:
-            embed.add_field(
-                name="User permissions",
-                value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in command.permissions])}```",
-                inline=False,
-            )
-
-        if command.bot_permissions:
-            embed.add_field(
-                name="Bot permissions",
-                value=f"```\n{naturallist([p.replace('_', ' ').capitalize() for p in command.bot_permissions])}```",
-                inline=False,
-            )
-
         return embed
 
     async def send_command_help(self, command: Command) -> None:

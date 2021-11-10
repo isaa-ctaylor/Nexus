@@ -47,7 +47,7 @@ class Modlogs(Cog):
             await ctx.send_help(ctx.command)
 
     @has_guild_permissions(manage_guild=True)
-    @_modlogs.command(name="enable", permissions=["manage_server"])
+    @_modlogs.command(name="enable")
     async def _modlogs_enable(self, ctx: NexusContext):
         """
         Enable modlogs.
@@ -76,7 +76,7 @@ class Modlogs(Cog):
         )
 
     @has_guild_permissions(manage_guild=True)
-    @_modlogs.command(name="disable", permissions=["manage_server"])
+    @_modlogs.command(name="disable")
     async def _modlogs_disable(self, ctx: NexusContext):
         """
         Disable modlogs.
@@ -99,7 +99,7 @@ class Modlogs(Cog):
         )
 
     @has_guild_permissions(manage_guild=True)
-    @_modlogs.command(name="channel", permissions=["manage_server"])
+    @_modlogs.command(name="channel")
     async def _modlogs_channel(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None
     ):

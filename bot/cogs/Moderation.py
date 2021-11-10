@@ -56,7 +56,6 @@ class Moderation(Cog):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="ban",
-        
         usage="<member> [days to delete messages] [reason]",
         examples=["@isaa_ctaylor#2494 Swearing", "718087881087910018"],
     )
@@ -106,8 +105,7 @@ class Moderation(Cog):
     @bot_has_guild_permissions(ban_members=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
-        name="unban",
-        
+        name="unban",        
         examples=["718087881087910018 Appeal approved", "718087881087910018"],
     )
     async def _unban(
@@ -155,7 +153,7 @@ class Moderation(Cog):
     @bot_has_guild_permissions(manage_roles=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
-        name="mute",  examples=["718087881087910018", "@Person#0123 spam"]
+        name="mute",  examples=["718087881087910018", "@Person#0123 spam"],
     )
     async def _mute(
         self,
@@ -167,7 +165,7 @@ class Moderation(Cog):
         """
         Mute the given member for the optional reason
 
-        Note: If this command does not seem to work, make sure the person does not have the Speak permission for the channel, and that they do not have any other roles with the speak permission
+        Note: If this command does not seem to work, make sure the person does not have the send messages permission for the channel, and that they do not have any other roles with the send messages permission
         """
 
         if member.id == ctx.author.id:
@@ -271,7 +269,6 @@ class Moderation(Cog):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="kick",
-        
         examples=["@Someone#1234", "718087881087910018 Swearing"],
     )
     async def _kick(
@@ -383,7 +380,7 @@ class Moderation(Cog):
         name="purge",
         aliases=["clear", "cleanup"],
         examples=["#general 4", "@Someone#1234 15", "10"],
-        invoke_without_command=True,
+        invoke_without_command=True
     )
     async def _purge(self, ctx: NexusContext, limit: Optional[int] = 10):
         """
@@ -424,7 +421,7 @@ class Moderation(Cog):
         send_messages=True,
         embed_links=True,
     )
-    @command( name="nuke")
+    @command(name="nuke")
     async def _nuke(self, ctx: NexusContext, channel: TextChannel = None):
         """
         Completely clear a channel
@@ -447,7 +444,7 @@ class Moderation(Cog):
         send_messages=True,
         embed_links=True,
     )
-    @command( name="chatlimit")
+    @command(name="chatlimit")
     async def _chatlimit(
         self, ctx: NexusContext, channel: Optional[TextChannel] = None, limit: int = 100
     ):
