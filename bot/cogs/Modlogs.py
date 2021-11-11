@@ -7,6 +7,7 @@ from discord.errors import Forbidden, HTTPException
 from discord.ext.commands.core import has_guild_permissions
 from discord.guild import Guild
 from discord.message import Message
+from discord.utils import utcnow
 from discord.webhook.async_ import Webhook
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
@@ -141,6 +142,9 @@ class Modlogs(Cog):
         )
 
     async def _send(self, guild: Guild, *args, **kwargs):
+        if kwargs.get("embed", None) is not None:
+            kwargs["embed"].timestamp = utcnow()
+            
         c: Webhook = self.cache[guild.id]["channel"]
         if c:
             await c.send(*args, **kwargs)
