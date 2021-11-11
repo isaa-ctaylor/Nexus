@@ -262,7 +262,7 @@ class Modlogs(Cog):
                 for obj, overwrites in channel.overwrites.items()
             }
 
-            embed.description = "\n".join(
+            embed.description = "\n\n".join(
                 f"**Overwrites for {obj.mention}:**\n" +
                 "\n".join(f"{tick if v else cross} {k.replace('_', ' ').capitalize()}" for k, v in overwrites.items())
                 for obj, overwrites in permissions.items()
