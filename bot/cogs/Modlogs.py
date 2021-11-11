@@ -235,9 +235,9 @@ class Modlogs(Cog):
         ):
             return
 
-        channel = self.cache[channel.guild.id]["channel"]
+        _channel = self.cache[channel.guild.id]["channel"]
 
-        if not channel:
+        if not _channel:
             return
 
         embed = Embed(title="Channel created", colour=self.bot.config.colours.neutral)
