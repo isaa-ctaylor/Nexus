@@ -263,7 +263,7 @@ class Modlogs(Cog):
             }
 
             embed.description = "\n".join(
-                f"**Overwrites for {obj.mention}:**\n" \
+                f"**Overwrites for {obj.mention}:**\n" +
                 "\n".join(f"{tick if v else cross} {k}" for k, v in overwrites.items())
                 for obj, overwrites in permissions.items()
             )
