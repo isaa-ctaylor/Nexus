@@ -7,6 +7,7 @@ from discord.errors import Forbidden, HTTPException
 from discord.ext.commands.core import has_guild_permissions
 from discord.guild import Guild
 from discord.message import Message
+from discord.role import Role
 from discord.utils import utcnow
 from discord.webhook.async_ import Webhook
 from utils.subclasses.bot import Nexus
@@ -267,7 +268,7 @@ class Modlogs(Cog):
             }
 
             embed.description = "\n\n".join(
-                f"**Overwrites for {obj.mention}:**\n" +
+                f"**Overwrites for {obj.mention if not (isinstance(obj, Role) and obj.is_default()) else '@everyone'}:**\n" +
                 "\n".join(f"{tick if v else cross} {k.replace('_', ' ').capitalize()}" for k, v in overwrites.items())
                 for obj, overwrites in permissions.items()
             )
