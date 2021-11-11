@@ -179,7 +179,7 @@ class Music(Cog):
         tracks = await player.get_tracks(query=query, ctx=ctx)
 
         if not tracks:
-            await ctx.send("❌ No results!")
+            return await ctx.send("❌ No results!")
 
         if isinstance(tracks, pomice.Playlist):
             await ctx.send(f"Adding {tracks.track_count} songs to the queue")
