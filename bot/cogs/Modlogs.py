@@ -1,5 +1,6 @@
 from traceback import format_exception
 from typing import List, Optional
+from discord.abc import GuildChannel
 from discord.channel import TextChannel
 from discord.enums import AuditLogAction
 from discord.errors import Forbidden, HTTPException
@@ -20,6 +21,7 @@ class Modlogs(Cog):
     """
     Log moderation actions in your server
     """
+
     def __init__(self, bot: Nexus):
         self.bot = bot
 
@@ -32,7 +34,9 @@ class Modlogs(Cog):
         self.cache = {
             record["guild_id"]: {
                 "enabled": record["enabled"],
-                "channel": Webhook.from_url(str(record["channel"]), session=self.bot.session),
+                "channel": Webhook.from_url(
+                    str(record["channel"]), session=self.bot.session
+                ),
             }
             for record in data
         }
@@ -112,9 +116,13 @@ class Modlogs(Cog):
             return await ctx.error("Modlogs are not set up!")
 
         try:
-            wh = await channel.create_webhook(name="Nexus", avatar=await self.bot.user.avatar.read(), reason="Logging")
+            wh = await channel.create_webhook(
+                name="Nexus", avatar=await self.bot.user.avatar.read(), reason="Logging"
+            )
         except (Forbidden, HTTPException):
-            return await ctx.error(f"I need the Manage webhooks permission in {channel.name}!")
+            return await ctx.error(
+                f"I need the Manage webhooks permission in {channel.name}!"
+            )
 
         await self.bot.db.execute(
             "UPDATE modlogs SET channel = $1 WHERE guild_id = $2",
@@ -133,7 +141,9 @@ class Modlogs(Cog):
         )
 
     async def _send(self, guild: Guild, *args, **kwargs):
-        await self.cache[guild.id]["channel"].send(*args, **kwargs)
+        c: Webhook = self.cache[guild.id]["channel"]
+        if c:
+            await c.send(*args, **kwargs)
 
     @Cog.listener(name="on_message_delete")
     async def _log_message_delete(self, message: Message):
@@ -150,7 +160,7 @@ class Modlogs(Cog):
                 return
 
             embed = (
-                Embed(title="Modlog delete", colour=self.bot.config.colours.neutral)
+                Embed(title="Message deleted", colour=self.bot.config.colours.neutral)
                 .add_field(name="Channel", value=message.channel.mention)
                 .add_field(name="Author", value=message.author.mention)
                 .add_field(
@@ -178,7 +188,8 @@ class Modlogs(Cog):
 
             embed = (
                 Embed(
-                    title="Modlog bulk delete", colour=self.bot.config.colours.neutral
+                    title="Bulk messages deleted",
+                    colour=self.bot.config.colours.neutral,
                 )
                 .add_field(name="Channel", value=messages[0].channel.mention)
                 .add_field(name="Quantity", value=len(messages))
@@ -208,9 +219,7 @@ class Modlogs(Cog):
                 return
 
             embed = (
-                Embed(
-                    title="Modlog message edit", colour=self.bot.config.colours.neutral
-                )
+                Embed(title="Message edited", colour=self.bot.config.colours.neutral)
                 .add_field(name="Channel", value=after.channel.mention)
                 .add_field(name="Author", value=after.author.mention)
                 .add_field(name="Content before", value=before.content, inline=False)
@@ -218,6 +227,48 @@ class Modlogs(Cog):
             )
 
             await self._send(after.guild, embed=embed)
+
+    @Cog.listener(name="on_guild_channel_create")
+    async def _log_channel_creation(self, channel: GuildChannel):
+        if not (
+            channel.guild.id in self.cache and self.cache[channel.guild.id]["enabled"]
+        ):
+            return
+
+        channel = self.cache[channel.guild.id]["channel"]
+
+        if not channel:
+            return
+
+        embed = Embed(title="Channel created", colour=self.bot.config.colours.neutral)
+        embed.add_field(name="Channel name", value=channel.name, inline=True)
+        embed.add_field(
+            name="Channel category",
+            value=channel.category.name if channel.category else "None",
+            inline=True,
+        )
+
+        tick = self.bot.config.emojis.tick
+        cross = self.bot.config.emojis.cross
+        slash = self.bot.config.emojis.slash
+
+        if channel.overwrites:
+            permissions = {
+                obj: {
+                    overwrite: v
+                    for overwrite, v in dict(overwrites).items()
+                    if v in [True, False]
+                }
+                for obj, overwrites in channel.overwrites.items()
+            }
+
+            embed.description = (
+                f"**Overwrites for {obj.mention}:**\n" \
+                "\n".join(f"{tick if v else cross} {k}" for k, v in overwrites.items())
+                for obj, overwrites in permissions
+            )
+
+        await self._send(channel.guild, embed=embed)
 
 
 def setup(bot: Nexus):
