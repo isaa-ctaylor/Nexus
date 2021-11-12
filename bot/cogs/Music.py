@@ -19,6 +19,7 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
+from lyricsgenius import Genius
 
 load_dotenv()
 
@@ -46,6 +47,8 @@ class Music(Cog):
 
         if not hasattr(self.bot, "pomice"):
             self.bot.pomice = pomice.NodePool()
+            
+        self.genius = Genius(getenv("GENIUS"), remove_section_headers=True)
 
         bot.loop.create_task(self.connect_nodes())
 
@@ -464,6 +467,44 @@ class Music(Cog):
 
         await player.set_volume(volume)
         await ctx.message.add_reaction("👍")
+        
+    @command(name="lyrics")
+    async def _lyrics(self, ctx: NexusContext, song: Optional[str] = None):
+        """
+        Get the lyrics for a given song, or the current playing song if not specified
+        """
+        if ctx.guild is None and song is None:
+            return await ctx.error("You need to specify a song!")
+        
+        if song is None and not ctx.voice_client:
+            return await ctx.error("You need to specify a song!")
+        
+        song = song or ctx.voice_client.current.title
+        
+        track = self.genius.search_song(song)
+        
+        if track is None:
+            return await ctx.error("No results!")
+        
+        lyrics = track.lyrics
+        
+        _ = []
+        i = 0
+        for line in lyrics.splitlines():
+            try:
+                _[i]
+            except IndexError:
+                _.append([])
+            
+            if len("\n".join(_[i] + [line])) >= 4096:
+                i += 1
+                _.append([])
+            
+            _[i].append(line)
+        
+        embeds = [Embed(description="\n".join(p)) for p in _]
+        
+        await ctx.paginate(embeds)
 
 
 def setup(bot: Nexus):
