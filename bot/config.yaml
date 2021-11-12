@@ -31,6 +31,6 @@ emojis:
   online: <:online:876417266110046239>
   idle: <:idle:876417249613856778>
   dnd: <:dnd:876417282736259082>
-  tick: <:tick:908268082571649056>
-  cross: <:cross:908268082919772201>
+  tick: ":white_check_mark:"
+  cross: ":x:"
   slash: <:slash:908268082903003157>
