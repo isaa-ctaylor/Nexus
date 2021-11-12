@@ -8,7 +8,7 @@ import async_timeout
 import pomice
 from discord.channel import TextChannel, VoiceChannel
 from discord.client import Client
-from discord.embeds import Embed
+from discord.embeds import Embed, EmptyEmbed
 from discord.ext.commands.core import guild_only
 from discord.ext.commands.errors import BadArgument
 from discord.mentions import AllowedMentions
@@ -502,7 +502,7 @@ class Music(Cog):
             
             _[i].append(line)
         
-        embeds = [Embed(description="\n".join(p)) for p in _]
+        embeds = [Embed(title=track.title if i == 0 else EmptyEmbed, description="\n".join(p), colour=self.bot.config.colours.neutral) for i, p in enumerate(_)]
         
         await ctx.paginate(embeds)
 
