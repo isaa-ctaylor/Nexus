@@ -235,45 +235,46 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_guild_channel_create")
     async def _log_channel_creation(self, channel: GuildChannel):
-        if not (
-            channel.guild.id in self.cache and self.cache[channel.guild.id]["enabled"]
-        ):
-            return
+        with suppress(Exception):
+            if not (
+                channel.guild.id in self.cache and self.cache[channel.guild.id]["enabled"]
+            ):
+                return
 
-        _channel = self.cache[channel.guild.id]["channel"]
+            _channel = self.cache[channel.guild.id]["channel"]
 
-        if not _channel:
-            return
+            if not _channel:
+                return
 
-        embed = Embed(title="Channel created", colour=self.bot.config.colours.neutral)
-        embed.add_field(name="Channel name", value=channel.name, inline=True)
-        embed.add_field(
-            name="Channel category",
-            value=channel.category.name if channel.category else "None",
-            inline=True,
-        )
-
-        tick = self.bot.config.emojis.tick
-        cross = self.bot.config.emojis.cross
-        slash = self.bot.config.emojis.slash
-
-        if channel.overwrites:
-            permissions = {
-                obj: {
-                    overwrite: v
-                    for overwrite, v in dict(overwrites).items()
-                    if v in [True, False]
-                }
-                for obj, overwrites in channel.overwrites.items()
-            }
-
-            embed.description = "\n\n".join(
-                f"**Overwrites for {obj.mention if not (isinstance(obj, Role) and obj.is_default()) else '@everyone'}:**\n" +
-                "\n".join(f"{tick if v else cross} {k.replace('_', ' ').capitalize()}" for k, v in overwrites.items())
-                for obj, overwrites in permissions.items()
+            embed = Embed(title="Channel created", colour=self.bot.config.colours.neutral)
+            embed.add_field(name="Channel name", value=channel.name, inline=True)
+            embed.add_field(
+                name="Channel category",
+                value=channel.category.name if channel.category else "None",
+                inline=True,
             )
 
-        await self._send(channel.guild, embed=embed)
+            tick = self.bot.config.emojis.tick
+            cross = self.bot.config.emojis.cross
+            slash = self.bot.config.emojis.slash
+
+            if channel.overwrites:
+                permissions = {
+                    obj: {
+                        overwrite: v
+                        for overwrite, v in dict(overwrites).items()
+                        if v in [True, False]
+                    }
+                    for obj, overwrites in channel.overwrites.items()
+                }
+
+                embed.description = "\n\n".join(
+                    f"**Overwrites for {obj.mention if not (isinstance(obj, Role) and obj.is_default()) else '@everyone'}:**\n" +
+                    "\n".join(f"{tick if v else cross} {k.replace('_', ' ').capitalize()}" for k, v in overwrites.items())
+                    for obj, overwrites in permissions.items()
+                )
+
+            await self._send(channel.guild, embed=embed)
 
 
 def setup(bot: Nexus):
