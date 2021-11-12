@@ -469,7 +469,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
         
     @command(name="lyrics")
-    async def _lyrics(self, ctx: NexusContext, song: Optional[str] = None):
+    async def _lyrics(self, ctx: NexusContext, *, song: Optional[str] = None):
         """
         Get the lyrics for a given song, or the current playing song if not specified
         """
