@@ -42,12 +42,13 @@ class Music(Cog):
     """
     Music... what more can I say!
     """
+
     def __init__(self, bot: Nexus):
         self.bot = bot
 
         if not hasattr(self.bot, "pomice"):
             self.bot.pomice = pomice.NodePool()
-            
+
         self.genius = Genius(getenv("GENIUS"), remove_section_headers=True)
 
         bot.loop.create_task(self.connect_nodes())
@@ -93,7 +94,7 @@ class Music(Cog):
             return await player.control_channel.send("👋 Disconnected - queue finished")
 
     @guild_only()
-    @command( name="connect", aliases=["join"])
+    @command(name="connect", aliases=["join"])
     async def _connect(
         self,
         ctx: NexusContext,
@@ -145,14 +146,16 @@ class Music(Cog):
             try:
                 await channel.connect(cls=Player)
                 ctx.voice_client.control_channel = ctx.channel
-                await ctx.reply(f"Joined {channel.mention}", )
+                await ctx.reply(
+                    f"Joined {channel.mention}",
+                )
             except Exception as e:
                 return await ctx.error(
                     f"Uh oh! I couldn't join, please try again later\n\nError: {type(e)}: {e}"
                 )
 
     @guild_only()
-    @command( name="play")
+    @command(name="play")
     async def _play(self, ctx: NexusContext, *, query: str):
         """
         Play a song from Youtube
@@ -210,7 +213,7 @@ class Music(Cog):
                 await ctx.send(f"Enqueued `{codeblocksafe(tracks[0].title)}`")
 
     @guild_only()
-    @command( name="stop")
+    @command(name="stop")
     async def _stop(self, ctx: NexusContext):
         """
         Stops the player and clears the queue
@@ -231,7 +234,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command( name="leave")
+    @command(name="leave")
     async def _leave(self, ctx: NexusContext):
         """
         Leave the current voice channel
@@ -254,7 +257,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command( name="queue")
+    @command(name="queue")
     async def _queue(self, ctx: NexusContext):
         """
         See the current queue
@@ -298,7 +301,7 @@ class Music(Cog):
         await ctx.paginate(embeds)
 
     @guild_only()
-    @command( name="remove")
+    @command(name="remove")
     async def _remove(self, ctx: NexusContext, index: int):
         """
         Remove a song from the queue
@@ -328,7 +331,7 @@ class Music(Cog):
         )
 
     @guild_only()
-    @command( name="pause")
+    @command(name="pause")
     async def _pause(self, ctx: NexusContext):
         """
         Pause the current song
@@ -349,15 +352,17 @@ class Music(Cog):
 
         await player.set_pause(True)
         await ctx.message.add_reaction("👍")
-        
+
         try:
-            await self.bot.wait_for("command", check=lambda ctx: ctx.command.name == "resume", timeout=300)
+            await self.bot.wait_for(
+                "command", check=lambda ctx: ctx.command.name == "resume", timeout=300
+            )
         except asyncio.TimeoutError:
             await player.disconnect(force=True)
             await player.destroy()
 
     @guild_only()
-    @command( name="resume")
+    @command(name="resume")
     async def _resume(self, ctx: NexusContext):
         """
         Resume the paused song
@@ -380,7 +385,7 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
     @guild_only()
-    @command( name="now")
+    @command(name="now")
     async def _now(self, ctx: NexusContext):
         """
         See what song is currently playing
@@ -395,7 +400,7 @@ class Music(Cog):
         )
 
     @guild_only()
-    @command( name="skip")
+    @command(name="skip")
     async def _skip(self, ctx: NexusContext):
         """
         Skip the current song
@@ -436,7 +441,7 @@ class Music(Cog):
         await player.stop()
 
     @guild_only()
-    @command( name="volume")
+    @command(name="volume")
     async def _volume(self, ctx: NexusContext, volume: Union[int, str]):
         """
         Set the volume of the player
@@ -467,44 +472,59 @@ class Music(Cog):
 
         await player.set_volume(volume)
         await ctx.message.add_reaction("👍")
-        
-    @command(name="lyrics")
-    async def _lyrics(self, ctx: NexusContext, *, song: Optional[str] = None):
-        """
-        Get the lyrics for a given song, or the current playing song if not specified
-        """
-        if ctx.guild is None and song is None:
-            return await ctx.error("You need to specify a song!")
-        
-        if song is None and not ctx.voice_client:
-            return await ctx.error("You need to specify a song!")
-        
-        song = song or ctx.voice_client.current.title
-        
-        track = self.genius.search_song(song)
-        
-        if track is None:
-            return await ctx.error("No results!")
-        
-        lyrics = track.lyrics
-        
-        _ = []
-        i = 0
-        for line in lyrics.splitlines():
-            try:
-                _[i]
-            except IndexError:
-                _.append([])
-            
-            if len("\n".join(_[i] + [line])) >= 4096:
-                i += 1
-                _.append([])
-            
-            _[i].append(line)
-        
-        embeds = [Embed(title=track.title if i == 0 else EmptyEmbed, description="\n".join(p), colour=self.bot.config.colours.neutral) for i, p in enumerate(_)]
-        
-        await ctx.paginate(embeds)
+
+    # async def _search_lyrics(self, query: str):
+    #     async with self.bot.session.get(
+    #         "https://www.google.com/search",
+    #         params={"q": query},
+    #         headers={
+    #             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
+    #         },
+    #     ) as resp:
+    #         ...
+
+    # @command(name="lyrics")
+    # async def _lyrics(self, ctx: NexusContext, *, song: Optional[str] = None):
+    #     """
+    #     Get the lyrics for a given song, or the current playing song if not specified
+    #     """
+    #     if ctx.guild is None and song is None:
+    #         return await ctx.error("You need to specify a song!")
+
+    #     if song is None and not ctx.voice_client:
+    #         return await ctx.error("You need to specify a song!")
+
+    #     song = song or ctx.voice_client.current.title
+
+    #     lyrics = self._search_lyrics(song)
+
+    #     if lyrics is None:
+    #         return await ctx.error("No results!")
+
+    #     _ = []
+    #     i = 0
+    #     for line in lyrics.splitlines():
+    #         try:
+    #             _[i]
+    #         except IndexError:
+    #             _.append([])
+
+    #         if len("\n".join(_[i] + [line])) >= 4096:
+    #             i += 1
+    #             _.append([])
+
+    #         _[i].append(line)
+
+    #     embeds = [
+    #         Embed(
+    #             title=track.title if i == 0 else EmptyEmbed,
+    #             description="\n".join(p),
+    #             colour=self.bot.config.colours.neutral,
+    #         )
+    #         for i, p in enumerate(_)
+    #     ]
+
+    #     await ctx.paginate(embeds)
 
 
 def setup(bot: Nexus):
