@@ -305,7 +305,7 @@ class Utility(Cog):
         """
         if not query:
             if location.lower() == "list":
-                return await ctx.embed(description="\n".join(f"[`{k}`]({v})" for k, v in self.rtfm_destinations.items()))
+                return await ctx.embed(description="\n".join(f"{k}: {v}" for k, v in self.rtfm_destinations.items()))
             if re.match(URL_REGEX, location):
                 return await ctx.paginate(location)
             if location in self.rtfm_destinations:
