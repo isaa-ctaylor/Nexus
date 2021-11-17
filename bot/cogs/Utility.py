@@ -302,9 +302,9 @@ class Utility(Cog):
         """
         if not query:
             if re.match(URL_REGEX, location):
-                return location
+                return await ctx.paginate(location)
             if location in self.rtfm_destinations:
-                return self.rtfm_destinations[location]
+                return await ctx.paginate(self.rtfm_destinations[location])
             return await ctx.error(f"{location} is not a valid rtfm location!")
         
         try:
@@ -312,7 +312,7 @@ class Utility(Cog):
         except InvalidRtfmLibrary as e:
             return await ctx.error(str(e))
         
-        return await ctx.embed(description="\n".join(f"[{k}]({v})" for k, v in data.nodes.items()))
+        return await ctx.embed(description="\n".join(f"[`{k}`]({v})" for k, v in data.nodes.items()))
         
 
 def setup(bot: Nexus):
