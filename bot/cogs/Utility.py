@@ -68,6 +68,9 @@ URL_REGEX = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9
 
 class IdevisionLocation(Converter):
     async def convert(self, ctx: NexusContext, arg: Any):
+        if arg.lower() == "list":
+            return arg
+
         if arg.lower() in ["discord.py", "discordpy"]:
             arg = "dpy"
             
@@ -301,6 +304,8 @@ class Utility(Cog):
         If you don't know what this is, then you probably don't need it!
         """
         if not query:
+            if location.lower() == "list":
+                return await ctx.embed(description="\n".join(f"[`{k}`]({v})" for k, v in self.rtfm_destinations.items()))
             if re.match(URL_REGEX, location):
                 return await ctx.paginate(location)
             if location in self.rtfm_destinations:
