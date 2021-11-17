@@ -1,8 +1,9 @@
 from io import BytesIO
 from math import floor, log10
+from os import getenv
 from typing import Any, Optional
 
-# from topgg.types import BotVoteData
+from idevision.errors import InvalidRtfmLibrary
 
 import pytesseract
 from aiohttp import InvalidURL
@@ -13,12 +14,18 @@ from discord.ext.commands import Converter
 from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.errors import BadArgument
 from discord.ui import Button, View
+from dotenv.main import load_dotenv
+from idevision import async_client
 from PIL import Image, ImageOps, UnidentifiedImageError
 from utils import Timer, codeblocksafe, executor
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
+import re
+
+
+load_dotenv()
 
 
 class InvalidDiscriminator(BadArgument):
@@ -47,7 +54,42 @@ class Discriminator(Converter):
             return InvalidDiscriminator(argument)
 
         return _str
+    
 
+DESTINATIONS = {
+    "dpy": "https://discordpy.readthedocs.io/en/stable",
+    "dpy2": "https://discordpy.readthedocs.io/en/master",
+    "edpy": "https://enhanced-dpy.readthedocs.io/en/latest",
+    "py": "https://docs.python.org/3",
+    "py2": "https://docs.python.org/2"
+}
+URL_REGEX = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+
+
+class IdevisionLocation(Converter):
+    async def convert(self, ctx: NexusContext, arg: Any):
+        if arg.lower() in ["discord.py", "discordpy"]:
+            arg = "dpy"
+            
+        if arg.lower() in ["discord.py2", "discord.py-2", "discordpy2", "discordpy-2", "dpy-2"]:
+            arg = "dpy2"
+            
+        if arg.lower() in ["enhanced-discord.py", "enhanced-discordpy"]:
+            arg = "edpy"
+        
+        if arg.lower() in ["python", "python3", "py3"]:
+            arg = "py"
+            
+        if arg.lower() in ["python2"]:
+            arg = "py2"
+            
+        if arg in DESTINATIONS:
+            return arg
+        
+        if re.match(URL_REGEX, arg) is not None:
+            return arg
+        
+        raise BadArgument(f"{arg} is not a valid rtfm location!")
 
 class Utility(Cog):
     """
@@ -56,6 +98,9 @@ class Utility(Cog):
 
     def __init__(self, bot: Nexus):
         self.bot = bot
+        
+        self.rtfm_destinations = DESTINATIONS
+        self.idevision = async_client(getenv("IDEVISION"))
 
     @command(
         name="redirectcheck",
@@ -248,6 +293,27 @@ class Utility(Cog):
 
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
+    @command(name="rtfm")
+    async def _rtfm(self, ctx: NexusContext, location: Optional[IdevisionLocation] = "py", *, query: str = None):
+        """
+        Search through sphinx documentation
+        
+        If you don't know what this is, then you probably don't need it!
+        """
+        if not query:
+            if re.match(URL_REGEX, location):
+                return location
+            if location in self.rtfm_destinations:
+                return self.rtfm_destinations[location]
+            return await ctx.error(f"{location} is not a valid rtfm location!")
+        
+        try:
+            data = await self.idevision.sphinxrtfm(self.rtfm_destinations.get(location, location), query)
+        except InvalidRtfmLibrary as e:
+            return await ctx.error(str(e))
+        
+        return await ctx.embed(description="\n".join(f"[{k}]({v})" for k, v in data.nodes.items()))
+        
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
