@@ -383,7 +383,7 @@ class Utility(Cog):
                 
             embeds[i].description = "\n\n".join(websites)
             
-        await ctx.paginate(websites)
+        await ctx.paginate(embeds)
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
