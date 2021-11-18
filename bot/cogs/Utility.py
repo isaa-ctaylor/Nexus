@@ -381,8 +381,7 @@ class Utility(Cog):
             websites = []
             for website in page:
                 _ = []
-                if title := website.title: _.append(title)
-                if href := website.href: _.append(href)
+                if title := website.title: _.append(hyperlink(f"**{title}**", website.href))
                 if description := website.description: _.append(description)
                 websites.append("\n".join(_))
                 
