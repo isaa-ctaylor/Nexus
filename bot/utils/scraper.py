@@ -217,7 +217,7 @@ class Search(Scraper):
                 href = website.find("a")["href"]
 
                 _ = website.find("div", class_="IsZvec")
-                description = _.find("span").get_text() if _ is not None else None
+                description = _.find("span").get_text() if _ is not None and _.find("span") is not None else None
 
                 results.add(Website(title, href, description))
 
