@@ -354,6 +354,9 @@ class Utility(Cog):
         if not data.websites:
             return await ctx.error(f"No results for {codeblocksafe(query)}!")
 
+        if isinstance(data.websites, Exception):
+            raise data.websites
+        
         embeds = [Embed(title=f"Search results for {query}", colour=self.bot.config.colours.neutral)]
 
         _description = []
