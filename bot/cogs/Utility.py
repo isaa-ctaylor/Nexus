@@ -381,7 +381,10 @@ class Utility(Cog):
                 if description := website.description: _.append(description)
                 websites.append("\n".join(_))
                 
-            embeds[i].description = "\n\n".join(websites)
+            if embeds[i].description:
+                embeds[i].description += "\n\n" + "\n\n".join(websites)
+            else:
+                embeds[i].description = "\n\n".join(websites)
             
         await ctx.paginate(embeds)
 
