@@ -1,9 +1,11 @@
 from io import BytesIO
 from math import floor, log10
 from os import getenv
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from idevision.errors import InvalidRtfmLibrary
+from bot.utils import hyperlink
+from bot.utils.scraper import Website
 
 import pytesseract
 from aiohttp import InvalidURL
@@ -23,6 +25,7 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 import re
+from utils.scraper import Search
 
 
 load_dotenv()
@@ -54,16 +57,18 @@ class Discriminator(Converter):
             return InvalidDiscriminator(argument)
 
         return _str
-    
+
 
 DESTINATIONS = {
     "dpy": "https://discordpy.readthedocs.io/en/stable",
     "dpy2": "https://discordpy.readthedocs.io/en/master",
     "edpy": "https://enhanced-dpy.readthedocs.io/en/latest",
     "py": "https://docs.python.org/3",
-    "py2": "https://docs.python.org/2"
+    "py2": "https://docs.python.org/2",
 }
-URL_REGEX = r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+URL_REGEX = (
+    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
+)
 
 
 class IdevisionLocation(Converter):
@@ -73,26 +78,33 @@ class IdevisionLocation(Converter):
 
         if arg.lower() in ["discord.py", "discordpy"]:
             arg = "dpy"
-            
-        if arg.lower() in ["discord.py2", "discord.py-2", "discordpy2", "discordpy-2", "dpy-2"]:
+
+        if arg.lower() in [
+            "discord.py2",
+            "discord.py-2",
+            "discordpy2",
+            "discordpy-2",
+            "dpy-2",
+        ]:
             arg = "dpy2"
-            
+
         if arg.lower() in ["enhanced-discord.py", "enhanced-discordpy"]:
             arg = "edpy"
-        
+
         if arg.lower() in ["python", "python3", "py3"]:
             arg = "py"
-            
+
         if arg.lower() in ["python2"]:
             arg = "py2"
-            
+
         if arg in DESTINATIONS:
             return arg
-        
+
         if re.match(URL_REGEX, arg) is not None:
             return arg
-        
+
         raise BadArgument(f"{arg} is not a valid rtfm location!")
+
 
 class Utility(Cog):
     """
@@ -101,13 +113,12 @@ class Utility(Cog):
 
     def __init__(self, bot: Nexus):
         self.bot = bot
-        
+
         self.rtfm_destinations = DESTINATIONS
         self.idevision = async_client(getenv("IDEVISION"))
 
     @command(
         name="redirectcheck",
-        
         aliases=["redirects", "linkcheck"],
         examples=["https://youtu.be/"],
     )
@@ -152,7 +163,6 @@ class Utility(Cog):
 
     @command(
         name="discriminator",
-        
         aliases=["discrim"],
         examples=["0000", "1234"],
     )
@@ -275,7 +285,7 @@ class Utility(Cog):
 
         await ctx.paginate(embed)
 
-    @command( name="vote")
+    @command(name="vote")
     async def _vote(self, ctx: NexusContext):
         """
         Vote for Nexus!
@@ -297,28 +307,83 @@ class Utility(Cog):
         await ctx.reply(embed=embed, view=view, mention_author=False)
 
     @command(name="rtfm")
-    async def _rtfm(self, ctx: NexusContext, location: Optional[IdevisionLocation] = "py", *, query: str = None):
+    async def _rtfm(
+        self,
+        ctx: NexusContext,
+        location: Optional[IdevisionLocation] = "py",
+        *,
+        query: str = None,
+    ):
         """
         Search through sphinx documentation
-        
+
         If you don't know what this is, then you probably don't need it!
         """
         if not query:
             if location.lower() == "list":
-                return await ctx.embed(description="\n".join(f"{k}: {v}" for k, v in self.rtfm_destinations.items()))
+                return await ctx.embed(
+                    description="\n".join(
+                        f"{k}: {v}" for k, v in self.rtfm_destinations.items()
+                    )
+                )
             if re.match(URL_REGEX, location):
                 return await ctx.paginate(location)
             if location in self.rtfm_destinations:
                 return await ctx.paginate(self.rtfm_destinations[location])
             return await ctx.error(f"{location} is not a valid rtfm location!")
-        
+
         try:
-            data = await self.idevision.sphinxrtfm(self.rtfm_destinations.get(location, location), query)
+            data = await self.idevision.sphinxrtfm(
+                self.rtfm_destinations.get(location, location), query
+            )
         except InvalidRtfmLibrary as e:
             return await ctx.error(str(e))
+
+        return await ctx.embed(
+            description="\n".join(f"[`{k}`]({v})" for k, v in data.nodes.items())
+        )
+
+    @command(name="google")
+    async def _google(self, ctx: NexusContext, *, query: str):
+        """
+        Search something on google
+        """
+        s = Search()
+        data = await s.search(query)
+
+        if not data.websites:
+            return await ctx.error(f"No results for {codeblocksafe(query)}!")
+
+        embeds = [Embed(title=f"Search results for {query}", colour=self.bot.config.colours.neutral)]
+
+        _description = []
+        wc = 5 # Website count to add to first page
+
+        if snippet := data.snippet:
+            wc = 2
+            if title := snippet.title: _description.append(f"**{title}**")
+            if description := snippet.description: _description.append(description)
+            if link := snippet.link: _description.append(hyperlink(link.text, link.href))
+            
+        paginated_websites: List[List[Website]] = [[data.websites[:wc]]] + [data.websites[wc:][i:i+5] for i in range(0, len(data.websites[wc:]), 5)]
         
-        return await ctx.embed(description="\n".join(f"[`{k}`]({v})" for k, v in data.nodes.items()))
-        
+        for i, page in enumerate(paginated_websites):
+            try:
+                embeds[i]
+            except IndexError:
+                embeds.append(Embed(colour=self.bot.config.colours.neutral))
+            
+            websites = []
+            for website in page:
+                _ = []
+                if title := website.title: _.append(title)
+                if href := website.href: _.append(href)
+                if description := website.description: _.append(href)
+                websites.append("\n".join(_))
+                
+            embeds[i].description = "\n\n".join(websites)
+            
+        await ctx.paginate(websites)
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
