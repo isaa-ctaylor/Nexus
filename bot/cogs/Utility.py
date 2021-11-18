@@ -4,8 +4,8 @@ from os import getenv
 from typing import Any, List, Optional
 
 from idevision.errors import InvalidRtfmLibrary
-from bot.utils import hyperlink
-from bot.utils.scraper import Website
+from utils import hyperlink
+from utils.scraper import Website
 
 import pytesseract
 from aiohttp import InvalidURL
