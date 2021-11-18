@@ -302,10 +302,10 @@ class Search(Scraper):
         description = description.get_text() if description else None
 
         a = _.find("div", class_="yuRUbf")
-        _at = a.find("h3", class_="LC20lb MBeuO DKV0Md")
+        _at = a.find("h3", class_="LC20lb MBeuO DKV0Md") if a else None
         _at = _at.string if _at else None
 
-        _al = a.find("a")
+        _al = a.find("a") if a else None
         _al = _al["href"] if _al else None
 
         link = Link(_at, _al)
