@@ -365,6 +365,8 @@ class Utility(Cog):
             if description := snippet.description: _description.append(description)
             if link := snippet.link: _description.append(hyperlink(link.text, link.href))
             
+        if _description: embeds[0].description = "\n".join(_description)
+            
         paginated_websites: List[List[Website]] = [data.websites[:wc]] + [data.websites[wc:][i:i+5] for i in range(0, len(data.websites[wc:]), 5)]
         
         for i, page in enumerate(paginated_websites):
