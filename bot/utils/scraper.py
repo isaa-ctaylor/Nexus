@@ -255,7 +255,7 @@ class Search(Scraper):
             description = _.find(
                 "div", class_="kno-rdesc"
             )  # Knowledge card description
-            _dt = description.find("span").string if description else None
+            _dt = description.get_text() if description else None
 
             _dl = description.find("a")
             _dl = Link(_dl.string, _dl["href"]) if _dl else None
