@@ -217,7 +217,13 @@ class Search(Scraper):
                 href = website.find("a")["href"]
 
                 _ = website.find("div", class_="IsZvec")
-                description = _.find("span").get_text() if _ is not None and _.find("span") is not None else None
+                description = (
+                    _.find(
+                        "div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf"
+                    ).get_text()
+                    if _ is not None and _.find("span") is not None
+                    else None
+                )
 
                 results.add(Website(title, href, description))
 
@@ -255,7 +261,7 @@ class Search(Scraper):
             description = _.find(
                 "div", class_="kno-rdesc"
             )  # Knowledge card description
-            _dt = description.get_text() if description else None
+            _dt = description.find("span").string if description else None
 
             _dl = description.find("a")
             _dl = Link(_dl.string, _dl["href"]) if _dl else None
