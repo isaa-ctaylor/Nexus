@@ -219,9 +219,9 @@ class Search(Scraper):
                 _ = website.find("div", class_="IsZvec")
                 description = (
                     _.find(
-                        "div", class_="LGOjhe"
+                        "div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf"
                     ).get_text()
-                    if _ is not None and _.find("div", class_="LGOjhe") is not None
+                    if _ is not None and _.find("div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf") is not None
                     else None
                 )
 
