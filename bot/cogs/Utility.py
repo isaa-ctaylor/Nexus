@@ -338,7 +338,10 @@ class Utility(Cog):
             )
         except InvalidRtfmLibrary as e:
             return await ctx.error(str(e))
-
+        
+        if not data.nodes:
+            return await ctx.error("Nothing found!")
+        
         return await ctx.embed(
             description="\n".join(f"[`{k}`]({v})" for k, v in data.nodes.items())
         )
