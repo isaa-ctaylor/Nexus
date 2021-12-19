@@ -26,9 +26,58 @@ from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 import re
 from utils.scraper import Search
+from dateparser.search import search_dates
+import datetime
 
 
 load_dotenv()
+
+
+class TimeInPast(Exception):
+    pass
+
+class InvalidTimeProvided(Exception):
+    pass
+
+class TimeConverter(Converter):
+    async def convert(self, ctx: NexusContext, argument):
+        arg = str(argument) 
+        parsed = search_dates( 
+            arg, settings={
+                'TIMEZONE': 'UTC', 
+                'PREFER_DATES_FROM': 'future', 
+                'FUZZY': True
+            }
+        )
+
+        if not parsed:
+            raise InvalidTimeProvided() 
+
+        string_date = parsed[0][0]
+        date_obj = parsed[0][1]
+        if date_obj <= datetime.datetime.utcnow(): 
+            raise TimeInPast() 
+
+        reason = arg.replace(string_date, "")
+        if reason[:2] == 'me' and reason[:6] in ('me to ', 'me in ', 'me at '): 
+            reason = reason[6:] 
+
+        if reason[0:2] == 'me' and reason[:9] == 'me after ': 
+            reason = reason[9:] 
+
+        if reason[:3] == 'me ': 
+            reason = reason[3:] 
+
+        if reason[:2] == 'me': 
+            reason = reason[2:] 
+
+        if reason[:6] == 'after ': 
+            reason = reason[6:] 
+
+        if reason[:5] == 'after': 
+            reason = reason[5:] 
+
+        return (date_obj, reason) 
 
 
 class InvalidDiscriminator(BadArgument):
@@ -394,6 +443,10 @@ class Utility(Cog):
                 embeds[i].description = "\n\n".join(websites)
             
         await ctx.paginate(embeds)
+        
+    @command(name="remind")
+    async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
+        await ctx.send(str(dateandtime))
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
