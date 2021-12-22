@@ -26,58 +26,51 @@ from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 import re
 from utils.scraper import Search
-from dateparser.search import search_dates
+from parsedatetime import Calendar
 import datetime
+from dateutil.relativedelta import relativedelta
 
 
 load_dotenv()
 
 
+SIMPLETIME = re.compile(
+    """(?:(?P<years>[0-9])(?:years?|y))?
+       (?:(?P<months>[0-9]{1,2})(?:months?|mo))?
+       (?:(?P<weeks>[0-9]{1,4})(?:weeks?|w))?
+       (?:(?P<days>[0-9]{1,5})(?:days?|d))?
+       (?:(?P<hours>[0-9]{1,5})(?:hours?|h))?
+       (?:(?P<minutes>[0-9]{1,5})(?:minutes?|m))?
+       (?:(?P<seconds>[0-9]{1,5})(?:seconds?|s))?
+    """, re.VERBOSE
+)
+
+
 class TimeInPast(Exception):
     pass
+
 
 class InvalidTimeProvided(Exception):
     pass
 
+
 class TimeConverter(Converter):
     async def convert(self, ctx: NexusContext, argument):
-        arg = str(argument) 
-        parsed = search_dates( 
-            arg, settings={
-                'TIMEZONE': 'UTC', 
-                'PREFER_DATES_FROM': 'future', 
-                'FUZZY': True
-            }
-        )
+        arg = str(argument)
+        now = ctx.message.created_at
+        
+        match = SIMPLETIME.match(argument)
+        if match is not None and match.group(0):
+            data = { k: int(v) for k, v in match.groupdict(default=0).items() }
+            remaining = str(argument[match.end():]).strip()
+            date_obj = now + relativedelta(**data)
+            
+            await ctx.send(str(remaining) + "\n" + str(date_obj))
+            
+            if match.start() not in (0, 1):
+                return await ctx.error("The given time is not at the start!")
 
-        if not parsed:
-            raise InvalidTimeProvided() 
-
-        string_date = parsed[0][0]
-        date_obj = parsed[0][1]
-        if date_obj <= datetime.datetime.utcnow(): 
-            raise TimeInPast() 
-
-        reason = arg.replace(string_date, "")
-        if reason[:2] == 'me' and reason[:6] in ('me to ', 'me in ', 'me at '): 
-            reason = reason[6:] 
-
-        if reason[0:2] == 'me' and reason[:9] == 'me after ': 
-            reason = reason[9:] 
-
-        if reason[:3] == 'me ': 
-            reason = reason[3:] 
-
-        if reason[:2] == 'me': 
-            reason = reason[2:] 
-
-        if reason[:6] == 'after ': 
-            reason = reason[6:] 
-
-        if reason[:5] == 'after': 
-            reason = reason[5:] 
-
-        return (date_obj, reason) 
+        return (date_obj, remaining)
 
 
 class InvalidDiscriminator(BadArgument):
@@ -387,10 +380,10 @@ class Utility(Cog):
             )
         except InvalidRtfmLibrary as e:
             return await ctx.error(str(e))
-        
+
         if not data.nodes:
             return await ctx.error("Nothing found!")
-        
+
         return await ctx.embed(
             description="\n".join(f"[`{k}`]({v})" for k, v in data.nodes.items())
         )
@@ -408,45 +401,59 @@ class Utility(Cog):
 
         if isinstance(data.websites, Exception):
             raise data.websites
-        
-        embeds = [Embed(title=f"Search results for {query}", colour=self.bot.config.colours.neutral)]
+
+        embeds = [
+            Embed(
+                title=f"Search results for {query}",
+                colour=self.bot.config.colours.neutral,
+            )
+        ]
 
         _description = []
-        wc = 5 # Website count to add to first page
+        wc = 5  # Website count to add to first page
 
         if snippet := data.snippet:
             wc = 2
-            if title := snippet.title: _description.append(f"**{title}**")
-            if description := snippet.description: _description.append(description)
-            if link := snippet.link: _description.append(hyperlink(link.text, link.href))
-            
-        if _description: embeds[0].description = "\n".join(_description)
-            
-        paginated_websites: List[List[Website]] = [data.websites[:wc]] + [data.websites[wc:][i:i+5] for i in range(0, len(data.websites[wc:]), 5)]
-        
+            if title := snippet.title:
+                _description.append(f"**{title}**")
+            if description := snippet.description:
+                _description.append(description)
+            if link := snippet.link:
+                _description.append(hyperlink(link.text, link.href))
+
+        if _description:
+            embeds[0].description = "\n".join(_description)
+
+        paginated_websites: List[List[Website]] = [data.websites[:wc]] + [
+            data.websites[wc:][i : i + 5] for i in range(0, len(data.websites[wc:]), 5)
+        ]
+
         for i, page in enumerate(paginated_websites):
             try:
                 embeds[i]
             except IndexError:
                 embeds.append(Embed(colour=self.bot.config.colours.neutral))
-            
+
             websites = []
             for website in page:
                 _ = []
-                if title := website.title: _.append(hyperlink(f"**{title}**", website.href))
-                if description := website.description: _.append(description)
+                if title := website.title:
+                    _.append(hyperlink(f"**{title}**", website.href))
+                if description := website.description:
+                    _.append(description)
                 websites.append("\n".join(_))
-                
+
             if embeds[i].description:
                 embeds[i].description += "\n\n" + "\n\n".join(websites)
             else:
                 embeds[i].description = "\n\n".join(websites)
-            
+
         await ctx.paginate(embeds)
-        
+
     @command(name="remind")
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
         await ctx.send(str(dateandtime))
+
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
