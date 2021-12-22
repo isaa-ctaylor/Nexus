@@ -57,18 +57,17 @@ class InvalidTimeProvided(Exception):
 class TimeConverter(Converter):
     async def convert(self, ctx: NexusContext, argument):
         arg = str(argument)
-        now = ctx.message.created_at
+        date_obj = ctx.message.created_at
         
         match = SIMPLETIME.match(argument)
-        if match is not None and match.group(0):
+        while match is not None and match.group(0):
             data = { k: int(v) for k, v in match.groupdict(default=0).items() }
             remaining = str(argument[match.end():]).strip()
-            date_obj = now + relativedelta(**data)
+            date_obj += relativedelta(**data)
             
             await ctx.send(str(remaining) + "\n" + str(date_obj))
             
-            if match.start() not in (0, 1):
-                return await ctx.error("The given time is not at the start!")
+            match = SIMPLETIME.match(remaining)
 
         return (date_obj, remaining)
 
