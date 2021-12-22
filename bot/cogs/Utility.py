@@ -59,10 +59,11 @@ class TimeConverter(Converter):
         arg = str(argument)
         date_obj = ctx.message.created_at
         
+        remaining = argument
         match = SIMPLETIME.match(argument)
         while match is not None and match.group(0):
             data = { k: int(v) for k, v in match.groupdict(default=0).items() }
-            remaining = str(argument[match.end():]).strip()
+            remaining = str(remaining[match.end():]).strip()
             date_obj += relativedelta(**data)
             
             await ctx.send(str(remaining) + "\n" + str(date_obj))
