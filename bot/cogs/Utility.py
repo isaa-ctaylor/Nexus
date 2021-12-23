@@ -586,7 +586,7 @@ class Utility(Cog):
             )
         else:
             await self.bot.db.execute(
-                "INSERT INTO reminders (owner_id, channel_id, end, start, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
+                "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
                 owner.id,
                 channel.id,
                 int(when.timestamp()),
