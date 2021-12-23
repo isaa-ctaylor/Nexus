@@ -83,7 +83,7 @@ class TimeConverter(Converter):
             if not timestatus.hasDateOrTime:
                 raise InvalidTimeProvided("Invalid time provided!")
 
-            if beginning not in (0, 1) or end != len(argument):
+            if beginning not in (0, 1) and end != len(argument):
                 raise InvalidTimeProvided(
                     "I see a time, but it is not at the start or end of your input! (or I didn't understand you)"
                 )
