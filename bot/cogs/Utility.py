@@ -73,7 +73,7 @@ class TimeConverter(Converter):
         else:
             remaining = self.check_startswith(argument)
 
-            times = Calendar().nlp(remaining, sourceTime=date_obj)
+            times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(remaining, sourceTime=date_obj)
             if times is None or len(times) == 0:
                 raise InvalidTimeProvided("Invalid time provided!")
 
