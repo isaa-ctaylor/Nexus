@@ -527,7 +527,7 @@ class Utility(Cog):
 
     @command(name="remind")
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
-        await ctx.send(f"<t:{dateandtime[0].timestamp}:F>" + "\n" + str(dateandtime[1]))
+        await ctx.send(f"<t:{dateandtime[0].timestamp()}:F>" + "\n" + str(dateandtime[1]))
         
     @_remind.error
     async def _remind_error(self, ctx: NexusContext, error: Exception):
