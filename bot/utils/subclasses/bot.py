@@ -88,7 +88,9 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS spamchecker  (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
                 CREATE TABLE IF NOT EXISTS modlogs      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel TEXT);
                 CREATE TABLE IF NOT EXISTS chatlimit    (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
-                CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);"""
+                CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);
+                CREATE TABLE IF NOT EXISTS reminders    (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, end BIGINT NOT NULL, start BIGINT NOT NULL, reason TEXT NOT NULL, message_id BIGINT NOT NULL);
+            """
         )
 
         self.prefixes = {

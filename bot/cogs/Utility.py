@@ -33,6 +33,7 @@ from parsedatetime import Calendar
 import datetime
 from dateutil.relativedelta import relativedelta
 import asyncio
+import humanize
 
 
 load_dotenv()
@@ -545,10 +546,18 @@ class Utility(Cog):
 
         await ctx.paginate(embeds)
 
-    @command(name="remind")
+    @command(
+        name="remind",
+        usage="<when> [what]",
+        examples=["me in 1h to do the dishes", "me in four hours eat some cake"],
+    )
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
-        await ctx.send(
-            f"<t:{int(dateandtime[0].timestamp())}:F>" + "\n" + str(dateandtime[1])
+        """
+        Remind you to do something
+
+        Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
+        await self._create_timer(
+            ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1]
         )
 
     @_remind.error
@@ -565,19 +574,40 @@ class Utility(Cog):
         when: datetime.datetime,
         reason: str,
     ):
-        if sleep := (when - ctx.message.created_at).total_seconds() <= 60:
-            await asyncio.sleep(sleep)
-            await self._send_timer(
+        if (when - ctx.message.created_at).total_seconds() <= 60:
+            self.bot.loop.create_task(
+                self._send_timer(
+                    owner.id,
+                    channel.id,
+                    when.timestamp(),
+                    ctx.message.created_at.timestamp(),
+                    reason,
+                    ctx.message.id,
+                )
+            )
+        else:
+            await self.bot.db.execute(
+                "INSERT INTO reminders (owner_id, channel_id, end, start, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
                 owner.id,
                 channel.id,
-                when,
-                ctx.message.created_at.timestamp(),
-                reason,
+                int(when.timestamp()),
+                int(ctx.message.created_at.timestamp()),
+                str(reason),
                 ctx.message.id,
             )
 
+        await ctx.reply(
+            f"Alright {ctx.author.mention}, in {humanize.naturaldelta((when - ctx.message.created_at).total_seconds(), minimum_unit='seconds', when=ctx.message.created_at)}: {reason}"
+        )
+
     async def _send_timer(
-        self, owner: int, channel: int, end: float, start: float, reason: str, message: int
+        self,
+        owner: int,
+        channel: int,
+        end: float,
+        start: float,
+        reason: str,
+        message: int,
     ):
         sleep = (
             datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
