@@ -79,7 +79,7 @@ class TimeConverter(Converter):
                 raise InvalidTimeProvided("Invalid time provided!")
 
             dt, timestatus, beginning, end, _ = times[0]
-
+            await ctx.send(_)
             if not timestatus.hasDateOrTime:
                 raise InvalidTimeProvided("Invalid time provided!")
 
