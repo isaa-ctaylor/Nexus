@@ -601,6 +601,8 @@ class Utility(Cog):
         await ctx.reply(
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
+        
+        await self._send_reminders()
 
     async def _send_timer(
         self,
@@ -638,7 +640,7 @@ class Utility(Cog):
                     datum["timeend"],
                     datum["timestart"],
                     datum["reason"],
-                    datum["message"],
+                    datum["message_id"],
                 )
             )
 
