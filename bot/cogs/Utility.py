@@ -153,6 +153,12 @@ class TimeConverter(Converter):
         
         if not remaining:
             remaining = "..."
+        
+        if remaining.startswith("to "):
+            remaining = remaining.removeprefix("to ")
+        
+        elif remaining.startswith("to"):
+            remaining = remaining.removeprefix("to")
             
         return dt, remaining
 
