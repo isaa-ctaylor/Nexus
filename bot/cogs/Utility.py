@@ -15,6 +15,7 @@ from aiohttp import InvalidURL
 from async_timeout import timeout
 from discord import ButtonStyle
 from discord.embeds import Embed
+from discord.ext import tasks
 from discord.ext.commands import Converter
 from discord.ext.commands.converter import UserConverter
 from discord.ext.commands.errors import BadArgument, CommandError
@@ -253,6 +254,8 @@ class Utility(Cog):
 
         self.rtfm_destinations = DESTINATIONS
         self.idevision = async_client(getenv("IDEVISION"))
+        
+        self._send_reminders.start()
 
     @command(
         name="redirectcheck",
@@ -618,6 +621,26 @@ class Utility(Cog):
         await channel.send(
             f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
         )
+
+    @tasks.loop(minutes=1)
+    async def _send_reminders(self):
+        data = await self.bot.db.fetch(
+            "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
+            int(datetime.datetime.utcnow().timestamp()),
+            one=False,
+        )
+
+        for datum in data:
+            self.bot.loop.create_task(
+                self._send_timer(
+                    datum["owner_id"],
+                    datum["channel_id"],
+                    datum["timeend"],
+                    datum["timestart"],
+                    datum["reason"],
+                    datum["message"],
+                )
+            )
 
 
 def setup(bot: Nexus):
