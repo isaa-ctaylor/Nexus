@@ -56,22 +56,43 @@ class InvalidTimeProvided(Exception):
 
 class TimeConverter(Converter):
     async def convert(self, ctx: NexusContext, argument):
-        arg = str(argument)
         date_obj = ctx.message.created_at
         
-        remaining = argument
+        remaining = self.check_startswith(argument)
         match = SIMPLETIME.match(argument)
         while match is not None and match.group(0):
             data = { k: int(v) for k, v in match.groupdict(default=0).items() }
             remaining = str(remaining[match.end():]).strip()
             date_obj += relativedelta(**data)
             
-            await ctx.send(str(remaining) + "\n" + str(date_obj))
-            
             match = SIMPLETIME.match(remaining)
 
         return (date_obj, remaining)
+    
+    def check_startswith(self, reason: str):
+        if reason.startswith('me') and reason[:6] in (
+            'me to ',
+            'me in ',
+            'me at ',
+        ): 
+            reason = reason[6:] 
 
+        if reason[:2] == 'me' and reason[:9] == 'me after ': 
+            reason = reason[9:] 
+
+        if reason[:3] == 'me ': 
+            reason = reason[3:] 
+
+        if reason[:2] == 'me': 
+            reason = reason[2:] 
+
+        if reason[:6] == 'after ': 
+            reason = reason[6:] 
+
+        if reason[:5] == 'after': 
+            reason = reason[5:] 
+        
+        return reason
 
 class InvalidDiscriminator(BadArgument):
     def __init__(self, arg: Any):
