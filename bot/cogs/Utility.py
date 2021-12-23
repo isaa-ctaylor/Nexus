@@ -587,7 +587,7 @@ class Utility(Cog):
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
         await channel.send(
-            f"<@{owner}>, <t:{start}:R>: {reason}\n\n{message.jump_url if message else ''}"
+            f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
         )
 
 
