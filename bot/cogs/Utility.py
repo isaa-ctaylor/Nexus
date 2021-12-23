@@ -596,7 +596,7 @@ class Utility(Cog):
             )
 
         await ctx.reply(
-            f"Alright {ctx.author.mention}, in {humanize.naturaldelta((when - ctx.message.created_at).total_seconds(), minimum_unit='seconds', when=ctx.message.created_at)}: {reason}"
+            f"Alright {ctx.author.mention}, <t:{int(when)}:R>: {reason}"
         )
 
     async def _send_timer(
