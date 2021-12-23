@@ -71,7 +71,7 @@ class TimeConverter(Converter):
                 match = SIMPLETIME.match(remaining)
 
         else:
-            remaining = self.check_startswith(argument)
+            remaining = self._check_startswith(argument)
 
             await ctx.send(remaining)
             times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(remaining, sourceTime=date_obj)
@@ -117,9 +117,9 @@ class TimeConverter(Converter):
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
 
-        return (result_dt, remaining)
+        return self._run_checks(ctx.message.created_at, result_dt, remaining)
 
-    def check_startswith(self, reason: str):
+    def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
             "me to ",
             "me in ",
@@ -147,6 +147,14 @@ class TimeConverter(Converter):
 
         return reason.strip()
 
+    def _run_checks(self, now, dt, remaining):
+        if dt < now:
+            raise InvalidTimeProvided("Time is in the past!")
+        
+        if not remaining:
+            remaining = "..."
+            
+        return dt, remaining
 
 class InvalidDiscriminator(BadArgument):
     def __init__(self, arg: Any):
