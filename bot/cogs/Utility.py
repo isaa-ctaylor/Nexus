@@ -528,7 +528,7 @@ class Utility(Cog):
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
         await ctx.send(str(dateandtime))
         
-    @_remind.error()
+    @_remind.error
     async def _remind_error(self, ctx: NexusContext, error: Exception):
         if isinstance(error, InvalidTimeProvided):
             return await ctx.error(str(error))
