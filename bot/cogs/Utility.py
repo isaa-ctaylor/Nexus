@@ -584,7 +584,7 @@ class Utility(Cog):
             - datetime.datetime.fromtimestamp(start, tz=datetime.timezone.utc)
         ).total_seconds()
         await asyncio.sleep(sleep)
-        channel = self.bot.get_channel(message)
+        channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
         await channel.send(
             f"<@{owner}>, <t:{start}:R>: {reason}\n\n{message.jump_url if message else ''}"
