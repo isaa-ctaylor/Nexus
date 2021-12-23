@@ -77,7 +77,6 @@ class TimeConverter(Converter):
         else:
             remaining = self._check_startswith(argument)
 
-            await ctx.send(remaining)
             times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(
                 remaining, sourceTime=date_obj
             )
@@ -85,7 +84,7 @@ class TimeConverter(Converter):
                 raise InvalidTimeProvided("Invalid time provided!")
 
             dt, timestatus, beginning, end, _ = times[0]
-            await ctx.send(_)
+
             if not timestatus.hasDateOrTime:
                 raise InvalidTimeProvided("Invalid time provided!")
 
