@@ -117,7 +117,7 @@ class TimeConverter(Converter):
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
 
-        return (date_obj, remaining)
+        return (result_dt, remaining)
 
     def check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
