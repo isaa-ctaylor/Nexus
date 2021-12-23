@@ -4,6 +4,7 @@ from os import getenv
 from typing import Any, List, Optional
 
 from idevision.errors import InvalidRtfmLibrary
+import parsedatetime
 from utils import hyperlink
 from utils.scraper import Website
 
@@ -42,7 +43,8 @@ SIMPLETIME = re.compile(
        (?:(?P<hours>[0-9]{1,5})(?:hours?|h))?
        (?:(?P<minutes>[0-9]{1,5})(?:minutes?|m))?
        (?:(?P<seconds>[0-9]{1,5})(?:seconds?|s))?
-    """, re.VERBOSE
+    """,
+    re.VERBOSE,
 )
 
 
@@ -57,42 +59,93 @@ class InvalidTimeProvided(Exception):
 class TimeConverter(Converter):
     async def convert(self, ctx: NexusContext, argument):
         date_obj = ctx.message.created_at
-        
-        remaining = self.check_startswith(argument)
+
+        remaining = argument
         match = SIMPLETIME.match(remaining)
-        while match is not None and match.group(0):
-            data = { k: int(v) for k, v in match.groupdict(default=0).items() }
-            remaining = str(remaining[match.end():]).strip()
-            date_obj += relativedelta(**data)
-            
-            match = SIMPLETIME.match(remaining)
+        if match is not None and match.group(0):
+            while match is not None and match.group(0):
+                data = {k: int(v) for k, v in match.groupdict(default=0).items()}
+                remaining = str(remaining[match.end() :]).strip()
+                date_obj += relativedelta(**data)
+
+                match = SIMPLETIME.match(remaining)
+
+        else:
+            remaining = self.check_startswith(argument)
+
+            times = Calendar().nlp(remaining, sourceTime=date_obj)
+            if times is None or len(times) == 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+
+            dt, timestatus, beginning, end, string = times[0]
+
+            if not timestatus.hasDateOrTime:
+                raise InvalidTimeProvided("Invalid time provided!")
+
+            if beginning not in (0, 1) or end != len(argument):
+                raise InvalidTimeProvided(
+                    "I see a time, but it is not at the start or end of your input! (or I didn't understand you)"
+                )
+
+            if not timestatus.hasTime:
+                dt = dt.replace(
+                    hour=date_obj.hour,
+                    minute=date_obj.minute,
+                    second=date_obj.second,
+                    microsecond=date_obj.microsecond,
+                )
+
+            if timestatus.accuracy == parsedatetime.pdtContext.ACU_HALFDAY:
+                dt = dt.replace(day=date_obj.day + 1)
+
+            result_dt = dt.replace(tzinfo=datetime.timezone.utc)
+
+            if beginning in (0, 1):
+                if beginning == 1:
+                    if argument[0] != '"':
+                        raise InvalidTimeProvided("Expected quote before time input...")
+
+                    if end >= len(argument) or argument[end] != '"':
+                        raise InvalidTimeProvided(
+                            "If the time is quoted, you must unquote it."
+                        )
+
+                    remaining = argument[end + 1 :].lstrip(" ,.!")
+                else:
+                    remaining = argument[end:].lstrip(" ,.!")
+            elif len(argument) == end:
+                remaining = argument[:beginning].strip()
 
         return (date_obj, remaining)
-    
+
     def check_startswith(self, reason: str):
-        if reason.startswith('me') and reason[:6] in (
-            'me to ',
-            'me in ',
-            'me at ',
-        ): 
-            reason = reason[6:] 
+        if reason.startswith("me") and reason[:6] in (
+            "me to ",
+            "me in ",
+            "me at ",
+        ):
+            reason = reason[6:]
 
-        if reason[:2] == 'me' and reason[:9] == 'me after ': 
-            reason = reason[9:] 
+        if reason[:2] == "me" and reason[:9] == "me after ":
+            reason = reason[9:]
 
-        if reason[:3] == 'me ': 
-            reason = reason[3:] 
+        if reason[:3] == "me ":
+            reason = reason[3:]
 
-        if reason[:2] == 'me': 
-            reason = reason[2:] 
+        if reason[:2] == "me":
+            reason = reason[2:]
 
-        if reason[:6] == 'after ': 
-            reason = reason[6:] 
+        if reason[:6] == "after ":
+            reason = reason[6:]
 
-        if reason[:5] == 'after': 
-            reason = reason[5:] 
-        
+        if reason[:5] == "after":
+            reason = reason[5:]
+
+        if reason.endswith("from now"):
+            reason = reason[:-8]
+
         return reason.strip()
+
 
 class InvalidDiscriminator(BadArgument):
     def __init__(self, arg: Any):
@@ -474,6 +527,12 @@ class Utility(Cog):
     @command(name="remind")
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
         await ctx.send(str(dateandtime))
+        
+    @_remind.error()
+    async def _remind_error(self, ctx: NexusContext, error: Exception):
+        if isinstance(error, InvalidTimeProvided):
+            return await ctx.error(str(error))
+        raise error
 
 
 def setup(bot: Nexus):
