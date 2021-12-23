@@ -59,7 +59,7 @@ class TimeConverter(Converter):
         date_obj = ctx.message.created_at
         
         remaining = self.check_startswith(argument)
-        match = SIMPLETIME.match(argument)
+        match = SIMPLETIME.match(remaining)
         while match is not None and match.group(0):
             data = { k: int(v) for k, v in match.groupdict(default=0).items() }
             remaining = str(remaining[match.end():]).strip()
@@ -92,7 +92,7 @@ class TimeConverter(Converter):
         if reason[:5] == 'after': 
             reason = reason[5:] 
         
-        return reason
+        return reason.strip()
 
 class InvalidDiscriminator(BadArgument):
     def __init__(self, arg: Any):
