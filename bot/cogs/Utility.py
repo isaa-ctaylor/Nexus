@@ -103,19 +103,19 @@ class TimeConverter(Converter):
 
             if beginning in (0, 1):
                 if beginning == 1:
-                    if argument[0] != '"':
+                    if remaining[0] != '"':
                         raise InvalidTimeProvided("Expected quote before time input...")
 
-                    if end >= len(argument) or argument[end] != '"':
+                    if end >= len(argument) or remaining[end] != '"':
                         raise InvalidTimeProvided(
                             "If the time is quoted, you must unquote it."
                         )
 
-                    remaining = argument[end + 1 :].lstrip(" ,.!")
+                    remaining = remaining[end + 1 :].lstrip(" ,.!")
                 else:
-                    remaining = argument[end:].lstrip(" ,.!")
+                    remaining = remaining[end:].lstrip(" ,.!")
             elif len(argument) == end:
-                remaining = argument[:beginning].strip()
+                remaining = remaining[:beginning].strip()
 
         return (date_obj, remaining)
 
