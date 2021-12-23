@@ -2,6 +2,8 @@ from io import BytesIO
 from math import floor, log10
 from os import getenv
 from typing import Any, List, Optional
+from discord.channel import TextChannel
+from discord.member import Member
 
 from idevision.errors import InvalidRtfmLibrary
 import parsedatetime
@@ -30,6 +32,7 @@ from utils.scraper import Search
 from parsedatetime import Calendar
 import datetime
 from dateutil.relativedelta import relativedelta
+import asyncio
 
 
 load_dotenv()
@@ -74,7 +77,9 @@ class TimeConverter(Converter):
             remaining = self._check_startswith(argument)
 
             await ctx.send(remaining)
-            times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(remaining, sourceTime=date_obj)
+            times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(
+                remaining, sourceTime=date_obj
+            )
             if times is None or len(times) == 0:
                 raise InvalidTimeProvided("Invalid time provided!")
 
@@ -150,17 +155,18 @@ class TimeConverter(Converter):
     def _run_checks(self, now, dt, remaining):
         if dt < now:
             raise InvalidTimeProvided("Time is in the past!")
-        
+
         if not remaining:
             remaining = "..."
-        
+
         if remaining.startswith("to "):
             remaining = remaining.removeprefix("to ")
-        
+
         elif remaining.startswith("to"):
             remaining = remaining.removeprefix("to")
-            
+
         return dt, remaining
+
 
 class InvalidDiscriminator(BadArgument):
     def __init__(self, arg: Any):
@@ -541,13 +547,48 @@ class Utility(Cog):
 
     @command(name="remind")
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
-        await ctx.send(f"<t:{int(dateandtime[0].timestamp())}:F>" + "\n" + str(dateandtime[1]))
-        
+        await ctx.send(
+            f"<t:{int(dateandtime[0].timestamp())}:F>" + "\n" + str(dateandtime[1])
+        )
+
     @_remind.error
     async def _remind_error(self, ctx: NexusContext, error: Exception):
         if isinstance(error, InvalidTimeProvided):
             return await ctx.error(str(error))
         raise error
+
+    async def _create_timer(
+        self,
+        ctx: NexusContext,
+        owner: Member,
+        channel: TextChannel,
+        when: datetime.datetime,
+        reason: str,
+    ):
+        if sleep := (when - ctx.message.created_at).total_seconds() <= 60:
+            await asyncio.sleep(sleep)
+            await self._send_timer(
+                owner.id,
+                channel.id,
+                when,
+                ctx.message.created_at.timestamp(),
+                reason,
+                ctx.message.id,
+            )
+
+    async def _send_timer(
+        self, owner: int, channel: int, end: float, start: float, reason: str, message: int
+    ):
+        sleep = (
+            datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
+            - datetime.datetime.fromtimestamp(start, tz=datetime.timezone.utc)
+        ).total_seconds()
+        await asyncio.sleep(sleep)
+        channel = self.bot.get_channel(message)
+        message = await channel.fetch_message(message) if channel else None
+        await channel.send(
+            f"<@{owner}>, <t:{start}:R>: {reason}\n\n{message.jump_url if message else ''}"
+        )
 
 
 def setup(bot: Nexus):
