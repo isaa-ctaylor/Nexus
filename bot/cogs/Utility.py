@@ -596,7 +596,7 @@ class Utility(Cog):
             )
 
         await ctx.reply(
-            f"Alright {ctx.author.mention}, <t:{int(when)}:R>: {reason}"
+            f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
 
     async def _send_timer(
