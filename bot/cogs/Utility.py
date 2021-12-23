@@ -15,7 +15,7 @@ from discord import ButtonStyle
 from discord.embeds import Embed
 from discord.ext.commands import Converter
 from discord.ext.commands.converter import UserConverter
-from discord.ext.commands.errors import BadArgument
+from discord.ext.commands.errors import BadArgument, CommandError
 from discord.ui import Button, View
 from dotenv.main import load_dotenv
 from idevision import async_client
@@ -52,7 +52,7 @@ class TimeInPast(Exception):
     pass
 
 
-class InvalidTimeProvided(Exception):
+class InvalidTimeProvided(CommandError):
     pass
 
 
