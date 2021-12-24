@@ -606,8 +606,6 @@ class Utility(Cog):
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
 
-        await self._send_reminders()
-
     async def _send_timer(
         self,
         now: datetime.datetime,
@@ -622,6 +620,7 @@ class Utility(Cog):
             datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
             - now
         ).total_seconds()
+        print(sleep)
         await asyncio.sleep(sleep)
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
