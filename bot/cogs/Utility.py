@@ -17,7 +17,7 @@ from discord import ButtonStyle
 from discord.embeds import Embed
 from discord.ext import tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import UserConverter
+from discord.ext.commands.converter import UserConverter, clean_content
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.ui import Button, View
 from dotenv.main import load_dotenv
@@ -124,7 +124,7 @@ class TimeConverter(Converter):
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
 
-        return self._run_checks(ctx.message.created_at, result_dt, remaining)
+        return self._run_checks(ctx.message.created_at, result_dt, await clean_content().convert(ctx, remaining))
 
     def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
