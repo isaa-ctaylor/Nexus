@@ -553,7 +553,7 @@ class Utility(Cog):
         name="remind",
         usage="<when> [what]",
         examples=["me in 1h to do the dishes", "me in four hours eat some cake"],
-        invoke_without_command=True
+        invoke_without_command=True,
     )
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
         """
@@ -669,14 +669,16 @@ class Utility(Cog):
 
         embeds = [
             Embed(
+                title="Reminders",
                 colour=self.bot.config.colours.neutral,
                 description="\n".join(
-                    f"ID: {r['reminder_id']} <t:{int(r['timeend'])}:R>:\n{r['reason']}" for r in page
+                    f"ID: {r['reminder_id']} <t:{int(r['timeend'])}:R>:\n{r['reason']}"
+                    for r in page
                 ),
-            )
+            ).set_footer(text=f"{len(data)} reminder{'s' if len(data) > 1 else ''}")
             for page in pages
         ]
-        
+
         await ctx.paginate(embeds)
 
 
