@@ -617,7 +617,7 @@ class Utility(Cog):
         message: int,
     ):
         sleep = end - now.timestamp()
-        print(sleep)
+        print(sleep or "A")
         await asyncio.sleep(sleep)
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
