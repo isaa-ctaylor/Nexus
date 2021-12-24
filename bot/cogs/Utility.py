@@ -582,6 +582,7 @@ class Utility(Cog):
         if (when - ctx.message.created_at).total_seconds() <= 60:
             self.bot.loop.create_task(
                 self._send_timer(
+                    ctx.message.created_at,
                     owner.id,
                     channel.id,
                     when.timestamp(),
@@ -609,6 +610,7 @@ class Utility(Cog):
 
     async def _send_timer(
         self,
+        now: datetime.datetime,
         owner: int,
         channel: int,
         end: float,
@@ -618,7 +620,7 @@ class Utility(Cog):
     ):
         sleep = (
             datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
-            - datetime.datetime.fromtimestamp(start, tz=datetime.timezone.utc)
+            - now
         ).total_seconds()
         await asyncio.sleep(sleep)
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
@@ -635,10 +637,14 @@ class Utility(Cog):
             int(now.timestamp()),
             one=False,
         )
+        
+        if not data:
+            return
 
         for datum in data:
             self.bot.loop.create_task(
                 self._send_timer(
+                    now,
                     datum["owner_id"],
                     datum["channel_id"],
                     datum["timeend"],
