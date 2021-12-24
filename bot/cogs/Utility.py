@@ -681,14 +681,17 @@ class Utility(Cog):
         """
         List all your current reminders
         """
-        data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
+        data = sorted(
+            await self.bot.db.fetch(
+                "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
+            ),
+            key=lambda x: x["timeend"],
         )
 
         if not data:
             return await ctx.error("No currently set reminders!")
 
-        pages = [data[i : i + 5] for i in range(0, len(sorted(data, key=lambda x: x["timeend"])), 5)]
+        pages = [data[i : i + 5] for i in range(0, len(data), 5)]
 
         embeds = [
             Embed(
