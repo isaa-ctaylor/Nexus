@@ -659,11 +659,13 @@ class Utility(Cog):
         List all your current reminders
         """
         data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id
+            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
         )
 
         if not data:
             return await ctx.error("No currently set reminders!")
+
+        pages = [data[i : i + 5] for i in range(0, len(data), 5)]
 
         embeds = [
             Embed(
@@ -672,7 +674,7 @@ class Utility(Cog):
                     f"<t:{int(r['timeend'])}:R>:\n{r['reason']}" for r in page
                 ),
             )
-            for page in [data[i : i + 5] for i in range(0, len(data), 5)]
+            for page in pages
         ]
         
         await ctx.paginate(embeds)
