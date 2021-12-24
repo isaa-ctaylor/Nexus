@@ -617,7 +617,7 @@ class Utility(Cog):
         message: int,
     ):
         sleep = (
-            datetime.datetime.fromtimestamp(end)
+            datetime.datetime.fromtimestamp(end).replace(tzinfo=datetime.timezone.utc)
             - datetime.datetime.fromtimestamp(now)
         ).total_seconds()
         print(sleep)
@@ -630,7 +630,7 @@ class Utility(Cog):
 
     @tasks.loop(minutes=1)
     async def _send_reminders(self):
-        now = datetime.datetime.utcnow().replace(tzinfo=None)
+        now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
