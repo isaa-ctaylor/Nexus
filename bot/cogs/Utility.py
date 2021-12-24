@@ -659,7 +659,7 @@ class Utility(Cog):
         Remove a set reminder given its id
         """
         data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id
+            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
         )
 
         if not data:
@@ -673,7 +673,7 @@ class Utility(Cog):
             ctx.author.id,
             index,
         )
-        
+
         await ctx.message.add_reaction("👍")
 
     @_remind.command(name="list")
