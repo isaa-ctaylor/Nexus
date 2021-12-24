@@ -581,8 +581,7 @@ class Utility(Cog):
     ):
         if (when - ctx.message.created_at).total_seconds() <= 60:
             self.bot.loop.create_task(
-                self._send_timer(
-                    ctx.message.created_at,
+                self._send_reminder(
                     owner.id,
                     channel.id,
                     when.timestamp(),
@@ -606,9 +605,8 @@ class Utility(Cog):
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
 
-    async def _send_timer(
+    async def _send_reminder(
         self,
-        now: datetime.datetime,
         owner: int,
         channel: int,
         end: float,
@@ -617,9 +615,7 @@ class Utility(Cog):
         message: int,
     ):
         now = datetime.datetime.utcnow()
-        print(now.timestamp(), end)
         sleep = end - now.timestamp()
-        print(sleep or "A")
         await asyncio.sleep(sleep)
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
@@ -641,8 +637,7 @@ class Utility(Cog):
 
         for datum in data:
             self.bot.loop.create_task(
-                self._send_timer(
-                    now,
+                self._send_reminder(
                     datum["owner_id"],
                     datum["channel_id"],
                     datum["timeend"],
