@@ -26,7 +26,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 from utils import Timer, codeblocksafe, executor
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
-from utils.subclasses.command import command
+from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
 import re
 from utils.scraper import Search
@@ -255,7 +255,7 @@ class Utility(Cog):
 
         self.rtfm_destinations = DESTINATIONS
         self.idevision = async_client(getenv("IDEVISION"))
-        
+
         self._send_reminders.start()
 
     @command(
@@ -392,23 +392,23 @@ class Utility(Cog):
         If just supplying the image does not work, or the image is light text on a dark background, try adding "--invert" to the end of your message
         """
         invert = False
+        if image and "--invert" in image:
+            invert = True
+            image = image.replace("--invert", "")
         if image:
-            if "--invert" in image:
-                invert = True
-                image = image.replace("--invert", "")
-            if image:
-                try:
-                    async with self.bot.session.get(image.strip()) as resp:
-                        image = await resp.read()
-                except InvalidURL:
-                    return await ctx.error("Please attach a valid image!")
+            try:
+                async with self.bot.session.get(image.strip()) as resp:
+                    image = await resp.read()
+            except InvalidURL:
+                return await ctx.error("Please attach a valid image!")
 
         if not image:
             if ctx.message.attachments:
                 image = await ctx.message.attachments[0].read()
-            if ref := ctx.message.reference:
-                if attachments := ref.resolved.attachments:
-                    image = await attachments[0].read()
+            if (ref := ctx.message.reference) and (
+                attachments := ref.resolved.attachments
+            ):
+                image = await attachments[0].read()
 
         try:
             image = Image.open(BytesIO(image)).convert("RGB")
@@ -549,7 +549,7 @@ class Utility(Cog):
 
         await ctx.paginate(embeds)
 
-    @command(
+    @group(
         name="remind",
         usage="<when> [what]",
         examples=["me in 1h to do the dishes", "me in four hours eat some cake"],
@@ -602,7 +602,7 @@ class Utility(Cog):
         await ctx.reply(
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
-        
+
         await self._send_reminders()
 
     async def _send_timer(
@@ -645,11 +645,35 @@ class Utility(Cog):
                     datum["message_id"],
                 )
             )
-        
+
         await self.bot.db.execute(
             "DELETE FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
         )
+
+    @_remind.command(name="list")
+    async def _remind_list(self, ctx: NexusContext):
+        """
+        List all your current reminders
+        """
+        data = await self.bot.db.fetch(
+            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id
+        )
+
+        if not data:
+            return await ctx.error("No currently set reminders!")
+
+        embeds = [
+            Embed(
+                colour=self.bot.config.colours.neutral,
+                description="\n".join(
+                    f"<t:{int(r['timeend'])}:R>:\n{r['reason']}" for r in page
+                ),
+            )
+            for page in [data[i : i + 5] for i in range(0, len(data), 5)]
+        ]
+        
+        await ctx.paginate(embeds)
 
 
 def setup(bot: Nexus):
