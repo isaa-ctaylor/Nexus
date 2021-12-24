@@ -553,15 +553,17 @@ class Utility(Cog):
         name="remind",
         usage="<when> [what]",
         examples=["me in 1h to do the dishes", "me in four hours eat some cake"],
+        invoke_without_command=True
     )
     async def _remind(self, ctx: NexusContext, *, dateandtime: TimeConverter):
         """
         Remind you to do something
 
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
-        await self._create_timer(
-            ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1]
-        )
+        if not ctx.invoked_subcommand:
+            await self._create_timer(
+                ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1]
+            )
 
     @_remind.error
     async def _remind_error(self, ctx: NexusContext, error: Exception):
