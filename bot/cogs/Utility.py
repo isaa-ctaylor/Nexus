@@ -256,6 +256,7 @@ class Utility(Cog):
         self.rtfm_destinations = DESTINATIONS
         self.idevision = async_client(getenv("IDEVISION"))
 
+        self._current_reminders = []
         self._send_reminders.start()
 
     @command(
@@ -603,10 +604,15 @@ class Utility(Cog):
         start: float,
         reason: str,
         message: int,
+        _id: int,
     ):
         now = datetime.datetime.utcnow()
         sleep = end - now.timestamp()
         await asyncio.sleep(sleep)
+        for i, r in enumerate(self._current_reminders):
+            if _id == r["reminder_id"]:
+                self._current_reminders.pop(i)
+                break
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
         message = await channel.fetch_message(message) if channel else None
         await channel.send(
@@ -621,6 +627,8 @@ class Utility(Cog):
             int(now.timestamp()),
             one=False,
         )
+        
+        self._current_reminders += data
         
         await self.bot.db.execute(
             "DELETE FROM reminders WHERE (timeend - $1) <= 60",
@@ -639,6 +647,7 @@ class Utility(Cog):
                     datum["timestart"],
                     datum["reason"],
                     datum["message_id"],
+                    datum["reminder_id"]
                 )
             )
 
@@ -672,9 +681,9 @@ class Utility(Cog):
         List all your current reminders
         """
         data = sorted(
-            await self.bot.db.fetch(
+            (await self.bot.db.fetch(
                 "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
-            ),
+            )) + [r for r in self._current_reminders if r["owner_id"] == ctx.author.id],
             key=lambda x: x["timeend"],
         )
 
