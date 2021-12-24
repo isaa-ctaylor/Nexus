@@ -579,31 +579,21 @@ class Utility(Cog):
         when: datetime.datetime,
         reason: str,
     ):
-        if (when - ctx.message.created_at).total_seconds() <= 60:
-            self.bot.loop.create_task(
-                self._send_reminder(
-                    owner.id,
-                    channel.id,
-                    when.timestamp(),
-                    ctx.message.created_at.timestamp(),
-                    reason,
-                    ctx.message.id,
-                )
-            )
-        else:
-            await self.bot.db.execute(
-                "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
-                owner.id,
-                channel.id,
-                int(when.timestamp()),
-                int(ctx.message.created_at.timestamp()),
-                str(reason),
-                ctx.message.id,
-            )
+        await self.bot.db.execute(
+            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            owner.id,
+            channel.id,
+            int(when.timestamp()),
+            int(ctx.message.created_at.timestamp()),
+            str(reason),
+            ctx.message.id,
+        )
 
         await ctx.reply(
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
+        
+        await self._send_reminders()
 
     async def _send_reminder(
         self,
@@ -631,6 +621,11 @@ class Utility(Cog):
             int(now.timestamp()),
             one=False,
         )
+        
+        await self.bot.db.execute(
+            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
+            int(now.timestamp()),
+        )
 
         if not data:
             return
@@ -647,10 +642,6 @@ class Utility(Cog):
                 )
             )
 
-        await self.bot.db.execute(
-            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
-            int(now.timestamp()),
-        )
 
     @_remind.command(name="remove", usage="<id>")
     async def _remind_remove(self, ctx: NexusContext, index: int):
