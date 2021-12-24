@@ -74,6 +74,7 @@ class TimeConverter(Converter):
                 date_obj += relativedelta(**data)
 
                 match = SIMPLETIME.match(remaining)
+            result_dt = date_obj
 
         else:
             remaining = self._check_startswith(argument)
@@ -626,9 +627,10 @@ class Utility(Cog):
 
     @tasks.loop(minutes=1)
     async def _send_reminders(self):
+        now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
-            int(datetime.datetime.utcnow().timestamp()),
+            int(now.timestamp()),
             one=False,
         )
 
@@ -643,6 +645,11 @@ class Utility(Cog):
                     datum["message_id"],
                 )
             )
+        
+        await self.bot.db.execute(
+            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
+            int(now.timestamp()),
+        )
 
 
 def setup(bot: Nexus):
