@@ -617,6 +617,7 @@ class Utility(Cog):
         message: int,
     ):
         now = datetime.datetime.utcnow()
+        print(now.timestamp(), end)
         sleep = end - now.timestamp()
         print(sleep or "A")
         await asyncio.sleep(sleep)
