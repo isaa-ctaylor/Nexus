@@ -653,6 +653,29 @@ class Utility(Cog):
             int(now.timestamp()),
         )
 
+    @_remind.command(name="remove", usage="<id>")
+    async def _remind_remove(self, ctx: NexusContext, index: int):
+        """
+        Remove a set reminder given its id
+        """
+        data = await self.bot.db.fetch(
+            "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id
+        )
+
+        if not data:
+            return await ctx.error("No reminders set!")
+
+        if index not in [r["reminder_id"] for r in data]:
+            return await ctx.error("No reminder with that ID found!")
+
+        await self.bot.db.execute(
+            "DELETE FROM reminders WHERE (owner_id = $1 and reminder_id = $2)",
+            ctx.author.id,
+            index,
+        )
+        
+        await ctx.message.add_reaction("👍")
+
     @_remind.command(name="list")
     async def _remind_list(self, ctx: NexusContext):
         """
