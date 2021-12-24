@@ -630,7 +630,7 @@ class Utility(Cog):
 
     @tasks.loop(minutes=1)
     async def _send_reminders(self):
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now()
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
