@@ -617,7 +617,7 @@ class Utility(Cog):
         message: int,
     ):
         sleep = (
-            datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
+            datetime.datetime.fromtimestamp(end).replace(tzinfo=datetime.timezone.utc)
             - now.replace(tzinfo=datetime.timezone.utc)
         ).total_seconds()
         print(sleep)
