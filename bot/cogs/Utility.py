@@ -616,7 +616,10 @@ class Utility(Cog):
         reason: str,
         message: int,
     ):
-        sleep = (datetime.datetime.fromtimestamp(end) - now).total_seconds()
+        sleep = (
+            datetime.datetime.fromtimestamp(end)
+            - datetime.datetime.fromtimestamp(start)
+        ).total_seconds()
         print(sleep)
         await asyncio.sleep(sleep)
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
