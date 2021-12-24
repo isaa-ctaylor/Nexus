@@ -618,7 +618,7 @@ class Utility(Cog):
     ):
         sleep = (
             datetime.datetime.fromtimestamp(end, tz=datetime.timezone.utc)
-            - now
+            - now.replace(tzinfo=datetime.timezone.utc)
         ).total_seconds()
         print(sleep)
         await asyncio.sleep(sleep)
