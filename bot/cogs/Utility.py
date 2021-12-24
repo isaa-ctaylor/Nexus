@@ -671,7 +671,7 @@ class Utility(Cog):
             Embed(
                 colour=self.bot.config.colours.neutral,
                 description="\n".join(
-                    f"<t:{int(r['timeend'])}:R>:\n{r['reason']}" for r in page
+                    f"ID: {r['reminder_id']} <t:{int(r['timeend'])}:R>:\n{r['reason']}" for r in page
                 ),
             )
             for page in pages
