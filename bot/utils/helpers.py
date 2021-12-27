@@ -306,9 +306,9 @@ class Paginator:
             self.message = await destination.send(
                 self.items[start].content or None,
                 embed=self.items[start].embed or None,
-                file=self.items[start].file or MISSING
+                file=self.items[start].file or (MISSING
                 if not isinstance(self.ctx.message, Message)
-                else None,
+                else None),
                 view=self.items[start].view or MISSING,
                 reference=self.ctx.message
                 if self.reply and isinstance(self.ctx.message, Message)
