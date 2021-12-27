@@ -238,6 +238,7 @@ class Colour(Converter):
             f"Couldn't find a colour value matching `{codeblocksafe(argument)}`."
         )
 
+
 DESTINATIONS = {
     "dpy": "https://discordpy.readthedocs.io/en/stable",
     "dpy2": "https://discordpy.readthedocs.io/en/master",
@@ -766,14 +767,23 @@ class Utility(Cog):
     async def _colour(self, ctx: NexusContext, colour: Colour):
         """
         Get information on a colour
-        
+
         Colour can be specified in one of many ways (each shown with an example):
             - RGB: (255, 55, 21)
             - Hex: #FF0000 or #F00
             - Name: red
         """
         rendered: discord.File = await self._render_colour(colour)
-        await ctx.paginate(paginatorinput(embed=Embed(colour=colour).set_thumbnail(url=f"attachment://{rendered.filename}"), file=rendered))
+        await ctx.paginate(
+            paginatorinput(
+                embed=Embed(colour=colour)
+                .set_thumbnail(url=f"attachment://{rendered.filename}")
+                .add_field(name="Hex", value=str(colour))
+                .add_field(name="RGB", value=f"({colour.r}, {colour.g}, {colour.b})"),
+                file=rendered,
+            )
+        )
+
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
