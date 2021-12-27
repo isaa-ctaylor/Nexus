@@ -712,8 +712,8 @@ class Utility(Cog):
             Embed(
                 title="Reminders",
                 colour=self.bot.config.colours.neutral,
-                description="\n".join(
-                    f"ID: {r['reminder_id']} <t:{int(r['timeend'])}:R>:\n{r['reason']}"
+                description="\n\n".join(
+                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>:\n{r['reason']}"
                     for r in page
                 ),
             ).set_footer(
