@@ -1,46 +1,40 @@
+import asyncio
+import contextlib
+import datetime
+import re
 from io import BytesIO
 from math import floor, log10
 from os import getenv
 from typing import Any, List, Optional
-from discord.channel import TextChannel
-from discord.member import Member
 
-from idevision.errors import InvalidRtfmLibrary
+import discord
+import humanize
 import parsedatetime
-from bot.utils.helpers import paginatorinput
-from utils import hyperlink
-from utils.scraper import Website
-
 import pytesseract
 from aiohttp import InvalidURL
 from async_timeout import timeout
+from dateutil.relativedelta import relativedelta
 from discord import ButtonStyle
+from discord.channel import TextChannel
 from discord.embeds import Embed
-from discord.ext import tasks
+from discord.ext import commands, tasks
 from discord.ext.commands import Converter
 from discord.ext.commands.converter import UserConverter, clean_content
 from discord.ext.commands.errors import BadArgument, CommandError
+from discord.member import Member
 from discord.ui import Button, View
 from dotenv.main import load_dotenv
 from idevision import async_client
-from PIL import Image, ImageOps, UnidentifiedImageError
-from utils import Timer, codeblocksafe, executor
+from idevision.errors import InvalidRtfmLibrary
+from parsedatetime import Calendar
+from PIL import Image, ImageColor, ImageOps, UnidentifiedImageError
+from utils import Timer, codeblocksafe, executor, hyperlink
+from utils.helpers import paginatorinput
+from utils.scraper import Search, Website
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-import re
-from utils.scraper import Search
-from parsedatetime import Calendar
-import datetime
-from dateutil.relativedelta import relativedelta
-import asyncio
-import humanize
-import discord
-import contextlib
-from discord.ext import commands
-from PIL import ImageColor
-
 
 load_dotenv()
 
