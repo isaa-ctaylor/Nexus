@@ -28,7 +28,7 @@ from idevision import async_client
 from idevision.errors import InvalidRtfmLibrary
 from parsedatetime import Calendar
 from PIL import Image, ImageColor, ImageOps, UnidentifiedImageError
-from utils import Timer, codeblocksafe, executor, hyperlink
+from utils import Timer, codeblocksafe, executor, hyperlink, codeblock
 from utils.helpers import paginatorinput
 from utils.scraper import Search, Website
 from utils.subclasses.bot import Nexus
@@ -778,8 +778,8 @@ class Utility(Cog):
             paginatorinput(
                 embed=Embed(colour=colour)
                 .set_thumbnail(url=f"attachment://{rendered.filename}")
-                .add_field(name="Hex", value=str(colour))
-                .add_field(name="RGB", value=f"({colour.r}, {colour.g}, {colour.b})"),
+                .add_field(name="Hex", value=codeblock(str(colour)))
+                .add_field(name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})")),
                 file=rendered,
             )
         )

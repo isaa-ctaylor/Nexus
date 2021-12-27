@@ -52,3 +52,6 @@ def hyperlink(text, uri):
     if uri is None:
         return text
     return f"[{text}]({uri})"
+
+def codeblock(text, language=""):
+    return f"```{language}\n{text}```"
