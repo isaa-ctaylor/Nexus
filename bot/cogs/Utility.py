@@ -773,7 +773,7 @@ class Utility(Cog):
             - Name: red
         """
         rendered: discord.File = await self._render_colour(colour)
-        await ctx.paginate(paginatorinput(embed=Embed(colour=colour).set_image(url=f"attachment://{rendered.filename}"), file=rendered))
+        await ctx.paginate(paginatorinput(embed=Embed(colour=colour).set_thumbnail(url=f"attachment://{rendered.filename}"), file=rendered))
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
