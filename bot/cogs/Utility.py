@@ -35,6 +35,10 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import asyncio
 import humanize
+import discord
+import contextlib
+from discord.ext import commands
+from PIL import ImageColor
 
 
 load_dotenv()
@@ -209,6 +213,35 @@ class Discriminator(Converter):
 
         return _str
 
+
+class Colour(Converter):
+    async def convert(self, ctx, argument: str):
+        with contextlib.suppress(AttributeError):
+            RGB_REGEX = re.compile(r"\(?(\d+),?\s*(\d+),?\s*(\d+)\)?")
+            match = RGB_REGEX.match(argument)
+            check = all(0 <= int(x) <= 255 for x in match.groups())
+
+        if match and check:
+            rgb = [int(x) for x in match.groups()]
+            return discord.Colour.from_rgb(*rgb)
+
+        converter = commands.ColourConverter()
+
+        try:
+            result = await converter.convert(ctx, argument)
+        except commands.BadColourArgument:
+            try:
+                colour = ImageColor.getrgb(argument)
+                result = discord.Colour.from_rgb(*colour)
+            except ValueError:
+                result = None
+
+        if result:
+            return result
+
+        raise commands.BadArgument(
+            f"Couldn't find a colour value matching `{codeblocksafe(argument)}`."
+        )
 
 DESTINATIONS = {
     "dpy": "https://discordpy.readthedocs.io/en/stable",
@@ -724,6 +757,27 @@ class Utility(Cog):
 
         await ctx.paginate(embeds)
 
+    @executor
+    def _render_colour(self, colour: discord.Colour):
+        buf = BytesIO()
+        img = Image.new("RGB", (500, 500), (colour.r, colour.g, colour.b))
+        img.save(buf, "PNG")
+        buf.seek(0)
+        return discord.File(
+            buf, filename=f'{str(colour).replace(" ", "_").strip("#")}.png'
+        )
+
+    @command(name="colour", aliases=["color"])
+    async def _colour(self, ctx: NexusContext, colour: Colour):
+        """
+        Get information on a colour
+        
+        Colour can be specified in one of many ways (each shown with an example):
+            - RGB: (255, 55, 21)
+            - Hex: #FF0000 or #F00
+            - Name: red
+        """
+        await ctx.send(file=await self._render_colour(colour))
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
