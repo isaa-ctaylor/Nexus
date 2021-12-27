@@ -779,7 +779,8 @@ class Utility(Cog):
                 embed=Embed(colour=colour)
                 .set_thumbnail(url=f"attachment://{rendered.filename}")
                 .add_field(name="Hex", value=codeblock(str(colour)))
-                .add_field(name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})")),
+                .add_field(name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})"))
+                .add_field(name="Integer", value=codeblock(colour.value)),
                 file=rendered,
             )
         )
