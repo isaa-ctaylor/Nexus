@@ -7,6 +7,7 @@ from discord.member import Member
 
 from idevision.errors import InvalidRtfmLibrary
 import parsedatetime
+from bot.utils.helpers import paginatorinput
 from utils import hyperlink
 from utils.scraper import Website
 
@@ -758,7 +759,7 @@ class Utility(Cog):
         await ctx.paginate(embeds)
 
     @executor
-    def _render_colour(self, colour: discord.Colour):
+    def _render_colour(self, colour: discord.Colour) -> discord.File:
         buf = BytesIO()
         img = Image.new("RGB", (500, 500), (colour.r, colour.g, colour.b))
         img.save(buf, "PNG")
@@ -777,7 +778,8 @@ class Utility(Cog):
             - Hex: #FF0000 or #F00
             - Name: red
         """
-        await ctx.send(file=await self._render_colour(colour))
+        rendered: discord.File = await self._render_colour(colour)
+        await ctx.paginate(paginatorinput(embed=Embed(colour=colour).set_image(url=f"attachment://{rendered.filename}"), file=rendered))
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
