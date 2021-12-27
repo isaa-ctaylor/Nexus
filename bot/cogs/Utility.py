@@ -62,19 +62,27 @@ class InvalidTimeProvided(CommandError):
 
 
 class TimeConverter(Converter):
-    async def convert(self, ctx: NexusContext, argument):
-        date_obj = ctx.message.created_at
-
+    def _check_regex(self, dt, argument):
         remaining = argument
         match = SIMPLETIME.match(remaining)
-        if match is not None and match.group(0):
-            while match is not None and match.group(0):
-                data = {k: int(v) for k, v in match.groupdict(default=0).items()}
-                remaining = str(remaining[match.end() :]).strip()
-                date_obj += relativedelta(**data)
+        if match is None or not match.group(0):
+            return None
+        while match is not None and match.group(0):
+            data = {k: int(v) for k, v in match.groupdict(default=0).items()}
+            remaining = str(remaining[match.end() :]).strip()
+            dt += relativedelta(**data)
 
-                match = SIMPLETIME.match(remaining)
-            result_dt = date_obj
+            match = SIMPLETIME.match(remaining)
+        result_dt = dt
+        return result_dt, remaining
+
+    async def convert(self, ctx: NexusContext, argument):  # sourcery no-metrics
+        date_obj = ctx.message.created_at
+
+        retime = self._check_regex(date_obj, argument)
+
+        if retime is not None:
+            result_dt, remaining = retime
 
         else:
             remaining = self._check_startswith(argument)
@@ -124,7 +132,11 @@ class TimeConverter(Converter):
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
 
-        return self._run_checks(ctx.message.created_at, result_dt, await clean_content().convert(ctx, remaining))
+        return self._run_checks(
+            ctx.message.created_at,
+            result_dt,
+            await clean_content().convert(ctx, remaining),
+        )
 
     def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
@@ -593,7 +605,7 @@ class Utility(Cog):
         await ctx.reply(
             f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
         )
-        
+
         await self._send_reminders()
 
     async def _send_reminder(
@@ -627,9 +639,9 @@ class Utility(Cog):
             int(now.timestamp()),
             one=False,
         )
-        
+
         self._current_reminders += data
-        
+
         await self.bot.db.execute(
             "DELETE FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
@@ -647,12 +659,11 @@ class Utility(Cog):
                     datum["timestart"],
                     datum["reason"],
                     datum["message_id"],
-                    datum["reminder_id"]
+                    datum["reminder_id"],
                 )
             )
 
-
-    @_remind.command(name="remove", usage="<id>")
+    @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
         """
         Remove a set reminder given its id
@@ -681,9 +692,14 @@ class Utility(Cog):
         List all your current reminders
         """
         data = sorted(
-            (await self.bot.db.fetch(
-                "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
-            )) + [r for r in self._current_reminders if r["owner_id"] == ctx.author.id],
+            (
+                await self.bot.db.fetch(
+                    "SELECT * FROM reminders WHERE owner_id = $1",
+                    ctx.author.id,
+                    one=False,
+                )
+            )
+            + [r for r in self._current_reminders if r["owner_id"] == ctx.author.id],
             key=lambda x: x["timeend"],
         )
 
@@ -700,7 +716,9 @@ class Utility(Cog):
                     f"ID: {r['reminder_id']} <t:{int(r['timeend'])}:R>:\n{r['reason']}"
                     for r in page
                 ),
-            ).set_footer(text=f"{len(data)} reminder{'s' if len(data) > 1 else ''}")
+            ).set_footer(
+                text=f"{len(data)} total reminder{'s' if len(data) > 1 else ''}"
+            )
             for page in pages
         ]
 
