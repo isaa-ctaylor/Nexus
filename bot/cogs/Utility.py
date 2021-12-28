@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import contextlib
 import datetime
@@ -8,7 +9,6 @@ from os import getenv
 from typing import Any, List, Optional
 
 import discord
-import humanize
 import parsedatetime
 import pytesseract
 from aiohttp import InvalidURL
@@ -19,7 +19,8 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import UserConverter, clean_content
+from discord.ext.commands.converter import (MemberConverter, UserConverter,
+                                            clean_content)
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.ui import Button, View
@@ -28,13 +29,14 @@ from idevision import async_client
 from idevision.errors import InvalidRtfmLibrary
 from parsedatetime import Calendar
 from PIL import Image, ImageColor, ImageOps, UnidentifiedImageError
-from utils import Timer, codeblocksafe, executor, hyperlink, codeblock
+from utils import Timer, codeblock, codeblocksafe, executor, hyperlink
 from utils.helpers import paginatorinput
 from utils.scraper import Search, Website
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
+import shlex
 
 load_dotenv()
 
@@ -49,6 +51,17 @@ SIMPLETIME = re.compile(
        (?:(?P<seconds>[0-9]{1,5})(?:seconds?|s))?
     """,
     re.VERBOSE,
+)
+
+DESTINATIONS = {
+    "dpy": "https://discordpy.readthedocs.io/en/stable",
+    "dpy2": "https://discordpy.readthedocs.io/en/master",
+    "edpy": "https://enhanced-dpy.readthedocs.io/en/latest",
+    "py": "https://docs.python.org/3",
+    "py2": "https://docs.python.org/2",
+}
+URL_REGEX = (
+    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
 )
 
 
@@ -210,7 +223,7 @@ class Discriminator(Converter):
 
 
 class Colour(Converter):
-    async def convert(self, ctx, argument: str):
+    async def convert(self, _, argument: str):
         with contextlib.suppress(AttributeError):
             RGB_REGEX = re.compile(r"\(?(\d+),?\s*(\d+),?\s*(\d+)\)?")
             match = RGB_REGEX.match(argument)
@@ -238,17 +251,31 @@ class Colour(Converter):
             f"Couldn't find a colour value matching `{codeblocksafe(argument)}`."
         )
 
-
-DESTINATIONS = {
-    "dpy": "https://discordpy.readthedocs.io/en/stable",
-    "dpy2": "https://discordpy.readthedocs.io/en/master",
-    "edpy": "https://enhanced-dpy.readthedocs.io/en/latest",
-    "py": "https://docs.python.org/3",
-    "py2": "https://docs.python.org/2",
-}
-URL_REGEX = (
-    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*(),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+"
-)
+class ImageConverter(Converter):
+    async def convert(self, ctx: NexusContext, argument: str):
+        bot: Nexus = ctx.bot
+        with contextlib.suppress(BadArgument, CommandError):
+            member = await MemberConverter().convert(ctx, argument)
+            return BytesIO(await member.display_avatar.read())
+        
+        if re.match(URL_REGEX, argument.strip()) is not None:
+            async with bot.session.get(argument.strip()) as resp:
+                return BytesIO(await resp.read())
+            
+        if ctx.message.reference:
+            message = ctx.message.reference.cached_message or ctx.message.reference.resolved
+            
+            if attachments := message.attachments:
+                return BytesIO(await attachments[0].read())
+            
+            if embeds := message.embeds:
+                image = embeds[0].image if not isinstance(embeds[0].image, Embed.Empty) else embeds[0].thumbnail if not isinstance(embeds[0].thumbnail, Embed.Empty) else None
+                
+                if image:
+                    async with bot.session.get(image.url.strip()) as resp:
+                        return BytesIO(await resp.read())
+                    
+        return None
 
 
 class IdevisionLocation(Converter):
@@ -764,7 +791,7 @@ class Utility(Cog):
         )
 
     @command(name="colour", aliases=["color"])
-    async def _colour(self, ctx: NexusContext, colour: Colour):
+    async def _colour(self, ctx: NexusContext, *, colour: Colour):
         """
         Get information on a colour
 
@@ -778,12 +805,37 @@ class Utility(Cog):
             paginatorinput(
                 embed=Embed(colour=colour)
                 .set_thumbnail(url=f"attachment://{rendered.filename}")
-                .add_field(name="Hex", value=codeblock(str(colour)))
+                .add_field(name="Hex", value=codeblock(str(colour).upper()))
                 .add_field(name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})"))
                 .add_field(name="Integer", value=codeblock(colour.value)),
                 file=rendered,
             )
         )
+        
+    @command(name="say", usage="<message> [flags]")
+    async def _say(self, ctx: NexusContext, *, messageandargs):
+        """
+        Say something
+        
+        Optional flags can be applied to modify the output
+        """
+        parser = argparse.ArgumentParser()
+        
+        parser.add_argument("message", type=str, nargs="*", default=None)
+        
+        parser.add_argument("--embed", action="store_true", default=False)
+        parser.add_argument("--colour", "--color", type=str, default=None)
+        parser.add_argument("--title", type=str, default=None)
+        
+        parser.add_argument("--profile", "--image", type=str, default=None)
+        parser.add_argument("--name", type=str, default=None)
+        
+        parser.add_argument("--channel", type=str)
+        
+        args = parser.parse_args(shlex.split(messageandargs))
+        
+        await ctx.send(args)
+        
 
 
 def setup(bot: Nexus):
