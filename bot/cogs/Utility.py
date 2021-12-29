@@ -813,75 +813,76 @@ class Utility(Cog):
             )
         )
     
-    @has_guild_permissions(manage_messages=True)
-    @bot_has_guild_permissions(manage_webhooks=True)
-    @command(name="say", usage="<message> [flags]")
-    async def _say(self, ctx: NexusContext, *, messageandargs):
-        """
-        Say something
+    # @has_guild_permissions(manage_messages=True)
+    # @bot_has_guild_permissions(manage_webhooks=True)
+    # @command(name="say", usage="<message> [flags]")
+    # async def _say(self, ctx: NexusContext, *, messageandargs):
+    #     """
+    #     Say something
         
-        Optional flags can be appended to your input to modify the output:
+    #     Optional flags can be appended to your input to modify the output:
         
-        --embed
-            Makes the message into an embed and unlocks --colour and --title
+    #     --embed
+    #         Makes the message into an embed and unlocks --colour and --title
             
-        --colour <colour>
-            Changes the colour of the embed. Takes any input the `colour` command does. Ignored if --embed is not present
+    #     --colour <colour>
+    #         Changes the colour of the embed. Takes any input the `colour` command does. Ignored if --embed is not present
             
-        --title <title>
-            Sets a title for the embed. Ignored if --embed is not present
+    #     --title <title>
+    #         Sets a title for the embed. Ignored if --embed is not present
             
-        --profile <url or mention>
-            Sets a profile picture for the message (bot requires webhook permissions for this to work)
+    #     --profile <url or mention>
+    #         Sets a profile picture for the message (bot requires webhook permissions for this to work)
             
-        --name <name>
-            Sets a custom name for the message (bot requires webhook permissions for this to work)
+    #     --name <name>
+    #         Sets a custom name for the message (bot requires webhook permissions for this to work)
             
-        --channel <channel>
-            Sends the message in another channel
-        """
-        parser = argparse.ArgumentParser(exit_on_error=False)
+    #     --channel <channel>
+    #         Sends the message in another channel
+    #     """
+    #     parser = argparse.ArgumentParser(exit_on_error=False)
         
-        parser.add_argument("message", type=str, nargs="*", default=None)
+    #     parser.add_argument("message", type=str, nargs="*", default=None)
         
-        parser.add_argument("--embed", action="store_true", default=False)
-        parser.add_argument("--colour", "--color", type=str, default=None)
-        parser.add_argument("--title", nargs="*", type=str, default=None)
+    #     parser.add_argument("--embed", action="store_true", default=False)
+    #     parser.add_argument("--colour", "--color", type=str, default=None)
+    #     parser.add_argument("--title", nargs="*", type=str, default=None)
         
-        parser.add_argument("--profile", "--image", type=str, default=None)
-        parser.add_argument("--name", type=str, default=None)
+    #     parser.add_argument("--profile", "--image", type=str, default=None)
+    #     parser.add_argument("--name", type=str, default=None)
         
-        parser.add_argument("--channel", type=str, default=None)
+    #     parser.add_argument("--channel", type=str, default=None)
         
-        try:
-            args = parser.parse_args(shlex.split(messageandargs))
-        except argparse.ArgumentError as e:
-            return await ctx.error(f"{e.argument_name} {e.message}!")
+    #     try:
+    #         args = parser.parse_args(shlex.split(messageandargs))
+    #     except argparse.ArgumentError as e:
+    #         return await ctx.error(f"{e.argument_name} {e.message}!")
         
-        if profile := args.profile:
-            image = ImageConverter().convert(ctx, profile)
+    #     if profile := args.profile:
+    #         image = ImageConverter().convert(ctx, profile)
 
         
-        embed = Embed() if args.embed else None
+    #     embed = Embed() if args.embed else None
         
-        if embed:
-            if title := args.title:
-                embed.title = title if isinstance(title, str) else " ".join(title)
+    #     if embed:
+    #         if title := args.title:
+    #             embed.title = title if isinstance(title, str) else " ".join(title)
                 
-            if colour := args.colour:
-                try:
-                    colour = await Colour().convert(ctx, colour)
-                except BadArgument:
-                    return await ctx.error(f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`.")
+    #         if colour := args.colour:
+    #             try:
+    #                 colour = await Colour().convert(ctx, colour)
+    #             except BadArgument:
+    #                 return await ctx.error(f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`.")
 
-        if channel := args.channel:
-            try:
-                channel = TextChannelConverter().convert(ctx, channel)
-            except (CommandError, BadArgument):
-                return await ctx.error(f"Couldn't find a channel matching {codeblocksafe(channel)}!")
+    #     if channel := args.channel:
+    #         try:
+    #             channel = TextChannelConverter().convert(ctx, channel)
+    #         except (CommandError, BadArgument):
+    #             return await ctx.error(f"Couldn't find a channel matching {codeblocksafe(channel)}!")
             
-            else:
-                if args.profile or args.name
+    #         else:
+    #             if args.profile or args.name:
+                    
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
