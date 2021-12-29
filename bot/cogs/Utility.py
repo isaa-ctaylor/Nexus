@@ -9,6 +9,7 @@ from os import getenv
 from typing import Any, List, Optional
 
 import discord
+from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
 import parsedatetime
 import pytesseract
 from aiohttp import InvalidURL
@@ -19,7 +20,7 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import (MemberConverter, UserConverter,
+from discord.ext.commands.converter import (MemberConverter, TextChannelConverter, UserConverter,
                                             clean_content)
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
@@ -223,7 +224,7 @@ class Discriminator(Converter):
 
 
 class Colour(Converter):
-    async def convert(self, _, argument: str):
+    async def convert(self, ctx, argument: str):
         with contextlib.suppress(AttributeError):
             RGB_REGEX = re.compile(r"\(?(\d+),?\s*(\d+),?\s*(\d+)\)?")
             match = RGB_REGEX.match(argument)
@@ -811,32 +812,76 @@ class Utility(Cog):
                 file=rendered,
             )
         )
-        
+    
+    @has_guild_permissions(manage_messages=True)
+    @bot_has_guild_permissions(manage_webhooks=True)
     @command(name="say", usage="<message> [flags]")
     async def _say(self, ctx: NexusContext, *, messageandargs):
         """
         Say something
         
-        Optional flags can be applied to modify the output
+        Optional flags can be appended to your input to modify the output:
+        
+        --embed
+            Makes the message into an embed and unlocks --colour and --title
+            
+        --colour <colour>
+            Changes the colour of the embed. Takes any input the `colour` command does. Ignored if --embed is not present
+            
+        --title <title>
+            Sets a title for the embed. Ignored if --embed is not present
+            
+        --profile <url or mention>
+            Sets a profile picture for the message (bot requires webhook permissions for this to work)
+            
+        --name <name>
+            Sets a custom name for the message (bot requires webhook permissions for this to work)
+            
+        --channel <channel>
+            Sends the message in another channel
         """
-        parser = argparse.ArgumentParser()
+        parser = argparse.ArgumentParser(exit_on_error=False)
         
         parser.add_argument("message", type=str, nargs="*", default=None)
         
         parser.add_argument("--embed", action="store_true", default=False)
         parser.add_argument("--colour", "--color", type=str, default=None)
-        parser.add_argument("--title", type=str, default=None)
+        parser.add_argument("--title", nargs="*", type=str, default=None)
         
         parser.add_argument("--profile", "--image", type=str, default=None)
         parser.add_argument("--name", type=str, default=None)
         
-        parser.add_argument("--channel", type=str)
+        parser.add_argument("--channel", type=str, default=None)
         
-        args = parser.parse_args(shlex.split(messageandargs))
+        try:
+            args = parser.parse_args(shlex.split(messageandargs))
+        except argparse.ArgumentError as e:
+            return await ctx.error(f"{e.argument_name} {e.message}!")
         
-        await ctx.send(args)
-        
+        if profile := args.profile:
+            image = ImageConverter().convert(ctx, profile)
 
+        
+        embed = Embed() if args.embed else None
+        
+        if embed:
+            if title := args.title:
+                embed.title = title if isinstance(title, str) else " ".join(title)
+                
+            if colour := args.colour:
+                try:
+                    colour = await Colour().convert(ctx, colour)
+                except BadArgument:
+                    return await ctx.error(f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`.")
+
+        if channel := args.channel:
+            try:
+                channel = TextChannelConverter().convert(ctx, channel)
+            except (CommandError, BadArgument):
+                return await ctx.error(f"Couldn't find a channel matching {codeblocksafe(channel)}!")
+            
+            else:
+                if args.profile or args.name
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
