@@ -913,7 +913,7 @@ class Utility(Cog):
                         f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`."
                     )
                     
-            embed.description = args.message
+            embed.description = " ".join(args.message)
 
         if channel := args.channel:
             try:
