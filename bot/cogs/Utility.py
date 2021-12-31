@@ -912,6 +912,8 @@ class Utility(Cog):
                     return await ctx.error(
                         f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`."
                     )
+                    
+            embed.description = args.message
 
         if channel := args.channel:
             try:
