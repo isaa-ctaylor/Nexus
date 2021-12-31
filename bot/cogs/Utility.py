@@ -834,7 +834,6 @@ class Utility(Cog):
         )
 
     @has_guild_permissions(manage_messages=True)
-    @bot_has_guild_permissions(manage_webhooks=True)
     @command(name="say", usage="<message> [flags]")
     async def _say(self, ctx: NexusContext, *, messageandargs):
         """
@@ -927,6 +926,8 @@ class Utility(Cog):
             channel = ctx.channel
 
         if name or pfp:
+            if not channel.permissions_for(ctx.guild.me).manage_webhooks:
+                return await ctx.error("I am missing the following permissions: Manage webhooks")
             wh = await channel.create_webhook(
                 name=name or ctx.guild.me.display_name,
                 avatar=pfp or await ctx.guild.me.avatar.read(),
