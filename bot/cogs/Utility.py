@@ -10,10 +10,10 @@ from typing import Any, List, Optional
 
 import discord
 from discord.ext.commands.core import (
-    MISSING,
     bot_has_guild_permissions,
     has_guild_permissions,
 )
+from discord.utils import MISSING
 import parsedatetime
 import pytesseract
 from aiohttp import InvalidURL
