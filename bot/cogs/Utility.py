@@ -878,7 +878,7 @@ class Utility(Cog):
         parser.add_argument("--channel", type=str, default=None)
 
         try:
-            args = parser.parse_args(shlex.split(messageandargs))
+            args = parser.parse_args(shlex.split(messageandargs.replace("\n", " [[NEWLINE]] ")))
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
@@ -913,7 +913,7 @@ class Utility(Cog):
                     )
                 embed.colour = colour
                     
-            embed.description = " ".join(args.message)
+            embed.description = " ".join(args.message).replace("[[NEWLINE]]", "\n")
 
         if channel := args.channel:
             try:
@@ -934,7 +934,7 @@ class Utility(Cog):
                 reason=f"💬 Say command invoked",
             )
             await wh.send(
-                " ".join(args.message) if embed is None else MISSING,
+                " ".join(args.message).replace("[[NEWLINE]]", "\n") if embed is None else MISSING,
                 embed=embed if embed is not None else MISSING,
                 allowed_mentions=AllowedMentions.none(),
             )
@@ -942,7 +942,7 @@ class Utility(Cog):
 
         else:
             await channel.send(
-                " ".join(args.message) if not embed else None,
+                " ".join(args.message).replace("[[NEWLINE]]", "\n") if not embed else None,
                 embed=embed or None,
                 allowed_mentions=AllowedMentions.none(),
             )
