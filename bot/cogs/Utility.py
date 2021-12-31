@@ -904,29 +904,24 @@ class Utility(Cog):
                 return await ctx.error(
                     f"Couldn't find a channel matching {codeblocksafe(channel)}!"
                 )
+        else:
+            channel = ctx.channel
 
-            if name or profile:
-                wh = await channel.create_webhook(
-                    name=name or ctx.guild.me.display_name,
-                    avatar=pfp or await ctx.guild.me.avatar.read(),
-                    reason=f"💬 Say command invoked",
-                )
-                await wh.send(
-                    " ".join(args.message) if not embed else MISSING,
-                    embed=embed or MISSING,
-                    allowed_mentions=AllowedMentions.none(),
-                )
-                await wh.delete()
-
-            else:
-                await channel.send(
-                    " ".join(args.message) if not embed else None,
-                    embed=embed or None,
-                    allowed_mentions=AllowedMentions.none(),
-                )
+        if name or profile:
+            wh = await channel.create_webhook(
+                name=name or ctx.guild.me.display_name,
+                avatar=pfp or await ctx.guild.me.avatar.read(),
+                reason=f"💬 Say command invoked",
+            )
+            await wh.send(
+                " ".join(args.message) if not embed else MISSING,
+                embed=embed or MISSING,
+                allowed_mentions=AllowedMentions.none(),
+            )
+            await wh.delete()
 
         else:
-            await ctx.send(
+            await channel.send(
                 " ".join(args.message) if not embed else None,
                 embed=embed or None,
                 allowed_mentions=AllowedMentions.none(),
