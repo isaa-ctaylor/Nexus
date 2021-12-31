@@ -914,7 +914,7 @@ class Utility(Cog):
                 await wh.send(
                     " ".join(args.message) if not embed else MISSING,
                     embed=embed or MISSING,
-                    allowed_mentions=AllowedMentions.none,
+                    allowed_mentions=AllowedMentions.none(),
                 )
                 await wh.delete()
 
@@ -922,14 +922,14 @@ class Utility(Cog):
                 await channel.send(
                     " ".join(args.message) if not embed else None,
                     embed=embed or None,
-                    allowed_mentions=AllowedMentions.none,
+                    allowed_mentions=AllowedMentions.none(),
                 )
 
         else:
             await ctx.send(
                 " ".join(args.message) if not embed else None,
                 embed=embed or None,
-                allowed_mentions=AllowedMentions.none,
+                allowed_mentions=AllowedMentions.none(),
             )
 
 
