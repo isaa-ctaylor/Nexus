@@ -908,7 +908,7 @@ class Utility(Cog):
                 if name or profile:
                     wh = await channel.create_webhook(
                         name=name or ctx.guild.me.display_name,
-                        avatar=pfp or BytesIO(await ctx.guild.me.avatar.read()),
+                        avatar=pfp or await ctx.guild.me.avatar.read(),
                         reason=f"💬 Say command invoked",
                     )
                     await wh.send(
