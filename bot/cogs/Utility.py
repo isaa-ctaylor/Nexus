@@ -742,7 +742,7 @@ class Utility(Cog):
         for reminder in _daily_data:
             await self.bot.db.execute(
                 "UPDATE reminders SET timeend = $1 WHERE reminder_id = $2",
-                reminder["timeend"] + 120,
+                reminder["timeend"] + 86400,
                 reminder["reminder_id"],
             )
 
