@@ -14,6 +14,7 @@ from discord.ext.commands.errors import BadArgument
 from discord.mentions import AllowedMentions
 from discord.utils import MISSING
 from dotenv import load_dotenv
+from pomice.spotify.exceptions import InvalidSpotifyURL, SpotifyRequestException
 from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
@@ -182,7 +183,10 @@ class Music(Cog):
             )
 
         player: Player = ctx.voice_client
-        tracks = await player.get_tracks(query=query, ctx=ctx)
+        try:
+            tracks = await player.get_tracks(query=query, ctx=ctx)
+        except (InvalidSpotifyURL, SpotifyRequestException):
+            tracks = None
 
         if not tracks:
             return await ctx.send("❌ No results!")
