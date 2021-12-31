@@ -877,6 +877,7 @@ class Utility(Cog):
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
+        pfp = None
         if profile := args.profile:
             pfp = ImageConverter().convert(ctx, profile)
         name = args.name
