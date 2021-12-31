@@ -912,6 +912,7 @@ class Utility(Cog):
                     return await ctx.error(
                         f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`."
                     )
+                embed.colour = colour
                     
             embed.description = " ".join(args.message)
 
