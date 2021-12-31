@@ -923,7 +923,7 @@ class Utility(Cog):
         else:
             channel = ctx.channel
 
-        if name or profile:
+        if name or pfp:
             wh = await channel.create_webhook(
                 name=name or ctx.guild.me.display_name,
                 avatar=pfp or await ctx.guild.me.avatar.read(),
