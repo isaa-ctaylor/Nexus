@@ -9,7 +9,11 @@ from os import getenv
 from typing import Any, List, Optional
 
 import discord
-from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
+from discord.ext.commands.core import (
+    MISSING,
+    bot_has_guild_permissions,
+    has_guild_permissions,
+)
 import parsedatetime
 import pytesseract
 from aiohttp import InvalidURL
@@ -20,8 +24,12 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import (MemberConverter, TextChannelConverter, UserConverter,
-                                            clean_content)
+from discord.ext.commands.converter import (
+    MemberConverter,
+    TextChannelConverter,
+    UserConverter,
+    clean_content,
+)
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.ui import Button, View
@@ -252,30 +260,39 @@ class Colour(Converter):
             f"Couldn't find a colour value matching `{codeblocksafe(argument)}`."
         )
 
+
 class ImageConverter(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
         bot: Nexus = ctx.bot
         with contextlib.suppress(BadArgument, CommandError):
             member = await MemberConverter().convert(ctx, argument)
             return BytesIO(await member.display_avatar.read())
-        
+
         if re.match(URL_REGEX, argument.strip()) is not None:
             async with bot.session.get(argument.strip()) as resp:
                 return BytesIO(await resp.read())
-            
+
         if ctx.message.reference:
-            message = ctx.message.reference.cached_message or ctx.message.reference.resolved
-            
+            message = (
+                ctx.message.reference.cached_message or ctx.message.reference.resolved
+            )
+
             if attachments := message.attachments:
                 return BytesIO(await attachments[0].read())
-            
+
             if embeds := message.embeds:
-                image = embeds[0].image if not isinstance(embeds[0].image, Embed.Empty) else embeds[0].thumbnail if not isinstance(embeds[0].thumbnail, Embed.Empty) else None
-                
+                image = (
+                    embeds[0].image
+                    if not isinstance(embeds[0].image, Embed.Empty)
+                    else embeds[0].thumbnail
+                    if not isinstance(embeds[0].thumbnail, Embed.Empty)
+                    else None
+                )
+
                 if image:
                     async with bot.session.get(image.url.strip()) as resp:
                         return BytesIO(await resp.read())
-                    
+
         return None
 
 
@@ -807,82 +824,102 @@ class Utility(Cog):
                 embed=Embed(colour=colour)
                 .set_thumbnail(url=f"attachment://{rendered.filename}")
                 .add_field(name="Hex", value=codeblock(str(colour).upper()))
-                .add_field(name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})"))
+                .add_field(
+                    name="RGB", value=codeblock(f"({colour.r}, {colour.g}, {colour.b})")
+                )
                 .add_field(name="Integer", value=codeblock(colour.value)),
                 file=rendered,
             )
         )
-    
-    # @has_guild_permissions(manage_messages=True)
-    # @bot_has_guild_permissions(manage_webhooks=True)
-    # @command(name="say", usage="<message> [flags]")
-    # async def _say(self, ctx: NexusContext, *, messageandargs):
-    #     """
-    #     Say something
-        
-    #     Optional flags can be appended to your input to modify the output:
-        
-    #     --embed
-    #         Makes the message into an embed and unlocks --colour and --title
-            
-    #     --colour <colour>
-    #         Changes the colour of the embed. Takes any input the `colour` command does. Ignored if --embed is not present
-            
-    #     --title <title>
-    #         Sets a title for the embed. Ignored if --embed is not present
-            
-    #     --profile <url or mention>
-    #         Sets a profile picture for the message (bot requires webhook permissions for this to work)
-            
-    #     --name <name>
-    #         Sets a custom name for the message (bot requires webhook permissions for this to work)
-            
-    #     --channel <channel>
-    #         Sends the message in another channel
-    #     """
-    #     parser = argparse.ArgumentParser(exit_on_error=False)
-        
-    #     parser.add_argument("message", type=str, nargs="*", default=None)
-        
-    #     parser.add_argument("--embed", action="store_true", default=False)
-    #     parser.add_argument("--colour", "--color", type=str, default=None)
-    #     parser.add_argument("--title", nargs="*", type=str, default=None)
-        
-    #     parser.add_argument("--profile", "--image", type=str, default=None)
-    #     parser.add_argument("--name", type=str, default=None)
-        
-    #     parser.add_argument("--channel", type=str, default=None)
-        
-    #     try:
-    #         args = parser.parse_args(shlex.split(messageandargs))
-    #     except argparse.ArgumentError as e:
-    #         return await ctx.error(f"{e.argument_name} {e.message}!")
-        
-    #     if profile := args.profile:
-    #         image = ImageConverter().convert(ctx, profile)
 
-        
-    #     embed = Embed() if args.embed else None
-        
-    #     if embed:
-    #         if title := args.title:
-    #             embed.title = title if isinstance(title, str) else " ".join(title)
-                
-    #         if colour := args.colour:
-    #             try:
-    #                 colour = await Colour().convert(ctx, colour)
-    #             except BadArgument:
-    #                 return await ctx.error(f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`.")
+    @has_guild_permissions(manage_messages=True)
+    @bot_has_guild_permissions(manage_webhooks=True)
+    @command(name="say", usage="<message> [flags]")
+    async def _say(self, ctx: NexusContext, *, messageandargs):
+        """
+        Say something
 
-    #     if channel := args.channel:
-    #         try:
-    #             channel = TextChannelConverter().convert(ctx, channel)
-    #         except (CommandError, BadArgument):
-    #             return await ctx.error(f"Couldn't find a channel matching {codeblocksafe(channel)}!")
-            
-    #         else:
-    #             if args.profile or args.name:
-                    
+        Optional flags can be appended to your input to modify the output:
+
+        --embed
+            Makes the message into an embed and unlocks --colour and --title
+
+        --colour <colour>
+            Changes the colour of the embed. Takes any input the `colour` command does. Ignored if --embed is not present
+
+        --title <title>
+            Sets a title for the embed. Ignored if --embed is not present
+
+        --profile <url or mention>
+            Sets a profile picture for the message (bot requires webhook permissions for this to work)
+
+        --name <name>
+            Sets a custom name for the message (bot requires webhook permissions for this to work)
+
+        --channel <channel>
+            Sends the message in another channel
+        """
+        parser = argparse.ArgumentParser(exit_on_error=False)
+
+        parser.add_argument("message", type=str, nargs="*", default=None)
+
+        parser.add_argument("--embed", action="store_true", default=False)
+        parser.add_argument("--colour", "--color", type=str, default=None)
+        parser.add_argument("--title", nargs="*", type=str, default=None)
+
+        parser.add_argument("--profile", "--image", type=str, default=None)
+        parser.add_argument("--name", type=str, default=None)
+
+        parser.add_argument("--channel", type=str, default=None)
+
+        try:
+            args = parser.parse_args(shlex.split(messageandargs))
+        except argparse.ArgumentError as e:
+            return await ctx.error(f"{e.argument_name} {e.message}!")
+
+        if profile := args.profile:
+            pfp = ImageConverter().convert(ctx, profile)
+        name = args.name
+
+        embed = Embed() if args.embed else None
+
+        if embed:
+            if title := args.title:
+                embed.title = title if isinstance(title, str) else " ".join(title)
+
+            if colour := args.colour:
+                try:
+                    colour = await Colour().convert(ctx, colour)
+                except BadArgument:
+                    return await ctx.error(
+                        f"Couldn't find a colour value matching `{codeblocksafe(args.colour)}`."
+                    )
+
+        if channel := args.channel:
+            try:
+                channel = await TextChannelConverter().convert(ctx, channel)
+            except (CommandError, BadArgument):
+                return await ctx.error(
+                    f"Couldn't find a channel matching {codeblocksafe(channel)}!"
+                )
+
+            else:
+                if name or profile:
+                    wh = await channel.create_webhook(
+                        name=name or ctx.guild.me.display_name,
+                        avatar=pfp or BytesIO(await ctx.guild.me.avatar.read()),
+                        reason=f"💬 Say command invoked",
+                    )
+                    await wh.send(
+                        args.message if not embed else MISSING, embed=embed or MISSING
+                    )
+                    await wh.delete()
+
+                else:
+                    await channel.send(
+                        args.message if not embed else MISSING, embed=embed or MISSING
+                    )
+
 
 def setup(bot: Nexus):
     bot.add_cog(Utility(bot))
