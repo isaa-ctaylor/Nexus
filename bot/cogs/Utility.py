@@ -266,11 +266,11 @@ class ImageConverter(Converter):
         bot: Nexus = ctx.bot
         with contextlib.suppress(BadArgument, CommandError):
             member = await MemberConverter().convert(ctx, argument)
-            return BytesIO(await member.display_avatar.read())
+            return await member.display_avatar.read()
 
         if re.match(URL_REGEX, argument.strip()) is not None:
             async with bot.session.get(argument.strip()) as resp:
-                return BytesIO(await resp.read())
+                return await resp.read()
 
         if ctx.message.reference:
             message = (
@@ -278,7 +278,7 @@ class ImageConverter(Converter):
             )
 
             if attachments := message.attachments:
-                return BytesIO(await attachments[0].read())
+                return await attachments[0].read()
 
             if embeds := message.embeds:
                 image = (
@@ -291,7 +291,7 @@ class ImageConverter(Converter):
 
                 if image:
                     async with bot.session.get(image.url.strip()) as resp:
-                        return BytesIO(await resp.read())
+                        return await resp.read()
 
         return None
 
