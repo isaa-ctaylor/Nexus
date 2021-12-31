@@ -917,7 +917,7 @@ class Utility(Cog):
 
                 else:
                     await channel.send(
-                        args.message if not embed else ..., embed=embed or ...
+                        args.message if not embed else None, embed=embed or None
                     )
 
 
