@@ -901,7 +901,7 @@ class Utility(Cog):
 
         embed = Embed() if args.embed else None
 
-        if embed:
+        if embed is not None:
             if title := args.title:
                 embed.title = title if isinstance(title, str) else " ".join(title)
 
@@ -932,8 +932,8 @@ class Utility(Cog):
                 reason=f"💬 Say command invoked",
             )
             await wh.send(
-                " ".join(args.message) if not embed else MISSING,
-                embed=embed or MISSING,
+                " ".join(args.message) if embed is None else MISSING,
+                embed=embed if embed is not None else MISSING,
                 allowed_mentions=AllowedMentions.none(),
             )
             await wh.delete()
