@@ -884,6 +884,7 @@ class Utility(Cog):
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
         pfp = None
+        name = None
 
         if args.copy:
             try:
