@@ -473,59 +473,6 @@ class Music(Cog):
         await player.set_volume(volume)
         await ctx.message.add_reaction("👍")
 
-    # async def _search_lyrics(self, query: str):
-    #     async with self.bot.session.get(
-    #         "https://www.google.com/search",
-    #         params={"q": query},
-    #         headers={
-    #             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
-    #         },
-    #     ) as resp:
-    #         ...
-
-    # @command(name="lyrics")
-    # async def _lyrics(self, ctx: NexusContext, *, song: Optional[str] = None):
-    #     """
-    #     Get the lyrics for a given song, or the current playing song if not specified
-    #     """
-    #     if ctx.guild is None and song is None:
-    #         return await ctx.error("You need to specify a song!")
-
-    #     if song is None and not ctx.voice_client:
-    #         return await ctx.error("You need to specify a song!")
-
-    #     song = song or ctx.voice_client.current.title
-
-    #     lyrics = self._search_lyrics(song)
-
-    #     if lyrics is None:
-    #         return await ctx.error("No results!")
-
-    #     _ = []
-    #     i = 0
-    #     for line in lyrics.splitlines():
-    #         try:
-    #             _[i]
-    #         except IndexError:
-    #             _.append([])
-
-    #         if len("\n".join(_[i] + [line])) >= 4096:
-    #             i += 1
-    #             _.append([])
-
-    #         _[i].append(line)
-
-    #     embeds = [
-    #         Embed(
-    #             title=track.title if i == 0 else EmptyEmbed,
-    #             description="\n".join(p),
-    #             colour=self.bot.config.colours.neutral,
-    #         )
-    #         for i, p in enumerate(_)
-    #     ]
-
-    #     await ctx.paginate(embeds)
-
 
 def setup(bot: Nexus):
     bot.add_cog(Music(bot))
