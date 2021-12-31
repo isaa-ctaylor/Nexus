@@ -880,7 +880,7 @@ class Utility(Cog):
 
         pfp = None
         if profile := args.profile:
-            pfp = ImageConverter().convert(ctx, profile)
+            pfp = await ImageConverter().convert(ctx, profile)
         name = args.name
 
         embed = Embed() if args.embed else None
