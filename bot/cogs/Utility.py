@@ -911,13 +911,13 @@ class Utility(Cog):
                         reason=f"💬 Say command invoked",
                     )
                     await wh.send(
-                        args.message if not embed else MISSING, embed=embed or MISSING
+                        " ".join(args.message) if not embed else MISSING, embed=embed or MISSING
                     )
                     await wh.delete()
 
                 else:
                     await channel.send(
-                        args.message if not embed else None, embed=embed or None
+                        " ".join(args.message) if not embed else None, embed=embed or None
                     )
 
 
