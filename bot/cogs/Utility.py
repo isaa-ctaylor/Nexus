@@ -856,6 +856,9 @@ class Utility(Cog):
 
         --name <name>
             Sets a custom name for the message (bot requires webhook permissions for this to work)
+            
+        --copy <member>
+            Like the two above, sets the name and profile picture to the mentioned member. `--profile` and `--name` flags are ignored if this is specified.
 
         --channel <channel>
             Sends the message in another channel
@@ -868,8 +871,10 @@ class Utility(Cog):
         parser.add_argument("--colour", "--color", type=str, default=None)
         parser.add_argument("--title", nargs="*", type=str, default=None)
 
+        parser.add_argument("--copy", type=str, default=None)
+
         parser.add_argument("--profile", "--image", type=str, default=None)
-        parser.add_argument("--name", type=str, default=None)
+        parser.add_argument("--name", type=str, nargs="*", default=None)
 
         parser.add_argument("--channel", type=str, default=None)
 
@@ -879,9 +884,19 @@ class Utility(Cog):
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
         pfp = None
-        if profile := args.profile:
-            pfp = await ImageConverter().convert(ctx, profile)
-        name = args.name
+
+        if args.copy:
+            try:
+                member = await MemberConverter().convert(ctx, args.copy)
+            except (CommandError, BadArgument):
+                pass
+            pfp = await member.display_avatar.read()
+            name = member.display_name
+        
+        if not name and pfp:
+            if profile := args.profile:
+                pfp = await ImageConverter().convert(ctx, profile)
+            name = args.name
 
         embed = Embed() if args.embed else None
 
