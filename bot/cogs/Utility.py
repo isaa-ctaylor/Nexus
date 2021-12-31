@@ -13,6 +13,7 @@ from discord.ext.commands.core import (
     bot_has_guild_permissions,
     has_guild_permissions,
 )
+from discord.mentions import AllowedMentions
 from discord.utils import MISSING
 import parsedatetime
 import pytesseract
@@ -904,22 +905,32 @@ class Utility(Cog):
                     f"Couldn't find a channel matching {codeblocksafe(channel)}!"
                 )
 
-            else:
-                if name or profile:
-                    wh = await channel.create_webhook(
-                        name=name or ctx.guild.me.display_name,
-                        avatar=pfp or await ctx.guild.me.avatar.read(),
-                        reason=f"💬 Say command invoked",
-                    )
-                    await wh.send(
-                        " ".join(args.message) if not embed else MISSING, embed=embed or MISSING
-                    )
-                    await wh.delete()
+            if name or profile:
+                wh = await channel.create_webhook(
+                    name=name or ctx.guild.me.display_name,
+                    avatar=pfp or await ctx.guild.me.avatar.read(),
+                    reason=f"💬 Say command invoked",
+                )
+                await wh.send(
+                    " ".join(args.message) if not embed else MISSING,
+                    embed=embed or MISSING,
+                    allowed_mentions=AllowedMentions.none,
+                )
+                await wh.delete()
 
-                else:
-                    await channel.send(
-                        " ".join(args.message) if not embed else None, embed=embed or None
-                    )
+            else:
+                await channel.send(
+                    " ".join(args.message) if not embed else None,
+                    embed=embed or None,
+                    allowed_mentions=AllowedMentions.none,
+                )
+
+        else:
+            await ctx.send(
+                " ".join(args.message) if not embed else None,
+                embed=embed or None,
+                allowed_mentions=AllowedMentions.none,
+            )
 
 
 def setup(bot: Nexus):
