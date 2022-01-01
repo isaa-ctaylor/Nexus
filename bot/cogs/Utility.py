@@ -731,25 +731,11 @@ class Utility(Cog):
             int(now.timestamp()),
             False
         )
-        
-        _daily_data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE (timeend - $1) <= 60 AND daily = $2",
-            int(now.timestamp()),
-            True,
-            one=False,
-        )
-        
-        for reminder in _daily_data:
-            await self.bot.db.execute(
-                "UPDATE reminders SET timeend = $1 WHERE reminder_id = $2",
-                reminder["timeend"] + 86400,
-                reminder["reminder_id"],
-            )
 
-        if not (data or _daily_data):
+        if not data:
             return
 
-        for datum in data + _daily_data:
+        for datum in data:
             self.bot.loop.create_task(
                 self._send_reminder(
                     datum["owner_id"],
