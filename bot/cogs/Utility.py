@@ -718,8 +718,8 @@ class Utility(Cog):
         self._current_reminders += data
 
         await self.bot.db.execute(
-            "DELETE FROM reminders WHERE (timeend - $1) <= 60,
-            int(now.timestamp()),
+            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
+            int(now.timestamp())
         )
 
         if not data:
