@@ -101,11 +101,6 @@ class TimeConverter(Converter):
     async def convert(self, ctx: NexusContext, argument: str):  # sourcery no-metrics
         date_obj = ctx.message.created_at
 
-        daily = False
-        if argument.endswith("--daily"):
-            daily = True
-            argument = argument.removesuffix("--daily")
-
         retime = self._check_regex(date_obj, argument)
 
         if retime is not None:
@@ -163,7 +158,6 @@ class TimeConverter(Converter):
             ctx.message.created_at,
             result_dt,
             await clean_content().convert(ctx, remaining),
-            daily
         )
 
     def _check_startswith(self, reason: str):
@@ -194,7 +188,7 @@ class TimeConverter(Converter):
 
         return reason.strip()
 
-    def _run_checks(self, now, dt, remaining, daily):
+    def _run_checks(self, now, dt, remaining):
         if dt < now:
             raise InvalidTimeProvided("Time is in the past!")
 
@@ -207,7 +201,7 @@ class TimeConverter(Converter):
         elif remaining.startswith("to"):
             remaining = remaining.removeprefix("to")
 
-        return dt, remaining, daily
+        return dt, remaining
 
 
 class InvalidDiscriminator(BadArgument):
@@ -656,7 +650,7 @@ class Utility(Cog):
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
         if not ctx.invoked_subcommand:
             await self._create_timer(
-                ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1], dateandtime[2]
+                ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1]
             )
 
     @_remind.error
@@ -672,17 +666,15 @@ class Utility(Cog):
         channel: TextChannel,
         when: datetime.datetime,
         reason: str,
-        daily: bool,
     ):
         await self.bot.db.execute(
-            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             owner.id,
             channel.id,
             int(when.timestamp()),
             int(ctx.message.created_at.timestamp()),
             str(reason),
             ctx.message.id,
-            daily
         )
 
         await ctx.reply(
@@ -718,18 +710,16 @@ class Utility(Cog):
     async def _send_reminders(self):
         now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE (timeend - $1) <= 60 AND daily = $2",
+            "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
-            False,
             one=False,
         )
 
         self._current_reminders += data
 
         await self.bot.db.execute(
-            "DELETE FROM reminders WHERE (timeend - $1) <= 60 AND daily = $2",
+            "DELETE FROM reminders WHERE (timeend - $1) <= 60,
             int(now.timestamp()),
-            False
         )
 
         if not data:
