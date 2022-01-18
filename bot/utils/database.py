@@ -1,5 +1,10 @@
 import asyncpg
 import asyncio
+from dotenv import load_dotenv
+from os import getenv
+
+
+load_dotenv()
 
 from . import Timer
 
@@ -14,7 +19,7 @@ class Database:
     async def new_connection(self, **kwargs):
         user, password, database, host = (
             kwargs.get("user", "postgres"),
-            kwargs.get("password", "postgres"),
+            kwargs.get("password", getenv("DATABASE")),
             kwargs.get("database", "nexus"),
             kwargs.get("host", "localhost"),
         )
