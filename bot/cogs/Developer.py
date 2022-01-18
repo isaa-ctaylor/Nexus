@@ -383,6 +383,8 @@ class Developer(Cog, hidden=True):
 
     @Cog.listener(name="on_guild_remove")
     async def _log_guild_leaves(self, guild: Guild):
+        if not guild.name:
+            return
         embed = Embed(title="Guild loss!", colour=self.bot.config.colours.neutral)
         embed.add_field(
             name="Name",
