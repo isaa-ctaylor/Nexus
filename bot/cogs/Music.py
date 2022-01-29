@@ -90,9 +90,10 @@ class Music(Cog):
                 allowed_mentions=AllowedMentions.none(),
             )
         except asyncio.TimeoutError:
-            await player.disconnect(force=True)
-            await player.destroy()
-            return await player.control_channel.send("👋 Disconnected - queue finished")
+            if not player.is_playing():
+                await player.disconnect(force=True)
+                await player.destroy()
+                return await player.control_channel.send("👋 Disconnected - queue finished")
 
     @guild_only()
     @command(name="connect", aliases=["join"])
