@@ -129,16 +129,10 @@ class Music(Cog):
         if ctx.voice_client and not ctx.author.voice:
             return await ctx.error("Please join a channel in order to connect me!")
 
-        if (
-            ctx.voice_client
-            and ctx.author.voice
-            and (
-                (len(ctx.voice_client.channel.members) == 1)
-                or (
-                    len(ctx.voice_client.channel.members) == 2
-                    and ctx.voice_client.channel.id == ctx.author.voice.channel.id
-                )
-            )
+        if ctx.voice_client and (
+            len(ctx.voice_client.channel.members) == 1
+            or len(ctx.voice_client.channel.members) == 2
+            and ctx.voice_client.channel.id == ctx.author.voice.channel.id
         ):
             await ctx.voice_client.move_to(channel)
 
