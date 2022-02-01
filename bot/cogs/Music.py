@@ -73,7 +73,6 @@ class Music(Cog):
             password="ayraiscute",
             spotify_client_id=getenv("SPOTIFY_ID"),
             spotify_client_secret=getenv("SPOTIFY_SECRET"),
-            session=self.bot.session,
         )
 
     @Cog.listener(name="on_pomice_track_end")
