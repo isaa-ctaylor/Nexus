@@ -68,9 +68,9 @@ class Music(Cog):
         await self.bot.pomice.create_node(
             bot=self.bot,
             identifier=str(self.bot.user.id),
-            host="127.0.0.1",
-            port=2333,
-            password="youshallnotpass",
+            host="lava.devin-dev.xyz",
+            port=3888,
+            password="ayraiscute",
             spotify_client_id=getenv("SPOTIFY_ID"),
             spotify_client_secret=getenv("SPOTIFY_SECRET"),
             session=self.bot.session,
