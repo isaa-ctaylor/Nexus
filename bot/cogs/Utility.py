@@ -16,6 +16,7 @@ from discord.ext.commands.core import (
 from discord.mentions import AllowedMentions
 from discord.utils import MISSING
 import parsedatetime
+import pytz
 import pytesseract
 from aiohttp import InvalidURL
 from async_timeout import timeout
@@ -877,8 +878,15 @@ class Utility(Cog):
 
         parser.add_argument("--channel", type=str, default=None)
 
+        def split(text):
+            lex = shlex.shlex(text)
+            lex.quotes = '"'
+            lex.whitespace_split = True
+            lex.commenters = ''
+            return list(lex)
+
         try:
-            args = parser.parse_args(shlex.split(messageandargs.replace("\n", " [[NEWLINE]] ")))
+            args = parser.parse_args(split(messageandargs.replace("\n", " [[NEWLINE]] ")))
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
