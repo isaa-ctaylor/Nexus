@@ -71,7 +71,7 @@ class Minecraft(Cog):
             title=f"{player['name']}'s skin", colour=self.bot.config.colours.neutral
         )
 
-        embed.set_image(url=f"https://crafatar.com/renders/body/{player['id']}?overlay")
+        embed.set_image(url=f"https://mc-heads.net/body/{player['id']}")
 
         await ctx.paginate(embed)
 
