@@ -79,6 +79,8 @@ class Nexus(Bot):
 
         self.topgg = topgg.DBLClient(self, getenv("TOPGG"), True, True)
 
+        self.add_check(self._check_cog_not_blacklisted)
+
         self.loop.create_task(self.__ainit__())
 
     async def __ainit__(self):
@@ -90,6 +92,7 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS chatlimit    (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
                 CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);
                 CREATE TABLE IF NOT EXISTS reminders    (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, timeend BIGINT NOT NULL, timestart BIGINT NOT NULL, reason TEXT NOT NULL, message_id BIGINT NOT NULL);
+                CREATE TABLE IF NOT EXISTS cogblacklist (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}')
             """
         )
 
@@ -100,6 +103,9 @@ class Nexus(Bot):
                 for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
+        
+    async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
+        await self.db.fetch("SELECT blacklist FROM cogblacklist ")
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
