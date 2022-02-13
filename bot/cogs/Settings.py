@@ -353,18 +353,15 @@ class Settings(Cog):
         data = await self.bot.db.fetch(
             "SELECT cogblacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
         )
-        _l = data["blacklist"] if data else []
+        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden]
+        _l = data["blacklist"] if data else cogs
 
         if module == "all":
-            cogs = [
-                cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden
-            ]
             if not toggle:
                 return await ctx.embed(
                     title="All available modules",
                     description="\n".join(
-                        f"{'❌' if cog in _l else '✅'} {cog}"
-                        for cog in cogs
+                        f"{'❌' if cog in _l else '✅'} {cog}" for cog in cogs
                     ),
                 )
 
@@ -403,12 +400,18 @@ class Settings(Cog):
             _l.append(module)
         else:
             _l.pop(_l.index(module))
-            
+
         if data:
-            await self.bot.db.execute("UPDATE cogblacklist SET blacklist = $1 WHERE guild_id = $2", _l, ctx.guild.id)
+            await self.bot.db.execute(
+                "UPDATE cogblacklist SET blacklist = $1 WHERE guild_id = $2",
+                _l,
+                ctx.guild.id,
+            )
         else:
-            await self.bot.db.execute("INSERT INTO cogblacklist VALUES ($2, $1)", _l, ctx.guild.id)
-            
+            await self.bot.db.execute(
+                "INSERT INTO cogblacklist VALUES ($2, $1)", _l, ctx.guild.id
+            )
+
         await ctx.message.add_reaction("👍")
 
 
