@@ -1,22 +1,20 @@
-from discord.ext.commands.bot import when_mentioned_or, _FakeSlashMessage
+import re
+from logging import INFO, getLogger
+from os import getenv
+from traceback import format_exception
+
+import topgg
+from aiohttp import ClientSession
+from discord.ext.commands import Bot, CheckFailure
+from discord.ext.commands.bot import _FakeSlashMessage, when_mentioned_or
 from discord.ext.commands.core import _CaseInsensitiveDict
 from discord.flags import Intents
-from logging import INFO, getLogger
-from traceback import format_exception
-from os import getenv
-
-from aiohttp import ClientSession
-from discord.ext.commands import Bot
 from dotenv import load_dotenv
 
 from ..config import CONFIG
+from ..database import Database
 from ..logging import WebhookHandler
 from .context import NexusContext
-from ..database import Database
-
-import re
-
-import topgg
 
 load_dotenv()
 
@@ -103,9 +101,21 @@ class Nexus(Bot):
                 for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
-        
+
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
-        await self.db.fetch("SELECT blacklist FROM cogblacklist ")
+        if ctx.author.id == self.owner_id:
+            return True
+        if ctx.command.cog_name not in [
+            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name in ["Help"]
+        ]:
+            return True
+        data = await self.db.fetch(
+            "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
+        )
+        if not data:
+            return True
+        if ctx.command.cog_name in data["blacklist"]:
+            raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
