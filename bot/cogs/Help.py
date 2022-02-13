@@ -191,7 +191,7 @@ class NexusHelp(HelpCommand):
         )
 
 
-class Help(Cog):
+class Help(Cog, hidden=True):
     """
     The help category
     """
