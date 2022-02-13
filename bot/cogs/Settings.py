@@ -363,7 +363,7 @@ class Settings(Cog):
                 return await ctx.embed(
                     title="All available modules",
                     description="\n".join(
-                        f"{'❌' if cog in _l else '✔'} {cog}"
+                        f"{'❌' if cog in _l else '✅'} {cog}"
                         for cog in cogs
                     ),
                 )
