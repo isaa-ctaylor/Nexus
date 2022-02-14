@@ -400,7 +400,7 @@ class Settings(Cog):
         if not toggle and module in _l:
             return await ctx.error(f"{module} is already disabled!")
 
-        if toggle:
+        if not toggle:
             _l.append(module)
         else:
             _l.pop(_l.index(module))
