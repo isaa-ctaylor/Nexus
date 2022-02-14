@@ -356,6 +356,8 @@ class Settings(Cog):
         cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden]
         _l = data["blacklist"] if data else cogs
 
+        await ctx.send(_l)
+
         if module == "all":
             if not toggle:
                 return await ctx.embed(
