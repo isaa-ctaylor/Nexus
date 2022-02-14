@@ -377,7 +377,7 @@ class Settings(Cog):
                 await self.bot.db.execute(
                     "INSERT INTO cogblacklist VALUES ($1, $2)",
                     ctx.guild.id,
-                    cogs if toggle else [],
+                    [] if toggle else cogs,
                 )
 
             return await ctx.message.add_reaction("👍")
