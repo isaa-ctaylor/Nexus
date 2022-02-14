@@ -41,6 +41,8 @@ class Toggle(Converter):
 
         if argument.lower().strip() in ["disable", "disabled", "no", "off"]:
             return False
+        
+        return None
 
 
 class Settings(Cog):
@@ -359,7 +361,7 @@ class Settings(Cog):
         await ctx.send(_l)
 
         if module == "all":
-            if not toggle:
+            if toggle is None:
                 return await ctx.embed(
                     title="All available modules",
                     description="\n".join(
