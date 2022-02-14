@@ -372,14 +372,14 @@ class Settings(Cog):
             if data:
                 await self.bot.db.execute(
                     "UPDATE cogblacklist SET blacklist = $1 WHERE guild_id = $2",
-                    cogs if toggle else [],
+                    [] if toggle else cogs,
                     ctx.guild.id,
                 )
             else:
                 await self.bot.db.execute(
                     "INSERT INTO cogblacklist VALUES ($1, $2)",
                     ctx.guild.id,
-                    [] if toggle else cogs,
+                    cogs if toggle else [],
                 )
 
             return await ctx.message.add_reaction("👍")
