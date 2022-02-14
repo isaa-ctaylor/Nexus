@@ -394,10 +394,10 @@ class Settings(Cog):
         if toggle is None:
             return await ctx.send_help(cog)
 
-        if toggle and module in _l:
+        if toggle and module not in _l:
             return await ctx.error(f"{module} is already enabled!")
 
-        if not toggle and module not in _l:
+        if not toggle and module in _l:
             return await ctx.error(f"{module} is already disabled!")
 
         if toggle:
