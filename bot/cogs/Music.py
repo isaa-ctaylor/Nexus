@@ -92,7 +92,9 @@ class Music(Cog):
             if not player.is_playing():
                 await player.disconnect(force=True)
                 await player.destroy()
-                return await player.control_channel.send("👋 Disconnected - queue finished")
+                return await player.control_channel.send(
+                    "👋 Disconnected - queue finished"
+                )
 
     @guild_only()
     @command(name="connect", aliases=["join"])

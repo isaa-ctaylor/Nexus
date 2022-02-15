@@ -13,7 +13,6 @@ cogs:
   - cogs.Modlogs
   - cogs.Settings
   - cogs.Music
-  - cogs.Minecraft
   # - cogs.Listeners
   # - Jishaku
 

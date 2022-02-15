@@ -65,9 +65,7 @@ class Errors(Cog, hidden=True):
             )
 
         elif isinstance(error, commands.MaxConcurrencyReached):
-            return await ctx.error(
-                f"This command has reached maximum concurrency!",
-            )
+            return await ctx.error("This command has reached maximum concurrency!")
 
         elif isinstance(error, commands.NotOwner):
             return await ctx.error(
@@ -115,9 +113,7 @@ class Errors(Cog, hidden=True):
             )
 
         elif isinstance(error, commands.BadInviteArgument):
-            return await ctx.error(
-                f"That invite is invalid or expired!",
-            )
+            return await ctx.error("That invite is invalid or expired!")
 
         elif isinstance(error, commands.EmojiNotFound):
             return await ctx.error(
@@ -130,9 +126,7 @@ class Errors(Cog, hidden=True):
             )
 
         elif isinstance(error, commands.BadBoolArgument):
-            return await ctx.error(
-                f"Invalid bool argument!",
-            )
+            return await ctx.error("Invalid bool argument!")
 
         elif isinstance(error, commands.MissingPermissions):
             return await ctx.error(
@@ -197,11 +191,9 @@ class Errors(Cog, hidden=True):
             return await ctx.error(
                 error.args[0],
             )
-            
+
         elif isinstance(error, commands.CheckFailure):
-            return await ctx.error(
-                str(error)
-            )
+            return await ctx.error(str(error))
 
         else:
             channel = self.bot.get_channel(self.bot.config.channels.errors)

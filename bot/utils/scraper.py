@@ -221,7 +221,11 @@ class Search(Scraper):
                     _.find(
                         "div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf"
                     ).get_text()
-                    if _ is not None and _.find("div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf") is not None
+                    if _ is not None
+                    and _.find(
+                        "div", class_="VwiC3b yXK7lf MUxGbd yDYNvb lyLwlc lEBKkf"
+                    )
+                    is not None
                     else None
                 )
 

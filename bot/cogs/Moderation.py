@@ -105,7 +105,7 @@ class Moderation(Cog):
     @bot_has_guild_permissions(ban_members=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
-        name="unban",        
+        name="unban",
         examples=["718087881087910018 Appeal approved", "718087881087910018"],
     )
     async def _unban(
@@ -153,7 +153,8 @@ class Moderation(Cog):
     @bot_has_guild_permissions(manage_roles=True)
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
-        name="mute",  examples=["718087881087910018", "@Person#0123 spam"],
+        name="mute",
+        examples=["718087881087910018", "@Person#0123 spam"],
     )
     async def _mute(
         self,
@@ -312,7 +313,7 @@ class Moderation(Cog):
     @guild_only()
     @has_permissions(manage_messages=True)
     @bot_has_permissions(manage_channels=True, send_messages=True, embed_links=True)
-    @command(name="slowmode",  examples=["#general 4", "10"])
+    @command(name="slowmode", examples=["#general 4", "10"])
     async def _slowmode(
         self,
         ctx: NexusContext,
@@ -380,7 +381,7 @@ class Moderation(Cog):
         name="purge",
         aliases=["clear", "cleanup"],
         examples=["#general 4", "@Someone#1234 15", "10"],
-        invoke_without_command=True
+        invoke_without_command=True,
     )
     async def _purge(self, ctx: NexusContext, limit: Optional[int] = 10):
         """
@@ -412,7 +413,7 @@ class Moderation(Cog):
         user = user or ctx.author
 
         await self._do_purge(ctx, ctx.channel, limit, lambda m: m.author.id == user.id)
-        
+
     @guild_only()
     @has_permissions(manage_channels=True)
     @bot_has_permissions(
@@ -425,15 +426,15 @@ class Moderation(Cog):
     async def _nuke(self, ctx: NexusContext, channel: TextChannel = None):
         """
         Completely clear a channel
-        
+
         This happens by cloning the channel and deleteing the original
         """
         channel = channel or ctx.channel
-        
+
         c = await channel.clone(reason=f"Nuke command invoked by {ctx.author}")
         await c.edit(position=channel.position)
         await channel.delete()
-        
+
         await c.send(ctx.author.mention, delete_after=5)
 
     @guild_only()

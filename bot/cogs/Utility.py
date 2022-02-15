@@ -233,6 +233,27 @@ class Discriminator(Converter):
         return _str
 
 
+class Player(Converter):
+    async def convert(self, ctx: NexusContext, query: Any):
+        query = query.strip()
+        async with ctx.bot.session.get(
+            f"https://api.mojang.com/users/profiles/minecraft/{query}"
+        ) as resp:
+            if resp.status == 200:
+                return await resp.json()
+
+        async with ctx.bot.session.get(
+            f"https://api.mojang.com/user/profiles/{query}/names"
+        ) as resp:
+            if resp.status == 200:
+                d = await resp.json()
+
+                if "errorMessage" not in d:
+                    return {"id": query, "name": d[-1]["name"]}
+
+        return {"error": f"{codeblocksafe(query)} is not a valid name!"}
+
+
 class Colour(Converter):
     async def convert(self, ctx, argument: str):
         with contextlib.suppress(AttributeError):
@@ -720,7 +741,7 @@ class Utility(Cog):
 
         await self.bot.db.execute(
             "DELETE FROM reminders WHERE (timeend - $1 - 7200) <= 60",
-            int(now.timestamp())
+            int(now.timestamp()),
         )
 
         if not data:
@@ -836,7 +857,7 @@ class Utility(Cog):
 
     @has_guild_permissions(manage_messages=True)
     @command(name="say", usage="<message> [flags]")
-    async def _say(self, ctx: NexusContext, *, messageandargs): # sourcery no-metrics
+    async def _say(self, ctx: NexusContext, *, messageandargs):  # sourcery no-metrics
         """
         Say something
 
@@ -856,7 +877,7 @@ class Utility(Cog):
 
         --name <name>
             Sets a custom name for the message (bot requires webhook permissions for this to work)
-            
+
         --copy <member>
             Like the two above, sets the name and profile picture to the mentioned member. `--profile` and `--name` flags are ignored if this is specified.
 
@@ -882,11 +903,13 @@ class Utility(Cog):
             lex = shlex.shlex(text)
             lex.quotes = '"'
             lex.whitespace_split = True
-            lex.commenters = ''
+            lex.commenters = ""
             return list(lex)
 
         try:
-            args = parser.parse_args(split(messageandargs.replace("\n", " [[NEWLINE]] ")))
+            args = parser.parse_args(
+                split(messageandargs.replace("\n", " [[NEWLINE]] "))
+            )
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
 
@@ -935,15 +958,19 @@ class Utility(Cog):
 
         if name or pfp:
             if not channel.permissions_for(ctx.guild.me).manage_webhooks:
-                return await ctx.error("I am missing the following permissions: Manage webhooks")
+                return await ctx.error(
+                    "I am missing the following permissions: Manage webhooks"
+                )
             wh = await channel.create_webhook(
                 name=name or ctx.guild.me.display_name,
                 avatar=pfp or await ctx.guild.me.avatar.read(),
-                reason='💬 Say command invoked',
+                reason="💬 Say command invoked",
             )
 
             await wh.send(
-                " ".join(args.message).replace("[[NEWLINE]]", "\n") if embed is None else MISSING,
+                " ".join(args.message).replace("[[NEWLINE]]", "\n")
+                if embed is None
+                else MISSING,
                 embed=embed if embed is not None else MISSING,
                 allowed_mentions=AllowedMentions.none(),
             )
@@ -951,10 +978,51 @@ class Utility(Cog):
 
         else:
             await channel.send(
-                " ".join(args.message).replace("[[NEWLINE]]", "\n") if not embed else None,
+                " ".join(args.message).replace("[[NEWLINE]]", "\n")
+                if not embed
+                else None,
                 embed=embed or None,
                 allowed_mentions=AllowedMentions.none(),
             )
+
+    @command(
+        name="mc-player", aliases=["mc_player", "minecraft-player", "minecraft_player"]
+    )
+    async def _minecraft_player(self, ctx: NexusContext, player: Player):
+        """
+        Get minecraft player info.
+        """
+        if "error" in player:
+            return await ctx.error(player["error"])
+
+        embed = Embed(
+            title="Minecraft player info", colour=self.bot.config.colours.neutral
+        )
+
+        embed.set_thumbnail(
+            url=f"https://crafatar.com/renders/body/{player['id']}?overlay"
+        )
+
+        embed.add_field(name="Name", value=f'```\n{player["name"]}```')
+        embed.add_field(name="UUID", value=f'```\n{player["id"]}```')
+
+        await ctx.paginate(embed)
+
+    @command(name="mc-skin", aliases=["mc_skin", "minecraft-skin", "minecraft_skin"])
+    async def _minecraft_skin(self, ctx: NexusContext, player: Player):
+        """
+        See the skin of the given player
+        """
+        if "error" in player:
+            return await ctx.error(player["error"])
+
+        embed = Embed(
+            title=f"{player['name']}'s skin", colour=self.bot.config.colours.neutral
+        )
+
+        embed.set_image(url=f"https://mc-heads.net/body/{player['id']}")
+
+        await ctx.paginate(embed)
 
 
 def setup(bot: Nexus):

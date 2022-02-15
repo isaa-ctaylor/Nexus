@@ -74,7 +74,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="eval",  examples=["print('Hello world!')"])
+    @command(name="eval", examples=["print('Hello world!')"])
     async def _eval(self, ctx: NexusContext, *, code: CodeblockConverter):
         """
         Evaluate python code
@@ -169,7 +169,6 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="load",
-        
         examples=["cogs.Developer", "Jishaku", "cogs.Help cogs.Developer"],
     )
     async def _load(self, ctx: NexusContext, *cogs: Tuple[str]):
@@ -201,7 +200,6 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="unload",
-        
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
     async def _unload(self, ctx: NexusContext, *cogs: str):
@@ -233,7 +231,6 @@ class Developer(Cog, hidden=True):
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(
         name="reload",
-        
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
     async def _reload(self, ctx: NexusContext, *cogs: str):
@@ -263,7 +260,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="as",  examples=["@isaa_ctaylor#2494 help"])
+    @command(name="as", examples=["@isaa_ctaylor#2494 help"])
     async def _as(self, ctx: NexusContext, user: Member, *, command: str):
         """
         Run the specified command as someone else
@@ -284,7 +281,7 @@ class Developer(Cog, hidden=True):
 
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
-    @command(name="sync",  aliases=["pull"])
+    @command(name="sync", aliases=["pull"])
     async def _sync(self, ctx: NexusContext):
         """
         Sync with github.
@@ -308,9 +305,7 @@ class Developer(Cog, hidden=True):
 
             _cogs = ""
 
-            cogs = findall(r"(?<=cogs\/)[^\/\W]*(?=\.py)", _)
-
-            if cogs:
+            if cogs := findall(r"(?<=cogs\/)[^\/\W]*(?=\.py)", _):
                 options = [
                     "cogs."
                     + str(file)

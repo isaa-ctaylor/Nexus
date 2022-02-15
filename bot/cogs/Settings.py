@@ -41,7 +41,7 @@ class Toggle(Converter):
 
         if argument.lower().strip() in ["disable", "disabled", "no", "off"]:
             return False
-        
+
         return None
 
 
@@ -356,7 +356,11 @@ class Settings(Cog):
         data = await self.bot.db.fetch(
             "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
         )
-        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden and cog.qualified_name not in ["Settings"]]
+        cogs = [
+            cog.qualified_name
+            for cog in self.bot.cogs.values()
+            if not cog.hidden and cog.qualified_name not in ["Settings"]
+        ]
         _l = data["blacklist"] if data else cogs
 
         if module == "all":
@@ -364,7 +368,8 @@ class Settings(Cog):
                 return await ctx.embed(
                     title="All available modules",
                     description="\n".join(
-                        f"{'❌' if cog in _l else '✅'} {cog}" for cog in cogs
+                        f"{cog} ({'Disabled' if cog in _l else 'Enabled'})"
+                        for cog in cogs
                     ),
                 )
 

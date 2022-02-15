@@ -35,6 +35,7 @@ def naturallist(iterable: Iterable, delimiter: str = ", "):
 
     return delimiter.join(iterable[:-1]) + f" and {iterable[-1]}"
 
+
 def executor(sync_function):
     @functools.wraps(sync_function)
     async def sync_wrapper(*args, **kwargs):
@@ -48,10 +49,12 @@ def executor(sync_function):
 
     return sync_wrapper
 
+
 def hyperlink(text, uri):
     if uri is None:
         return text
     return f"[{text}]({uri})"
+
 
 def codeblock(text, language=""):
     return f"```{language}\n{text}```"

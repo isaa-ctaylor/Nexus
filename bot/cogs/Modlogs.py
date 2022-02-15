@@ -37,7 +37,7 @@ class Modlogs(Cog):
             record["guild_id"]: {
                 "enabled": record["enabled"],
                 "channel": Webhook.from_url(
-                    str(record["channel"]), session=self.bot.session
+                    str(record["channel"]).strip(), session=self.bot.session
                 ),
             }
             for record in data
@@ -173,6 +173,7 @@ class Modlogs(Cog):
                     value=message.content or "This message contained no content.",
                     inline=False,
                 )
+                .set_footer(text=str(message.id))
             )
 
             await self._send(message.guild, embed=embed)
@@ -229,6 +230,7 @@ class Modlogs(Cog):
                 .add_field(name="Author", value=after.author.mention)
                 .add_field(name="Content before", value=before.content, inline=False)
                 .add_field(name="Content after", value=after.content, inline=True)
+                .set_footer(text=str(after.id))
             )
 
             await self._send(after.guild, embed=embed)
@@ -256,6 +258,7 @@ class Modlogs(Cog):
                 value=channel.category.name if channel.category else "None",
                 inline=True,
             )
+            embed.set_footer(text=str(channel.id))
 
             tick = self.bot.config.emojis.tick
             cross = self.bot.config.emojis.cross
@@ -283,25 +286,34 @@ class Modlogs(Cog):
 
     @Cog.listener(name="on_guild_channel_delete")
     async def _log_channel_deletion(self, channel: GuildChannel):
-        if not (
-            channel.guild.id in self.cache and self.cache[channel.guild.id]["enabled"]
-        ):
-            return
+        with suppress(Exception):
+            if not (
+                channel.guild.id in self.cache
+                and self.cache[channel.guild.id]["enabled"]
+            ):
+                return
 
-        _channel = self.cache[channel.guild.id]["channel"]
+            _channel = self.cache[channel.guild.id]["channel"]
 
-        if not _channel:
-            return
-        
-        embed = Embed(title="Channel deleted", colour=self.bot.config.colours.neutral)
-        embed.add_field(name="Channel name", value=channel.name, inline=True)
-        embed.add_field(
-            name="Channel category",
-            value=channel.category.name if channel.category else "None",
-            inline=True,
-        )
-        
-        await self._send(channel.guild, embed=embed)
+            if not _channel:
+                return
+
+            embed = Embed(
+                title="Channel deleted", colour=self.bot.config.colours.neutral
+            )
+            embed.add_field(name="Channel name", value=channel.name, inline=True)
+            embed.add_field(
+                name="Channel category",
+                value=channel.category.name if channel.category else "None",
+                inline=True,
+            )
+            embed.set_footer(text=str(channel.id))
+
+            await self._send(channel.guild, embed=embed)
+
+    @Cog.listener(name="on_guild_channel_edit")
+    async def _log_channel_edit(self, before: GuildChannel, after: GuildChannel):
+        ...
 
 
 def setup(bot: Nexus):
