@@ -114,9 +114,8 @@ class Nexus(Bot):
         )
         if data is None:
             return True
-        await ctx.send(data)
+        
         if ctx.command.cog_name.capitalize().strip() in data["blacklist"]:
-            await ctx.send("No")
             raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
 
     async def on_ready(self):
