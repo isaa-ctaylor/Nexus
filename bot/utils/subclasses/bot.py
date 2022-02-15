@@ -105,16 +105,17 @@ class Nexus(Bot):
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:
             return True
-        if ctx.command.cog_name not in [
-            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name in ["Help"]
+        if ctx.command.cog_name in [
+            cog.qualified_name for cog in self.cogs.values() if not cog.hidden
         ]:
             return True
         data = await self.db.fetch(
             "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
         )
-        if not data:
+        if data is None:
             return True
         if ctx.command.cog_name in data["blacklist"]:
+            await ctx.send("No")
             raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
 
     async def on_ready(self):
