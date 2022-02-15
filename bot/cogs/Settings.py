@@ -343,6 +343,7 @@ class Settings(Cog):
                 if role := member.guild.get_role(role):
                     await member.add_roles(role)
 
+    @has_guild_permissions(manage_guild=True)
     @command(name="module")
     async def _module(
         self, ctx: NexusContext, module: Module, toggle: Optional[Toggle] = None
@@ -355,7 +356,7 @@ class Settings(Cog):
         data = await self.bot.db.fetch(
             "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
         )
-        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden]
+        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden or cog.qualified_name in ["Settings"]]
         _l = data["blacklist"] if data else cogs
 
         await ctx.send(_l)
