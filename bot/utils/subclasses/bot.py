@@ -106,7 +106,7 @@ class Nexus(Bot):
         if ctx.author.id == self.owner_id:
             return True
         if ctx.command.cog_name in [
-            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name not in ["Settings"]
+            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name in ["Settings"]
         ]:
             return True
         data = await self.db.fetch(
@@ -117,6 +117,8 @@ class Nexus(Bot):
         
         if ctx.command.cog_name.capitalize().strip() in data["blacklist"]:
             raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
+        
+        return True
 
     async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
