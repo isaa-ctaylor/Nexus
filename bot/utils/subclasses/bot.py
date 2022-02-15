@@ -106,7 +106,7 @@ class Nexus(Bot):
         if ctx.author.id == self.owner_id:
             return True
         if ctx.command.cog_name in [
-            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name in ["Settings"]
+            cog.qualified_name for cog in self.cogs.values() if cog.hidden or cog.qualified_name not in ["Settings"]
         ]:
             return True
         data = await self.db.fetch(

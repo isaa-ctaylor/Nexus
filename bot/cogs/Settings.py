@@ -356,7 +356,7 @@ class Settings(Cog):
         data = await self.bot.db.fetch(
             "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
         )
-        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden or cog.qualified_name in ["Settings"]]
+        cogs = [cog.qualified_name for cog in self.bot.cogs.values() if not cog.hidden or cog.qualified_name not in ["Settings"]]
         _l = data["blacklist"] if data else cogs
 
         if module == "all":
