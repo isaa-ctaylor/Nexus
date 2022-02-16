@@ -716,7 +716,7 @@ class Utility(Cog):
         _id: int,
     ):
         now = datetime.datetime.utcnow()
-        sleep = end - now.timestamp() - 7200
+        sleep = end - now.timestamp()
         await asyncio.sleep(sleep)
         for i, r in enumerate(self._current_reminders):
             if _id == r["reminder_id"]:
@@ -732,7 +732,7 @@ class Utility(Cog):
     async def _send_reminders(self):
         now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE (timeend - $1 - 7200) <= 60",
+            "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
             one=False,
         )
@@ -740,7 +740,7 @@ class Utility(Cog):
         self._current_reminders += data
 
         await self.bot.db.execute(
-            "DELETE FROM reminders WHERE (timeend - $1 - 7200) <= 60",
+            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
             int(now.timestamp()),
         )
 
