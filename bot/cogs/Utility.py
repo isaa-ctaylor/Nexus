@@ -1,6 +1,8 @@
 import argparse
 import asyncio
+from collections import namedtuple
 import contextlib
+from ctypes import Union
 import datetime
 import re
 from io import BytesIO
@@ -17,6 +19,7 @@ from discord.mentions import AllowedMentions
 from discord.utils import MISSING
 import parsedatetime
 import pytz
+from bot.utils.scraper import Description
 import pytesseract
 from aiohttp import InvalidURL
 from async_timeout import timeout
@@ -76,6 +79,9 @@ URL_REGEX = (
 )
 
 
+simpletime = namedtuple("Time", "hour minute second")
+
+
 class TimeInPast(Exception):
     pass
 
@@ -99,7 +105,9 @@ class TimeConverter(Converter):
         result_dt = dt
         return result_dt, remaining
 
-    async def convert(self, ctx: NexusContext, argument: str):  # sourcery no-metrics
+    async def convert(
+        self, ctx: NexusContext, argument: str, run_checks=True
+    ):  # sourcery no-metrics
         date_obj = ctx.message.created_at
 
         retime = self._check_regex(date_obj, argument)
@@ -155,11 +163,14 @@ class TimeConverter(Converter):
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
 
-        return self._run_checks(
-            ctx.message.created_at,
-            result_dt,
-            await clean_content().convert(ctx, remaining),
-        )
+        if run_checks:
+            return self._run_checks(
+                ctx.message.created_at,
+                result_dt,
+                await clean_content().convert(ctx, remaining),
+            )
+        else:
+            return result_dt, await clean_content().convert(ctx, remaining) or "..."
 
     def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
@@ -231,6 +242,36 @@ class Discriminator(Converter):
             return InvalidDiscriminator(argument)
 
         return _str
+
+
+class Time(Converter):
+    async def convert(self, ctx: NexusContext, argument: str):
+        parts: List[str] = argument.strip().replace(" ", "").split(":")
+
+        if not all(part.isdigit() for part in parts):
+            return
+
+        if len(parts) == 1:
+            if int(parts[0]) > 24 or int(parts[0]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            return simpletime(int(parts[0]), 0, 0)
+
+        if len(parts) == 2:
+            if int(parts[0]) > 24 or int(parts[0]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            if int(parts[1]) > 59 or int(parts[1]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            return simpletime(int(parts[0]), int(parts[1]), 0)
+
+        if len(parts) == 3:
+            if int(parts[0]) > 24 or int(parts[0]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            if int(parts[1]) > 59 or int(parts[1]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            if int(parts[2]) > 59 or int(parts[2]) < 0:
+                raise InvalidTimeProvided("Invalid time provided!")
+            return simpletime(int(parts[0]), int(parts[1]), int(parts[2]))
+        raise InvalidTimeProvided("Invalid time provided!")
 
 
 class Player(Converter):
@@ -672,7 +713,7 @@ class Utility(Cog):
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
         if not ctx.invoked_subcommand:
             await self._create_timer(
-                ctx, ctx.author, ctx.channel, dateandtime[0], dateandtime[1]
+                ctx, ctx.author, ctx.channel, dateandtime[1], dateandtime[0]
             )
 
     @_remind.error
@@ -686,24 +727,36 @@ class Utility(Cog):
         ctx: NexusContext,
         owner: Member,
         channel: TextChannel,
-        when: datetime.datetime,
         reason: str,
+        when: Union[datetime.datetime, simpletime] = None,
+        daily: bool = False,
     ):
-        await self.bot.db.execute(
-            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
-            owner.id,
-            channel.id,
-            int(when.timestamp()),
-            int(ctx.message.created_at.timestamp()),
-            str(reason),
-            ctx.message.id,
-        )
+        if not daily:
+            await self.bot.db.execute(
+                "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
+                owner.id,
+                channel.id,
+                int(when.timestamp()),
+                int(ctx.message.created_at.timestamp()),
+                str(reason),
+                ctx.message.id,
+            )
 
-        await ctx.reply(
-            f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
-        )
+            await ctx.reply(
+                f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
+            )
 
-        await self._send_reminders()
+            await self._send_reminders()
+        else:
+            await self.bot.db.execute(
+                "INSERT INTO dailyreminders (owner_id, channel_id, hour, minute, second, reason) VALUES ($1, $2, $3, $4, $5, $6)",
+                owner.id,
+                channel.id,
+                when.hour,
+                when.minute,
+                when.second,
+                reason,
+            )
 
     async def _send_reminder(
         self,
@@ -820,6 +873,35 @@ class Utility(Cog):
         ]
 
         await ctx.paginate(embeds)
+
+    @command(name="dailyreminder", aliases=["dr", "daily-reminder"])
+    async def _dailyreminder(self, ctx: NexusContext, time: Time, *, message: str):
+        """
+        Set a message to be sent every day at a specific time
+
+        Intended for server-wide daily reminders and such
+        """
+        mentions = bool(ctx.author.guild_permissions.mention_everyone)
+
+        await self._create_timer(
+            ctx,
+            ctx.author,
+            ctx.channel,
+            clean_content().convert(message) if not mentions else message,
+            time,
+            True,
+        )
+
+        nexttime = await TimeConverter().convert(
+            ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}"
+        )
+        if nexttime[0] < ctx.message.created_at:
+            nexttime[0].day += 1
+
+        await ctx.embed(
+            title="Done!",
+            description=f"Set up a daily reminder! Next iteration: <t:{int(nexttime[0].timestamp())}:R>",
+        )
 
     @executor
     def _render_colour(self, colour: discord.Colour) -> discord.File:
