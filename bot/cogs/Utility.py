@@ -2,13 +2,12 @@ import argparse
 import asyncio
 from collections import namedtuple
 import contextlib
-from ctypes import Union
 import datetime
 import re
 from io import BytesIO
 from math import floor, log10
 from os import getenv
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 import discord
 from discord.ext.commands.core import (
