@@ -893,12 +893,13 @@ class Utility(Cog):
         nexttime = await TimeConverter().convert(
             ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}", run_checks=False
         )
-        if nexttime[0] < ctx.message.created_at:
-            nexttime = nexttime[0].replace(ctx.message.created_at.day + 1)
+        time = nexttime[0]
+        if time < ctx.message.created_at:
+            time = time.replace(ctx.message.created_at.day + 1)
 
         await ctx.embed(
             title="Done!",
-            description=f"Set up a daily reminder! Next iteration: <t:{int(nexttime.timestamp())}:R>",
+            description=f"Set up a daily reminder! Next iteration: <t:{int(time.timestamp())}:R>",
         )
 
     @executor
