@@ -894,6 +894,7 @@ class Utility(Cog):
             ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}", run_checks=False
         )
         time = nexttime[0]
+        await ctx.send(time)
         if time < ctx.message.created_at:
             time = time.replace(ctx.message.created_at.day + 1)
 
