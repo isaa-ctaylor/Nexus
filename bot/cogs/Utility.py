@@ -891,7 +891,7 @@ class Utility(Cog):
         )
 
         nexttime = await TimeConverter().convert(
-            ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}"
+            ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}", run_checks=False
         )
         if nexttime[0] < ctx.message.created_at:
             nexttime[0].day += 1
