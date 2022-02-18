@@ -896,7 +896,7 @@ class Utility(Cog):
         time = nexttime[0]
         await ctx.send(time)
         if time < ctx.message.created_at:
-            time = time.replace(ctx.message.created_at.day + 1)
+            time = time.replace(day=ctx.message.created_at.day + 1)
 
         await ctx.embed(
             title="Done!",
