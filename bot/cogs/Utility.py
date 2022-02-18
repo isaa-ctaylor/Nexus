@@ -19,7 +19,6 @@ from discord.mentions import AllowedMentions
 from discord.utils import MISSING
 import parsedatetime
 import pytz
-from bot.utils.scraper import Description
 import pytesseract
 from aiohttp import InvalidURL
 from async_timeout import timeout
