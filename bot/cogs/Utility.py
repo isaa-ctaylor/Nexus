@@ -760,24 +760,29 @@ class Utility(Cog):
         self,
         owner: int,
         channel: int,
-        end: float,
-        start: float,
         reason: str,
-        message: int,
-        _id: int,
+        end: float = None,
+        start: float = None,
+        message: int = None,
+        _id: int = None,
+        /,
+        daily=False
     ):
         now = datetime.datetime.utcnow()
-        sleep = end - now.timestamp()
-        await asyncio.sleep(sleep)
-        for i, r in enumerate(self._current_reminders):
-            if _id == r["reminder_id"]:
-                self._current_reminders.pop(i)
-                break
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
-        message = await channel.fetch_message(message) if channel else None
-        await channel.send(
-            f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
-        )
+        if not daily:
+            sleep = end - now.timestamp()
+            await asyncio.sleep(sleep)
+            for i, r in enumerate(self._current_reminders):
+                if _id == r["reminder_id"]:
+                    self._current_reminders.pop(i)
+                    break
+            message = await channel.fetch_message(message) if channel else None
+            await channel.send(
+                f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
+            )
+        else:
+            await channel.send(reason)
 
     @tasks.loop(minutes=1)
     async def _send_reminders(self):
@@ -803,11 +808,34 @@ class Utility(Cog):
                 self._send_reminder(
                     datum["owner_id"],
                     datum["channel_id"],
+                    datum["reason"],
                     datum["timeend"],
                     datum["timestart"],
-                    datum["reason"],
                     datum["message_id"],
                     datum["reminder_id"],
+                )
+            )
+            
+        data = await self.bot.db.fetch(
+            "SELECT * FROM dailyreminders WHERE (hour - $1) = 0 AND (minute - $2) = 0 AND ($3 - last) >= 120",
+            now.hour,
+            now.minute,
+            int(now.timestamp()),
+            one=False
+        )
+        await self.bot.db.execute(
+            "UPDATE dailyreminders SET last = $3 WHERE (hour - $1) = 0 AND (minute - $2)",
+            now.hour,
+            now.minute,
+            int(now.timestamp()),
+        )
+        for reminder in data:
+            self.bot.loop.create_task(
+                self._send_reminder(
+                    reminder["owner_id"],
+                    reminder["channel_id"],
+                    reminder["reason"],
+                    daily=True
                 )
             )
 
