@@ -90,6 +90,7 @@ class InvalidTimeProvided(CommandError):
 
 class TimeConverter(Converter):
     def _check_regex(self, dt, argument):
+        daily = False
         remaining = argument
         match = SIMPLETIME.match(remaining)
         if match is None or not match.group(0):
@@ -100,8 +101,12 @@ class TimeConverter(Converter):
             dt += relativedelta(**data)
 
             match = SIMPLETIME.match(remaining)
+        if remaining.lower().endswith("--daily"):
+            remaining = remaining[:-7]
+            daily = True
+        
         result_dt = dt
-        return result_dt, remaining
+        return result_dt, remaining, daily
 
     async def convert(
         self, ctx: NexusContext, argument: str, run_checks=True
@@ -416,7 +421,7 @@ class Utility(Cog):
         """
         Check redirects on a link
 
-        This tool will warn you if the link contains a grabify link
+        This tool will warn you if the link contains a known tracking link
         """
 
         try:
@@ -711,7 +716,7 @@ class Utility(Cog):
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
         if not ctx.invoked_subcommand:
             await self._create_timer(
-                ctx, ctx.author, ctx.channel, dateandtime[1], dateandtime[0]
+                ctx, ctx.author, ctx.channel, dateandtime[1], dateandtime[0], dateandtime[2]
             )
 
     @_remind.error
@@ -729,32 +734,21 @@ class Utility(Cog):
         when: Union[datetime.datetime, simpletime] = None,
         daily: bool = False,
     ):
-        if not daily:
-            await self.bot.db.execute(
-                "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
-                owner.id,
-                channel.id,
-                int(when.timestamp()),
-                int(ctx.message.created_at.timestamp()),
-                str(reason),
-                ctx.message.id,
-            )
+        await self.bot.db.execute(
+            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            owner.id,
+            channel.id,
+            int(when.timestamp()),
+            int(ctx.message.created_at.timestamp()),
+            reason,
+            ctx.message.id,
+        )
 
-            await ctx.reply(
-                f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
-            )
+        await ctx.reply(
+            f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
+        )
 
-            await self._send_reminders()
-        else:
-            await self.bot.db.execute(
-                "INSERT INTO dailyreminders (owner_id, channel_id, hour, minute, second, reason) VALUES ($1, $2, $3, $4, $5, $6)",
-                owner.id,
-                channel.id,
-                when.hour,
-                when.minute,
-                when.second,
-                reason,
-            )
+        await self._send_reminders()
 
     async def _send_reminder(
         self,
@@ -784,11 +778,11 @@ class Utility(Cog):
         else:
             await channel.send(reason)
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(seconds=59)
     async def _send_reminders(self):
         now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
-            "SELECT * FROM reminders WHERE (timeend - $1) <= 60",
+            "SELECT * FROM reminders WHERE (timeend - $1) <= 120",
             int(now.timestamp()),
             one=False,
         )
@@ -796,12 +790,14 @@ class Utility(Cog):
         self._current_reminders += data
 
         await self.bot.db.execute(
-            "DELETE FROM reminders WHERE (timeend - $1) <= 60",
+            "DELETE FROM reminders WHERE (timeend - $1) <= 120",
             int(now.timestamp()),
         )
 
         if not data:
             return
+
+        re_add = []
 
         for datum in data:
             self.bot.loop.create_task(
@@ -816,28 +812,11 @@ class Utility(Cog):
                 )
             )
             
-        data = await self.bot.db.fetch(
-            "SELECT * FROM dailyreminders WHERE (hour - $1) = 0 AND (minute - $2) = 0 AND ($3 - last) >= 120",
-            now.hour,
-            now.minute,
-            int(now.timestamp()),
-            one=False
-        )
-        await self.bot.db.execute(
-            "UPDATE dailyreminders SET last = $3 WHERE (hour - $1) = 0 AND (minute - $2)",
-            now.hour,
-            now.minute,
-            int(now.timestamp()),
-        )
-        for reminder in data:
-            self.bot.loop.create_task(
-                self._send_reminder(
-                    reminder["owner_id"],
-                    reminder["channel_id"],
-                    reminder["reason"],
-                    daily=True
-                )
-            )
+            if datum["daily"]:
+                datum["timeend"] += 86400
+                re_add.append(datum)
+                
+            
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
@@ -899,37 +878,6 @@ class Utility(Cog):
         ]
 
         await ctx.paginate(embeds)
-
-    @command(name="dailyreminder", aliases=["dr", "daily-reminder"])
-    async def _dailyreminder(self, ctx: NexusContext, time: Time, *, message: str):
-        """
-        Set a message to be sent every day at a specific time
-
-        Intended for server-wide daily reminders and such
-        """
-        mentions = bool(ctx.author.guild_permissions.mention_everyone)
-
-        await self._create_timer(
-            ctx,
-            ctx.author,
-            ctx.channel,
-            clean_content().convert(message) if not mentions else message,
-            time,
-            True,
-        )
-
-        nexttime = await TimeConverter().convert(
-            ctx, f"{time.hour:02}:{time.minute:02}:{time.second:02}", run_checks=False
-        )
-        time = nexttime[0]
-        await ctx.send(time)
-        if time < ctx.message.created_at:
-            time = time.replace(day=ctx.message.created_at.day + 1)
-
-        await ctx.embed(
-            title="Done!",
-            description=f"Set up a daily reminder! Next iteration: <t:{int(time.timestamp())}:R>",
-        )
 
     @executor
     def _render_colour(self, colour: discord.Colour) -> discord.File:
