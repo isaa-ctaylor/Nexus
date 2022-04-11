@@ -116,7 +116,7 @@ class TimeConverter(Converter):
         retime = self._check_regex(date_obj, argument)
 
         if retime is not None:
-            result_dt, remaining = retime
+            result_dt, remaining, daily = retime
 
         else:
             remaining = self._check_startswith(argument)
@@ -171,9 +171,10 @@ class TimeConverter(Converter):
                 ctx.message.created_at,
                 result_dt,
                 await clean_content().convert(ctx, remaining),
+                daily
             )
         else:
-            return result_dt, await clean_content().convert(ctx, remaining) or "..."
+            return result_dt, await clean_content().convert(ctx, remaining) or "...", daily
 
     def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
@@ -203,7 +204,7 @@ class TimeConverter(Converter):
 
         return reason.strip()
 
-    def _run_checks(self, now, dt, remaining):
+    def _run_checks(self, now, dt, remaining, daily):
         if dt < now:
             raise InvalidTimeProvided("Time is in the past!")
 
@@ -216,7 +217,7 @@ class TimeConverter(Converter):
         elif remaining.startswith("to"):
             remaining = remaining.removeprefix("to")
 
-        return dt, remaining
+        return dt, remaining, daily
 
 
 class InvalidDiscriminator(BadArgument):
