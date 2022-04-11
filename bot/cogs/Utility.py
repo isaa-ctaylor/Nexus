@@ -830,7 +830,7 @@ class Utility(Cog):
 
         await self.bot.db.pool.executemany(
             "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-            (
+            *(
                 (
                     datum["reminder_id"],
                     datum["owner_id"],
