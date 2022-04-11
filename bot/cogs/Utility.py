@@ -104,7 +104,7 @@ class TimeConverter(Converter):
         if remaining.lower().endswith("--daily"):
             remaining = remaining[:-7]
             daily = True
-        
+
         result_dt = dt
         return result_dt, remaining, daily
 
@@ -171,10 +171,14 @@ class TimeConverter(Converter):
                 ctx.message.created_at,
                 result_dt,
                 await clean_content().convert(ctx, remaining),
-                daily
+                daily,
             )
         else:
-            return result_dt, await clean_content().convert(ctx, remaining) or "...", daily
+            return (
+                result_dt,
+                await clean_content().convert(ctx, remaining) or "...",
+                daily,
+            )
 
     def _check_startswith(self, reason: str):
         if reason.startswith("me") and reason[:6] in (
@@ -239,7 +243,7 @@ class Discriminator(Converter):
         if len(_str) != 4:
             try:
                 return str((await UserConverter().convert(ctx, argument)).discriminator)
-            except:
+            except Exception:
                 return InvalidDiscriminator(argument)
 
         if not _str.isdigit():
@@ -350,11 +354,13 @@ class ImageConverter(Converter):
 
             if embeds := message.embeds:
                 image = (
-                    embeds[0].image
-                    if not isinstance(embeds[0].image, Embed.Empty)
-                    else embeds[0].thumbnail
-                    if not isinstance(embeds[0].thumbnail, Embed.Empty)
-                    else None
+                    (
+                        None
+                        if isinstance(embeds[0].thumbnail, Embed.Empty)
+                        else embeds[0].thumbnail
+                    )
+                    if isinstance(embeds[0].image, Embed.Empty)
+                    else embeds[0].image
                 )
 
                 if image:
@@ -717,7 +723,12 @@ class Utility(Cog):
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
         if not ctx.invoked_subcommand:
             await self._create_timer(
-                ctx, ctx.author, ctx.channel, dateandtime[1], dateandtime[0], dateandtime[2]
+                ctx,
+                ctx.author,
+                ctx.channel,
+                dateandtime[1],
+                dateandtime[0],
+                dateandtime[2],
             )
 
     @_remind.error
@@ -761,7 +772,7 @@ class Utility(Cog):
         message: int = None,
         _id: int = None,
         /,
-        daily=False
+        daily=False,
     ):
         now = datetime.datetime.utcnow()
         channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
@@ -812,12 +823,27 @@ class Utility(Cog):
                     datum["reminder_id"],
                 )
             )
-            
+
             if datum["daily"]:
                 datum["timeend"] += 86400
                 re_add.append(datum)
-                
-            
+
+        await self.bot.db.pool.executemany(
+            "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            (
+                (
+                    datum["reminder_id"],
+                    datum["owner_id"],
+                    datum["channel_id"],
+                    datum["timeend"],
+                    datum["timestart"],
+                    datum["reason"],
+                    datum["message_id"],
+                    datum["daily"],
+                )
+                for datum in re_add
+            ),
+        )
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
