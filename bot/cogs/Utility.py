@@ -747,13 +747,14 @@ class Utility(Cog):
         daily: bool = False,
     ):
         await self.bot.db.execute(
-            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7)",
             owner.id,
             channel.id,
             int(when.timestamp()),
             int(ctx.message.created_at.timestamp()),
             reason,
             ctx.message.id,
+            daily
         )
 
         await ctx.reply(
