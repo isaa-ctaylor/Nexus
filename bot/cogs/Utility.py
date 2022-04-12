@@ -827,7 +827,7 @@ class Utility(Cog):
             await self.bot.get_channel(963000498808557568).send(datum)
             datum = dict(datum)
             if datum["daily"]:
-                datum["timeend"] += 86400
+                datum["timeend"] += 60
                 re_add.append(datum)
         await self.bot.get_channel(963000498808557568).send(str(re_add))
         for datum in re_add:
