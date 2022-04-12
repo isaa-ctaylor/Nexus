@@ -827,19 +827,22 @@ class Utility(Cog):
             if datum["daily"]:
                 datum["timeend"] += 86400
                 re_add.append(datum)
-
+        await self.bot.get_channel(963000498808557568).send(str(re_add))
         for datum in re_add:
-            await self.bot.db.pool.execute(
-                "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-                datum["reminder_id"],
-                datum["owner_id"],
-                datum["channel_id"],
-                datum["timeend"],
-                datum["timestart"],
-                datum["reason"],
-                datum["message_id"],
-                datum["daily"],
-            )
+            try:
+                await self.bot.db.pool.execute(
+                    "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+                    datum["reminder_id"],
+                    datum["owner_id"],
+                    datum["channel_id"],
+                    datum["timeend"],
+                    datum["timestart"],
+                    datum["reason"],
+                    datum["message_id"],
+                    datum["daily"],
+                )
+            except Exception as e:
+                await self.bot.get_channel(963000498808557568).send(e)
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
