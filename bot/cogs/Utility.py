@@ -825,6 +825,7 @@ class Utility(Cog):
                 )
             )
             await self.bot.get_channel(963000498808557568).send(datum)
+            datum = dict(datum)
             if datum["daily"]:
                 datum["timeend"] += 86400
                 re_add.append(datum)
