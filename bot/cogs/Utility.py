@@ -823,7 +823,7 @@ class Utility(Cog):
                     datum["reminder_id"],
                 )
             )
-
+            await self.bot.get_channel(963000498808557568).send(datum)
             if datum["daily"]:
                 datum["timeend"] += 86400
                 re_add.append(datum)
