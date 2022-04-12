@@ -828,22 +828,18 @@ class Utility(Cog):
                 datum["timeend"] += 86400
                 re_add.append(datum)
 
-        await self.bot.db.pool.executemany(
-            "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-            *(
-                (
-                    datum["reminder_id"],
-                    datum["owner_id"],
-                    datum["channel_id"],
-                    datum["timeend"],
-                    datum["timestart"],
-                    datum["reason"],
-                    datum["message_id"],
-                    datum["daily"],
-                )
-                for datum in re_add
-            ),
-        )
+        for datum in re_add:
+            await self.bot.db.pool.execute(
+                "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+                datum["reminder_id"],
+                datum["owner_id"],
+                datum["channel_id"],
+                datum["timeend"],
+                datum["timestart"],
+                datum["reason"],
+                datum["message_id"],
+                datum["daily"],
+            )
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
