@@ -804,7 +804,7 @@ class Utility(Cog):
                 _id,
                 owner,
                 channel,
-                end + 86400,
+                end + 180,
                 start,
                 reason,
                 message,
