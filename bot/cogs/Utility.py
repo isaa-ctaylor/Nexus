@@ -754,7 +754,7 @@ class Utility(Cog):
             int(ctx.message.created_at.timestamp()),
             reason,
             ctx.message.id,
-            daily
+            daily,
         )
 
         await ctx.reply(
@@ -776,20 +776,40 @@ class Utility(Cog):
         daily=False,
     ):
         now = datetime.datetime.utcnow()
-        channel = self.bot.get_channel(channel) or self.bot.fetch_channel(channel)
-        if not daily:
-            sleep = end - now.timestamp()
-            await asyncio.sleep(sleep)
-            for i, r in enumerate(self._current_reminders):
-                if _id == r["reminder_id"]:
-                    self._current_reminders.pop(i)
-                    break
-            message = await channel.fetch_message(message) if channel else None
-            await channel.send(
-                f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
+        channel: TextChannel = self.bot.get_channel(channel) or self.bot.fetch_channel(
+            channel
+        )
+        owner: Member = channel.guild.get_member(owner)
+        sleep = end - now.timestamp()
+        await asyncio.sleep(sleep)
+        for i, r in enumerate(self._current_reminders):
+            if _id == r["reminder_id"]:
+                self._current_reminders.pop(i)
+                break
+        message = await channel.fetch_message(message) if channel else None
+        await channel.send(
+            f"{reason}"
+            if daily
+            else f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}",
+            allowed_mentions=AllowedMentions(
+                everyone=bool(owner.guild_permissions.mention_everyone),
+                roles=bool(owner.guild_permissions.manage_roles),
+                users=bool(owner.guild_permissions.mention_everyone),
+            ),
+        )
+
+        if daily:
+            await self.bot.db.pool.execute(
+                "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+                _id,
+                owner,
+                channel,
+                end + 86400,
+                start,
+                reason,
+                message,
+                True,
             )
-        else:
-            await channel.send(reason)
 
     @tasks.loop(seconds=59)
     async def _send_reminders(self):
@@ -822,29 +842,9 @@ class Utility(Cog):
                     datum["timestart"],
                     datum["message_id"],
                     datum["reminder_id"],
+                    daily=datum["daily"],
                 )
             )
-            
-            datum = dict(datum)
-            if datum["daily"]:
-                end = int(datum["timeend"]) + 300
-                re_add.append(datum)
-
-        for datum in re_add:
-            try:
-                await self.bot.db.pool.execute(
-                    "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-                    datum["reminder_id"],
-                    datum["owner_id"],
-                    datum["channel_id"],
-                    end,
-                    datum["timestart"],
-                    datum["reason"],
-                    datum["message_id"],
-                    True,
-                )
-            except Exception as e:
-                await self.bot.get_channel(963000498808557568).send(e)
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
     async def _remind_remove(self, ctx: NexusContext, index: int):
