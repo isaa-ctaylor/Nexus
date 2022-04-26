@@ -824,12 +824,12 @@ class Utility(Cog):
                     datum["reminder_id"],
                 )
             )
-            await self.bot.get_channel(963000498808557568).send(datum)
+            
             datum = dict(datum)
             if datum["daily"]:
-                datum["timeend"] += 60
+                end = int(datum["timeend"]) + 300
                 re_add.append(datum)
-        await self.bot.get_channel(963000498808557568).send(str(re_add))
+
         for datum in re_add:
             try:
                 await self.bot.db.pool.execute(
@@ -837,11 +837,11 @@ class Utility(Cog):
                     datum["reminder_id"],
                     datum["owner_id"],
                     datum["channel_id"],
-                    datum["timeend"],
+                    end,
                     datum["timestart"],
                     datum["reason"],
                     datum["message_id"],
-                    datum["daily"],
+                    True,
                 )
             except Exception as e:
                 await self.bot.get_channel(963000498808557568).send(e)
