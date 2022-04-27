@@ -436,7 +436,7 @@ class Utility(Cog):
         self._current_reminders = []
         self._send_reminders.start()
         
-        self._sleeper = sleeper()
+        self._running_reminders = {}
 
     @command(
         name="redirectcheck",
@@ -800,7 +800,10 @@ class Utility(Cog):
         )
         owner: Member = channel.guild.get_member(owner)
         sleep = end - now.timestamp()
-        r = await self._sleeper(sleep, loop=self.bot.loop)
+        s = sleeper()
+        r = await s(sleep, loop=self.bot.loop)
+        self._running_reminders[_id] = s
+        await asyncio.wait(s.tasks)
         await channel.send(str(r) or "Nothing")
         return
         for i, r in enumerate(self._current_reminders):
