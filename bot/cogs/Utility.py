@@ -435,7 +435,7 @@ class Utility(Cog):
 
         self._current_reminders = []
         self._send_reminders.start()
-        
+
         self._running_reminders = {}
 
     @command(
@@ -800,12 +800,7 @@ class Utility(Cog):
         )
         owner: Member = channel.guild.get_member(owner)
         sleep = end - now.timestamp()
-        s = sleeper()
-        r = await s(sleep, loop=self.bot.loop)
-        self._running_reminders[_id] = s
-        await asyncio.wait(s.tasks)
-        await channel.send(str(r) or "Nothing")
-        return
+        await asyncio.sleep(sleep)
         for i, r in enumerate(self._current_reminders):
             if _id == r["reminder_id"]:
                 self._current_reminders.pop(i)
