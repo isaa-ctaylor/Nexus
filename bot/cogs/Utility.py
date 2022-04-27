@@ -807,9 +807,7 @@ class Utility(Cog):
                 break
         message = await channel.fetch_message(message) if channel else None
         await channel.send(
-            f"{reason}"
-            if daily
-            else f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}",
+            f"<@{owner}>, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}",
             allowed_mentions=AllowedMentions(
                 everyone=bool(owner.guild_permissions.mention_everyone),
                 roles=bool(owner.guild_permissions.manage_roles),
