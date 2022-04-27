@@ -405,6 +405,23 @@ class IdevisionLocation(Converter):
         raise BadArgument(f"{arg} is not a valid rtfm location!")
 
 
+def sleeper():
+    async def sleep(delay, result=None, *, loop=None):
+        coro = asyncio.sleep(delay, result=result, loop=loop)
+        task = asyncio.ensure_future(coro)
+        sleep.tasks.add(task)
+        try:
+            return await task
+        except asyncio.CancelledError:
+            return result
+        finally:
+            sleep.tasks.remove(task)
+
+    sleep.tasks = set()
+    sleep.cancel_all = lambda: sum(task.cancel() for task in sleep.tasks)
+    return sleep
+
+
 class Utility(Cog):
     """
     Useful commands
@@ -418,6 +435,8 @@ class Utility(Cog):
 
         self._current_reminders = []
         self._send_reminders.start()
+        
+        self._sleeper = sleeper()
 
     @command(
         name="redirectcheck",
@@ -781,7 +800,9 @@ class Utility(Cog):
         )
         owner: Member = channel.guild.get_member(owner)
         sleep = end - now.timestamp()
-        await asyncio.sleep(sleep)
+        r = await self._sleeper(sleep, loop=self.bot.loop)
+        await channel.send(r)
+        return
         for i, r in enumerate(self._current_reminders):
             if _id == r["reminder_id"]:
                 self._current_reminders.pop(i)
