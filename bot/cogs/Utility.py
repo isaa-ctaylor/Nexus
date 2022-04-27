@@ -807,15 +807,19 @@ class Utility(Cog):
         message = await channel.fetch_message(message) if channel else None
         if _id in self._send_blacklist:
             self._send_blacklist.remove(_id)
-            return
-        await channel.send(
-            f"{owner.mention}, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}",
-            allowed_mentions=AllowedMentions(
-                everyone=bool(owner.guild_permissions.mention_everyone),
-                roles=bool(owner.guild_permissions.manage_roles),
-                users=bool(owner.guild_permissions.mention_everyone),
-            ),
-        )
+        else:
+            if daily:
+                _msg = reason or "No message provided."
+            else:
+                _msg = f"{owner.mention}, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}"
+            await channel.send(
+                _msg,
+                allowed_mentions=AllowedMentions(
+                    everyone=bool(owner.guild_permissions.mention_everyone),
+                    roles=bool(owner.guild_permissions.manage_roles),
+                    users=bool(owner.guild_permissions.mention_everyone),
+                ),
+            )
 
         if daily:
             await self.bot.db.pool.execute(
