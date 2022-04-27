@@ -801,7 +801,7 @@ class Utility(Cog):
         owner: Member = channel.guild.get_member(owner)
         sleep = end - now.timestamp()
         r = await self._sleeper(sleep, loop=self.bot.loop)
-        await channel.send(r)
+        await channel.send(str(r) or "Nothing")
         return
         for i, r in enumerate(self._current_reminders):
             if _id == r["reminder_id"]:
@@ -850,8 +850,6 @@ class Utility(Cog):
 
         if not data:
             return
-
-        re_add = []
 
         for datum in data:
             self.bot.loop.create_task(
