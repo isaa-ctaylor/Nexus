@@ -170,7 +170,7 @@ class TimeConverter(Converter):
             return self._run_checks(
                 ctx.message.created_at,
                 result_dt,
-                await clean_content().convert(ctx, remaining),
+                (await clean_content().convert(ctx, remaining) if not ctx.author.guild_permissions.mention_everyone else remaining),
                 daily,
             )
         else:
@@ -815,9 +815,9 @@ class Utility(Cog):
             await channel.send(
                 _msg,
                 allowed_mentions=AllowedMentions(
-                    everyone=bool(owner.guild_permissions.mention_everyone),
-                    roles=bool(owner.guild_permissions.manage_roles),
-                    users=bool(owner.guild_permissions.mention_everyone),
+                    everyone=owner.guild_permissions.mention_everyone,
+                    roles=owner.guild_permissions.mention_everyone,
+                    users=owner.guild_permissions.mention_everyone,
                 ),
             )
 
