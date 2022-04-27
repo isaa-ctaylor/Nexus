@@ -434,9 +434,8 @@ class Utility(Cog):
         self.idevision = async_client(getenv("IDEVISION"))
 
         self._current_reminders = []
+        self._send_blacklist = set()
         self._send_reminders.start()
-
-        self._running_reminders = {}
 
     @command(
         name="redirectcheck",
@@ -806,6 +805,9 @@ class Utility(Cog):
                 self._current_reminders.pop(i)
                 break
         message = await channel.fetch_message(message) if channel else None
+        if _id in self._send_blacklist:
+            self._send_blacklist.remove(_id)
+            return
         await channel.send(
             f"{owner.mention}, <t:{int(start)}:R>: {reason}\n\n{message.jump_url if message else ''}",
             allowed_mentions=AllowedMentions(
@@ -881,6 +883,9 @@ class Utility(Cog):
             ctx.author.id,
             index,
         )
+        
+        if index in [r["reminder_id"] for r in self._current_reminders]:
+            self._send_blacklist.add(index)
 
         await ctx.message.add_reaction("👍")
 
