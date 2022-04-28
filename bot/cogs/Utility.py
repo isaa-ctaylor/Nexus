@@ -1090,7 +1090,7 @@ class Utility(Cog):
             return list(lex)
 
         try:
-            args = parser.parse_known_args(
+            args = parser.parse_args(
                 split(messageandargs.replace("\n", " [[NEWLINE]] "))
             )
         except argparse.ArgumentError as e:
