@@ -1,24 +1,19 @@
 import argparse
 import asyncio
-from collections import namedtuple
 import contextlib
 import datetime
 import re
+import shlex
+from collections import namedtuple
 from io import BytesIO
 from math import floor, log10
 from os import getenv
 from typing import Any, List, Optional, Union
 
 import discord
-from discord.ext.commands.core import (
-    bot_has_guild_permissions,
-    has_guild_permissions,
-)
-from discord.mentions import AllowedMentions
-from discord.utils import MISSING
 import parsedatetime
-import pytz
 import pytesseract
+import pytz
 from aiohttp import InvalidURL
 from async_timeout import timeout
 from dateutil.relativedelta import relativedelta
@@ -33,9 +28,12 @@ from discord.ext.commands.converter import (
     UserConverter,
     clean_content,
 )
+from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
+from discord.mentions import AllowedMentions
 from discord.ui import Button, View
+from discord.utils import MISSING
 from dotenv.main import load_dotenv
 from idevision import async_client
 from idevision.errors import InvalidRtfmLibrary
@@ -48,7 +46,6 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-import shlex
 
 load_dotenv()
 
@@ -64,6 +61,10 @@ SIMPLETIME = re.compile(
     """,
     re.VERBOSE,
 )
+DAILY_1 = re.compile(r"--daily$")
+DAILY_2 = re.compile(r"--daily --repeat (?P<repeat>[0-9]+)$")
+REPEAT_1 = re.compile(r"--repeat (?P<repeat>[0-9]+)$")
+REPEAT_2 = re.compile(r"--repeat (?P<repeat>[0-9]+) --daily$")
 
 DESTINATIONS = {
     "dpy": "https://discordpy.readthedocs.io/en/stable",
@@ -101,12 +102,25 @@ class TimeConverter(Converter):
             dt += relativedelta(**data)
 
             match = SIMPLETIME.match(remaining)
-        if remaining.lower().endswith("--daily"):
-            remaining = remaining[:-7]
+
+        if DAILY_2.match(remaining.lower().strip()) is not None:
+            raise InvalidTimeProvided(
+                "You cannot specify --daily and --repeat at the same time!"
+            )
+        elif REPEAT_2.match(remaining.lower().strip()) is not None:
+            raise InvalidTimeProvided(
+                "You cannot specify --daily and --repeat at the same time!"
+            )
+        elif DAILY_1.match(remaining.lower().strip()) is not None:
             daily = True
+            remaining = remaining.strip()[:-7]
+        elif _m := REPEAT_1.match(remaining.lower().strip()) is not None:
+            if _m.group("repeat") >= 0:
+                repeat = int(_m.group("repeat"))
+            remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
 
         result_dt = dt
-        return result_dt, remaining, daily
+        return result_dt, remaining, daily, repeat
 
     async def convert(
         self, ctx: NexusContext, argument: str, run_checks=True
@@ -116,7 +130,7 @@ class TimeConverter(Converter):
         retime = self._check_regex(date_obj, argument)
 
         if retime is not None:
-            result_dt, remaining, daily = retime
+            result_dt, remaining, daily, repeat = retime
 
         else:
             remaining = self._check_startswith(argument)
@@ -170,14 +184,21 @@ class TimeConverter(Converter):
             return self._run_checks(
                 ctx.message.created_at,
                 result_dt,
-                (await clean_content().convert(ctx, remaining) if not ctx.author.guild_permissions.mention_everyone else remaining),
+                remaining
+                if ctx.author.guild_permissions.mention_everyone
+                else await clean_content().convert(ctx, remaining),
                 daily,
+                repeat
             )
+
         else:
             return (
                 result_dt,
-                await clean_content().convert(ctx, remaining) or "...",
+                remaining
+                if ctx.author.guild_permissions.mention_everyone
+                else await clean_content().convert(ctx, remaining) or "...",
                 daily,
+                repeat
             )
 
     def _check_startswith(self, reason: str):
@@ -208,7 +229,7 @@ class TimeConverter(Converter):
 
         return reason.strip()
 
-    def _run_checks(self, now, dt, remaining, daily):
+    def _run_checks(self, now, dt, remaining, daily, repeat):
         if dt < now:
             raise InvalidTimeProvided("Time is in the past!")
 
@@ -221,7 +242,7 @@ class TimeConverter(Converter):
         elif remaining.startswith("to"):
             remaining = remaining.removeprefix("to")
 
-        return dt, remaining, daily
+        return dt, remaining, daily, repeat
 
 
 class InvalidDiscriminator(BadArgument):
@@ -422,6 +443,11 @@ def sleeper():
     return sleep
 
 
+class InviteView(View):
+    def __init__(self, url: str):
+        self.add_item(Button(label="Click here", url=url))
+
+
 class Utility(Cog):
     """
     Useful commands
@@ -436,6 +462,24 @@ class Utility(Cog):
         self._current_reminders = []
         self._send_blacklist = set()
         self._send_reminders.start()
+
+    @command(name="invite", aliases=["addme"])
+    async def _invite(self, ctx: NexusContext):
+        """
+        Get an invite link for the bot
+        """
+        embed = Embed(
+            title="Thanks!",
+            description="Thanks for adding Nexus to your server!",
+            colour=self.bot.config.colours.neutral,
+        )
+        await ctx.reply(
+            embed=embed,
+            view=InviteView(
+                "https://discord.com/api/oauth2/authorize?client_id=869487103703138364&permissions=1644938390775&scope=bot%20applications.commands"
+            ),
+            mention_author=False,
+        )
 
     @command(
         name="redirectcheck",
@@ -747,6 +791,7 @@ class Utility(Cog):
                 dateandtime[1],
                 dateandtime[0],
                 dateandtime[2],
+                dateandtime[3],
             )
 
     @_remind.error
@@ -763,9 +808,10 @@ class Utility(Cog):
         reason: str,
         when: Union[datetime.datetime, simpletime] = None,
         daily: bool = False,
+        repeat: int = 0,
     ):
         await self.bot.db.execute(
-            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+            "INSERT INTO reminders (owner_id, channel_id, timeend, timestart, reason, message_id, daily, repeat) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
             owner.id,
             channel.id,
             int(when.timestamp()),
@@ -773,6 +819,7 @@ class Utility(Cog):
             reason,
             ctx.message.id,
             daily,
+            repeat
         )
 
         await ctx.reply(
@@ -791,7 +838,8 @@ class Utility(Cog):
         message: int = None,
         _id: int = None,
         /,
-        daily=False,
+        daily: bool = False,
+        repeat: int = 0,
     ):
         now = datetime.datetime.utcnow()
         channel: TextChannel = self.bot.get_channel(channel) or self.bot.fetch_channel(
@@ -832,6 +880,19 @@ class Utility(Cog):
                 reason,
                 message,
                 True,
+            )
+        elif repeat:
+            await self.bot.db.pool.execute(
+                "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily, repeat) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+                _id,
+                owner,
+                channel,
+                end + 86400,
+                start,
+                reason,
+                message,
+                True,
+                max(0, repeat - 1)
             )
 
     @tasks.loop(seconds=59)
@@ -887,7 +948,7 @@ class Utility(Cog):
             ctx.author.id,
             index,
         )
-        
+
         if index in [r["reminder_id"] for r in self._current_reminders]:
             self._send_blacklist.add(index)
 
