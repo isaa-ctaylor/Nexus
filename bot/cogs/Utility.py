@@ -452,6 +452,7 @@ def sleeper():
 
 class InviteView(View):
     def __init__(self, url: str):
+        super().__init__()
         self.add_item(Button(label="Click here", url=url))
 
 
@@ -1116,6 +1117,10 @@ class Utility(Cog):
 
         embed = Embed() if args.embed else None
 
+        msg = " ".join(args.message).replace("[[NEWLINE]]", "\n")
+        if msg.startswith('"') and msg.endswith('"'):
+            msg = msg[1:-1]
+
         if embed is not None:
             if title := args.title:
                 embed.title = title if isinstance(title, str) else " ".join(title)
@@ -1129,8 +1134,8 @@ class Utility(Cog):
                     )
                 embed.colour = colour
 
-            embed.description = " ".join(args.message).replace("[[NEWLINE]]", "\n")
-
+            embed.description = msg
+        
         if channel := args.channel:
             try:
                 channel = await TextChannelConverter().convert(ctx, channel)
