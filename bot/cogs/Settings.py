@@ -344,6 +344,14 @@ class Settings(Cog):
                     await member.add_roles(role)
 
     @has_guild_permissions(manage_guild=True)
+    @command(name="modules")
+    async def _modules(self, ctx: NexusContext):
+        """
+        List all available modules
+        """
+        await self._module(ctx, "all", None)
+
+    @has_guild_permissions(manage_guild=True)
     @command(name="module")
     async def _module(
         self, ctx: NexusContext, module: Module, toggle: Optional[Toggle] = None
@@ -422,6 +430,6 @@ class Settings(Cog):
 
         await ctx.message.add_reaction("👍")
 
-
+    
 def setup(bot: Nexus):
     bot.add_cog(Settings(bot))
