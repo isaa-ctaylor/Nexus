@@ -168,7 +168,7 @@ class TimeConverter(Converter):
                     remaining = remaining[end:].lstrip(" ,.!")
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
-        
+
         daily = False
         repeat = 0
         if DAILY_2.search(remaining.lower().strip()) is not None:
@@ -187,7 +187,7 @@ class TimeConverter(Converter):
                 repeat = int(_m.group("repeat")) + 1
             daily = False
             remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
-        
+
         if run_checks:
             return self._run_checks(
                 ctx.message.created_at,
@@ -792,9 +792,9 @@ class Utility(Cog):
         Remind you to do something
 
         Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input
-        
+
         Add --daily to the end of your message to send the reminder every day after the first reminder
-        Add --repeat <n> where <n> is a number to repeat the reminder again n times after the first reminder 
+        Add --repeat <n> where <n> is a number to repeat the reminder again n times after the first reminder
         """
         if not ctx.invoked_subcommand:
             await self._create_timer(
@@ -835,9 +835,7 @@ class Utility(Cog):
             repeat,
         )
 
-        await ctx.reply(
-            f"Alright {ctx.author.mention}, <t:{int(when.timestamp())}:R>: {reason}"
-        )
+        await ctx.reply(f"Alright, <t:{int(when.timestamp())}:R>: {reason}")
 
         await self._send_reminders()
 
@@ -865,7 +863,11 @@ class Utility(Cog):
             if _id == r["reminder_id"]:
                 self._current_reminders.pop(i)
                 break
-        message = await channel.fetch_message(message) if channel else None
+
+        message = None
+        with contextlib.suppress(Exception):
+            message = await channel.fetch_message(message) if channel else None
+
         if _id in self._send_blacklist:
             self._send_blacklist.remove(_id)
         else:
@@ -943,7 +945,7 @@ class Utility(Cog):
             )
 
     @_remind.command(name="remove", usage="<id>", aliases=["rm"], examples=["1"])
-    async def _remind_remove(self, ctx: NexusContext, index: int):
+    async def _remind_remove(self, ctx: NexusContext, *index: int):
         """
         Remove a set reminder given its id
         """
@@ -954,7 +956,9 @@ class Utility(Cog):
         if not data:
             return await ctx.error("No reminders set!")
 
-        if index not in [r["reminder_id"] for r in data]:
+        _ids = [r["reminder_id"] for r in data]
+
+        if index not in _ids:
             return await ctx.error("No reminder with that ID found!")
 
         await self.bot.db.execute(
@@ -1136,7 +1140,7 @@ class Utility(Cog):
                 embed.colour = colour
 
             embed.description = msg
-        
+
         if channel := args.channel:
             try:
                 channel = await TextChannelConverter().convert(ctx, channel)
