@@ -961,7 +961,7 @@ class Utility(Cog):
         to_del = [_id for _id, v in {_id: _id in _ids for _id in index}.items() if v]
         await self.bot.db.pool.executemany(
             "DELETE FROM reminders WHERE (owner_id = $1 and reminder_id = $2)",
-            (ctx.author.id, i for i in to_del)
+            ((ctx.author.id, i) for i in to_del)
         )
 
         for index in to_del:
