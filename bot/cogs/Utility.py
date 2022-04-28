@@ -94,6 +94,7 @@ class TimeConverter(Converter):
         daily = False
         remaining = argument
         match = SIMPLETIME.match(remaining)
+        repeat = 0
         if match is None or not match.group(0):
             return None
         while match is not None and match.group(0):
