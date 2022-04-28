@@ -926,6 +926,7 @@ class Utility(Cog):
                     datum["message_id"],
                     datum["reminder_id"],
                     daily=datum["daily"],
+                    repeat=datum["repeat"]
                 )
             )
 
