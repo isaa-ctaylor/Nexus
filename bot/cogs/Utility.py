@@ -96,10 +96,8 @@ class InvalidTimeProvided(CommandError):
 
 class TimeConverter(Converter):
     def _check_regex(self, dt, argument):
-        daily = False
         remaining = argument
         match = SIMPLETIME.match(remaining)
-        repeat = 0
         if match is None or not match.group(0):
             return None
         while match is not None and match.group(0):
@@ -108,25 +106,9 @@ class TimeConverter(Converter):
             dt += relativedelta(**data)
 
             match = SIMPLETIME.match(remaining)
-        if DAILY_2.search(remaining.lower().strip()) is not None:
-            raise InvalidTimeProvided(
-                "You cannot specify --daily and --repeat at the same time!"
-            )
-        elif REPEAT_2.search(remaining.lower().strip()) is not None:
-            raise InvalidTimeProvided(
-                "You cannot specify --daily and --repeat at the same time!"
-            )
-        elif DAILY_1.search(remaining.lower().strip()) is not None:
-            daily = True
-            remaining = remaining.strip()[:-7]
-        elif (_m := REPEAT_1.search(remaining.lower().strip())) is not None:
-            if int(_m.group("repeat")) >= 0:
-                repeat = int(_m.group("repeat")) + 1
-            daily = False
-            remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
 
         result_dt = dt
-        return result_dt, remaining, daily, repeat
+        return result_dt, remaining
 
     async def convert(
         self, ctx: NexusContext, argument: str, run_checks=True
@@ -136,9 +118,10 @@ class TimeConverter(Converter):
         retime = self._check_regex(date_obj, argument)
 
         if retime is not None:
-            result_dt, remaining, daily, repeat = retime
+            result_dt, remaining = retime
 
         else:
+            daily = False
             remaining = self._check_startswith(argument)
 
             times = Calendar(version=parsedatetime.VERSION_CONTEXT_STYLE).nlp(
@@ -185,7 +168,26 @@ class TimeConverter(Converter):
                     remaining = remaining[end:].lstrip(" ,.!")
             elif len(argument) == end:
                 remaining = remaining[:beginning].strip()
-
+        
+        daily = False
+        repeat = 0
+        if DAILY_2.search(remaining.lower().strip()) is not None:
+            raise InvalidTimeProvided(
+                "You cannot specify --daily and --repeat at the same time!"
+            )
+        elif REPEAT_2.search(remaining.lower().strip()) is not None:
+            raise InvalidTimeProvided(
+                "You cannot specify --daily and --repeat at the same time!"
+            )
+        elif DAILY_1.search(remaining.lower().strip()) is not None:
+            daily = True
+            remaining = remaining.strip()[:-7]
+        elif (_m := REPEAT_1.search(remaining.lower().strip())) is not None:
+            if int(_m.group("repeat")) >= 0:
+                repeat = int(_m.group("repeat")) + 1
+            daily = False
+            remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
+        
         if run_checks:
             return self._run_checks(
                 ctx.message.created_at,
