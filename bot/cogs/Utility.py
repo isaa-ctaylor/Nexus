@@ -118,6 +118,7 @@ class TimeConverter(Converter):
         elif _m is not None:
             if int(_m.group("repeat")) >= 0:
                 repeat = int(_m.group("repeat"))
+            daily = False
             remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
 
         result_dt = dt
@@ -892,7 +893,7 @@ class Utility(Cog):
                 start,
                 reason,
                 message,
-                True,
+                False,
                 max(0, repeat - 1),
             )
 
@@ -983,7 +984,7 @@ class Utility(Cog):
                 title="Reminders",
                 colour=self.bot.config.colours.neutral,
                 description="\n\n".join(
-                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>: {('(Repeating ' + str(r['repeat']) + 'more time' + ('s)' if r['repeat'] < 1 else ')')) if r['repeat'] else ''}{'(Daily)' if r['daily'] else ''}\n{r['reason']}"
+                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>: {('(Repeating ' + str(r['repeat']) + ' more time' + ('s)' if int(r['repeat']) > 1 else ')')) if r['repeat'] else ''}{'(Daily)' if r['daily'] else ''}\n{r['reason']}"
                     for r in page
                 ),
             ).set_footer(
