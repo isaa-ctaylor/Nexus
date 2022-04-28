@@ -81,6 +81,11 @@ URL_REGEX = (
 simpletime = namedtuple("Time", "hour minute second")
 
 
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> NoReturn:
+        raise Exception(message)
+
+
 class TimeInPast(Exception):
     pass
 
@@ -1062,7 +1067,7 @@ class Utility(Cog):
         --channel <channel>
             Sends the message in another channel
         """
-        parser = argparse.ArgumentParser(exit_on_error=False)
+        parser = ArgumentParser(exit_on_error=False)
 
         parser.add_argument("message", type=str, nargs="*", default=None)
 
@@ -1085,11 +1090,13 @@ class Utility(Cog):
             return list(lex)
 
         try:
-            args = parser.parse_args(
+            args = parser.parse_known_args(
                 split(messageandargs.replace("\n", " [[NEWLINE]] "))
             )
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
+        except Exception as e:
+            return await ctx.error(f"Oops! I couldn't do that!\n{'\n'.join(e.args)}")
 
         pfp = None
         name = None
