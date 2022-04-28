@@ -1096,7 +1096,7 @@ class Utility(Cog):
         except argparse.ArgumentError as e:
             return await ctx.error(f"{e.argument_name} {e.message}!")
         except Exception as e:
-            return await ctx.error(f"Oops! I couldn't do that!\n{'\n'.join(e.args)}")
+            return await ctx.error(f"Oops! I couldn't do that!\n{' '.join(e.args)}")
 
         pfp = None
         name = None
