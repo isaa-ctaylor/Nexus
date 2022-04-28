@@ -82,7 +82,7 @@ simpletime = namedtuple("Time", "hour minute second")
 
 
 class ArgumentParser(argparse.ArgumentParser):
-    def error(self, message: str) -> NoReturn:
+    def error(self, message: str):  # sourcery skip: raise-specific-error
         raise Exception(message)
 
 
