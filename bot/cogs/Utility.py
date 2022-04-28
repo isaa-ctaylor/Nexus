@@ -983,7 +983,7 @@ class Utility(Cog):
                 title="Reminders",
                 colour=self.bot.config.colours.neutral,
                 description="\n\n".join(
-                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>: {('(Repeating ' + r['repeat'] + 'more time' + ('s)' if r['repeat'] < 1 else ')')) if r['repeat'] else ''}{'(Daily)' if r['daily'] else ''}\n{r['reason']}"
+                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>: {('(Repeating ' + str(r['repeat']) + 'more time' + ('s)' if r['repeat'] < 1 else ')')) if r['repeat'] else ''}{'(Daily)' if r['daily'] else ''}\n{r['reason']}"
                     for r in page
                 ),
             ).set_footer(
