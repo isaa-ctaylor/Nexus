@@ -108,7 +108,6 @@ class TimeConverter(Converter):
             dt += relativedelta(**data)
 
             match = SIMPLETIME.match(remaining)
-        _m = REPEAT_1.match(remaining.lower().strip())
         if DAILY_2.match(remaining.lower().strip()) is not None:
             raise InvalidTimeProvided(
                 "You cannot specify --daily and --repeat at the same time!"
@@ -120,7 +119,7 @@ class TimeConverter(Converter):
         elif DAILY_1.match(remaining.lower().strip()) is not None:
             daily = True
             remaining = remaining.strip()[:-7]
-        elif _m is not None:
+        elif (_m := REPEAT_1.match(remaining.lower().strip())) is not None:
             if int(_m.group("repeat")) >= 0:
                 repeat = int(_m.group("repeat")) + 1
             daily = False
