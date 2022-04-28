@@ -189,7 +189,7 @@ class TimeConverter(Converter):
                 if ctx.author.guild_permissions.mention_everyone
                 else await clean_content().convert(ctx, remaining),
                 daily,
-                repeat
+                repeat,
             )
 
         else:
@@ -199,7 +199,7 @@ class TimeConverter(Converter):
                 if ctx.author.guild_permissions.mention_everyone
                 else await clean_content().convert(ctx, remaining) or "...",
                 daily,
-                repeat
+                repeat,
             )
 
     def _check_startswith(self, reason: str):
@@ -820,7 +820,7 @@ class Utility(Cog):
             reason,
             ctx.message.id,
             daily,
-            repeat
+            repeat,
         )
 
         await ctx.reply(
@@ -893,7 +893,7 @@ class Utility(Cog):
                 reason,
                 message,
                 True,
-                max(0, repeat - 1)
+                max(0, repeat - 1),
             )
 
     @tasks.loop(seconds=59)
@@ -926,7 +926,7 @@ class Utility(Cog):
                     datum["message_id"],
                     datum["reminder_id"],
                     daily=datum["daily"],
-                    repeat=datum["repeat"]
+                    repeat=datum["repeat"],
                 )
             )
 
@@ -983,7 +983,7 @@ class Utility(Cog):
                 title="Reminders",
                 colour=self.bot.config.colours.neutral,
                 description="\n\n".join(
-                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>:\n{r['reason']}"
+                    f"**ID: {r['reminder_id']}** <t:{int(r['timeend'])}:R>: {('(Repeating ' + r['repeat'] + 'more time' + ('s)' if r['repeat'] < 1 else ')')) if r['repeat'] else ''}{'(Daily)' if r['daily'] else ''}\n{r['reason']}"
                     for r in page
                 ),
             ).set_footer(
