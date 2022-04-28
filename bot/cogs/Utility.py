@@ -117,7 +117,7 @@ class TimeConverter(Converter):
             remaining = remaining.strip()[:-7]
         elif _m is not None:
             if int(_m.group("repeat")) >= 0:
-                repeat = int(_m.group("repeat"))
+                repeat = int(_m.group("repeat")) + 1
             daily = False
             remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
 
@@ -784,7 +784,11 @@ class Utility(Cog):
         """
         Remind you to do something
 
-        Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input"""
+        Time input can be in "short format" (e.g. 1h 2m) or natural speech (e.g. "in two hours") and must be at the start or end of your input
+        
+        Add --daily to the end of your message to send the reminder every day after the first reminder
+        Add --repeat <n> where <n> is a number to repeat the reminder again n times after the first reminder 
+        """
         if not ctx.invoked_subcommand:
             await self._create_timer(
                 ctx,
