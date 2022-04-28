@@ -115,7 +115,7 @@ class TimeConverter(Converter):
         elif DAILY_1.match(remaining.lower().strip()) is not None:
             daily = True
             remaining = remaining.strip()[:-7]
-        elif _m := REPEAT_1.match(remaining.lower().strip()) is not None:
+        elif (_m := REPEAT_1.match(remaining.lower().strip())) is not None:
             if _m.group("repeat") >= 0:
                 repeat = int(_m.group("repeat"))
             remaining = remaining[: -len(f"--repeat {_m.group('repeat')}")]
