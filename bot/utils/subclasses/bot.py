@@ -38,7 +38,7 @@ def get_prefix(bot, message: Message):
     comp = re.compile("^(" + "|".join(map(re.escape, [prefix])) + ").*", flags=re.I)
     match = comp.match(message.content)
     if match is not None:
-        return when_mentioned_or(match.group(1))(bot, message)
+        return when_mentioned_or(match[1])(bot, message)
     return when_mentioned_or("nxs")(bot, message)
 
 
@@ -51,8 +51,6 @@ class Nexus(Bot):
         kwargs["command_prefix"] = get_prefix
         kwargs["case_insensitive"] = kwargs.pop("case_insensitive", True)
         kwargs["slash_commands"] = kwargs.pop("slash_commands", True)
-
-        cogs = self.config.cogs
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
 
@@ -67,13 +65,6 @@ class Nexus(Bot):
             )
         )
         self.database = self.db = Database(self)
-
-        if cogs:
-            for cog in cogs:
-                try:
-                    self.load_extension(cog)
-                except Exception as e:
-                    print("".join(format_exception(type(e), e, e.__traceback__)))
 
         self.add_check(self._check_cog_not_blacklisted)
 
@@ -98,6 +89,13 @@ class Nexus(Bot):
                 for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
+
+        if cogs := self.config.cogs:
+            for cog in cogs:
+                try:
+                    self.load_extension(cog)
+                except Exception as e:
+                    print("".join(format_exception(type(e), e, e.__traceback__)))
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:
