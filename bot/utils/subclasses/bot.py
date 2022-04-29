@@ -107,6 +107,7 @@ class Nexus(Bot):
                 print(2)
                 try:
                     print(3)
+                    print(cog)
                     await self.load_extension(cog)
                     print(4)
                 except Exception as e:
