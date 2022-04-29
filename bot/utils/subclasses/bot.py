@@ -40,7 +40,7 @@ def get_prefix(bot, message: Message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
-        print(1)
+
         self.config = CONFIG
 
         kwargs["command_prefix"] = get_prefix
@@ -48,7 +48,7 @@ class Nexus(Bot):
         kwargs["slash_commands"] = kwargs.pop("slash_commands", True)
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
-        print(2)
+
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
 
@@ -61,11 +61,11 @@ class Nexus(Bot):
         # )
         
     async def setup_hook(self) -> None:
-        print(3)
+
         self.session = ClientSession()
-        print(4)
+
         self.database = self.db = Database(self)
-        print(5)
+
         user, password, database, host = (
             "postgres",
             getenv("DATABASE"),
@@ -76,9 +76,9 @@ class Nexus(Bot):
         self.db.pool = await asyncpg.create_pool(
             user=user, password=password, database=database, host=host
         )
-        print(6)
+
         self.add_check(self._check_cog_not_blacklisted)
-        print(7)
+
         await self.db.execute(
             r"""CREATE TABLE IF NOT EXISTS prefixes     (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
@@ -91,7 +91,7 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS cogblacklist (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}')
             """
         )
-        print(8)
+
 
         self.prefixes = {
             r["guild_id"]: r["prefixes"]
@@ -100,13 +100,19 @@ class Nexus(Bot):
                 for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
-        print(9)
+
         if cogs := self.config.cogs:
+            print(1)
             for cog in cogs:
+                print(2)
                 try:
+                    print(3)
                     await self.load_extension(cog)
+                    print(4)
                 except Exception as e:
+                    print(5)
                     print("".join(format_exception(type(e), e, e.__traceback__)))
+                    print(6)
         print(11)
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
