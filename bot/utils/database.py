@@ -37,12 +37,15 @@ class Database:
         return pool
 
     async def execute(self, command: str, *args):
-        return await self.pool.execute(command, *args)
+        async with self.pool.acquire() as con:
+            return await con.execute(command, *args)
 
     async def fetch(self, command: str, *args, one=True):
         if one:
-            return await self.pool.fetchrow(command, *args)
-        return await self.pool.fetch(command, *args)
+                async with self.pool.acquire() as con:
+                    return await con.fetchrow(command, *args)
+        async with self.pool.acquire() as con:
+            return await con.fetch(command, *args)
 
     @property
     async def ping(self):
