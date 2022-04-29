@@ -1,5 +1,6 @@
 import re
 from logging import INFO, getLogger
+from time import sleep
 from traceback import format_exception
 
 from aiohttp import ClientSession
@@ -61,6 +62,8 @@ class Nexus(Bot):
 
         self.database = self.db = Database(self)
 
+        sleep(10)
+        
         self.add_check(self._check_cog_not_blacklisted)
 
         await self.db.execute(
