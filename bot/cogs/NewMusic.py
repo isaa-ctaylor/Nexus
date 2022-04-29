@@ -14,7 +14,7 @@ class NewMusic(Cog):
         await self.bot.wait_until_ready()
 
         if not getattr(self.bot, "wavelink", None):
-            self.bot.wavelink = wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", password="youshallnotpass")
+            self.bot.wavelink = wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port=2333, password="youshallnotpass")
         
 
 def setup(bot: Nexus):
