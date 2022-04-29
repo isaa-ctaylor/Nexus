@@ -12,7 +12,7 @@ from . import Timer
 class Database:
     def __init__(self, bot, **kwargs):
         self.bot = bot
-        self.pool = bot.loop.create_task(
+        bot.loop.create_task(
             self.new_connection(**kwargs)
         )
 
@@ -28,13 +28,11 @@ class Database:
         #     f"Creating database connection with params user={user}, password={password}, database={database}, host={host}."
         # )
 
-        pool = await asyncpg.create_pool(
+        self.pool = await asyncpg.create_pool(
             user=user, password=password, database=database, host=host
         )
 
         # self.bot.logger.info("Database pool created.")
-
-        return pool
 
     async def execute(self, command: str, *args):
         async with self.pool.acquire() as con:
