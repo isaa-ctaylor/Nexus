@@ -454,8 +454,8 @@ class Utility(Cog):
         self._current_reminders = []
         self._send_blacklist = set()
     
-    # async def cog_load(self):
-    #     await self._send_reminders.start()
+    async def cog_load(self):
+        await self._send_reminders.start()
 
     @command(name="invite", aliases=["addme"])
     async def _invite(self, ctx: NexusContext):
@@ -895,8 +895,9 @@ class Utility(Cog):
                 max(0, repeat - 1),
             )
 
-    @tasks.loop(seconds=59)
+    @tasks.loop(seconds=60)
     async def _send_reminders(self):
+        print("Hello from the task!")
         now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE (timeend - $1) <= 120",
