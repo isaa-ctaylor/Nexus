@@ -434,23 +434,6 @@ class IdevisionLocation(Converter):
         raise BadArgument(f"{arg} is not a valid rtfm location!")
 
 
-def sleeper():
-    async def sleep(delay, result=None, *, loop=None):
-        coro = asyncio.sleep(delay, result=result, loop=loop)
-        task = asyncio.ensure_future(coro)
-        sleep.tasks.add(task)
-        try:
-            return await task
-        except asyncio.CancelledError:
-            return result
-        finally:
-            sleep.tasks.remove(task)
-
-    sleep.tasks = set()
-    sleep.cancel_all = lambda: sum(task.cancel() for task in sleep.tasks)
-    return sleep
-
-
 class InviteView(View):
     def __init__(self, url: str):
         super().__init__()
@@ -471,8 +454,8 @@ class Utility(Cog):
         self._current_reminders = []
         self._send_blacklist = set()
     
-    async def cog_load(self):
-        await self._send_reminders.start()
+    # async def cog_load(self):
+    #     await self._send_reminders.start()
 
     @command(name="invite", aliases=["addme"])
     async def _invite(self, ctx: NexusContext):
