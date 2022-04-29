@@ -13,7 +13,7 @@ class NewMusic(Cog):
     async def _connect_node(self):
         await self.bot.wait_until_ready()
 
-        if not getattr(self.bot, "wavelink"):
+        if not getattr(self.bot, "wavelink", None):
             self.bot.wavelink = wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", password="youshallnotpass")
         
 
