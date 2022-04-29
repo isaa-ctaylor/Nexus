@@ -70,7 +70,29 @@ class Nexus(Bot):
         
         self._ready_ran = False
 
-    @Bot.event
+    async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
+        if ctx.author.id == self.owner_id:
+            return True
+        if ctx.author.id == ctx.guild.owner_id:
+            return True
+
+        if ctx.command.cog_name in [
+            cog.qualified_name
+            for cog in self.cogs.values()
+            if cog.hidden or cog.qualified_name in ["Settings"]
+        ]:
+            return True
+        data = await self.db.fetch(
+            "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
+        )
+        if data is None:
+            return True
+
+        if ctx.command.cog_name.capitalize().strip() in data["blacklist"]:
+            raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
+
+        return True
+
     async def on_ready(self):
         if self._ready_ran == True:
             return
@@ -103,30 +125,6 @@ class Nexus(Bot):
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
 
-    async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
-        if ctx.author.id == self.owner_id:
-            return True
-        if ctx.author.id == ctx.guild.owner_id:
-            return True
-
-        if ctx.command.cog_name in [
-            cog.qualified_name
-            for cog in self.cogs.values()
-            if cog.hidden or cog.qualified_name in ["Settings"]
-        ]:
-            return True
-        data = await self.db.fetch(
-            "SELECT blacklist FROM cogblacklist WHERE guild_id = $1", ctx.guild.id
-        )
-        if data is None:
-            return True
-
-        if ctx.command.cog_name.capitalize().strip() in data["blacklist"]:
-            raise CheckFailure(f"The {ctx.command.cog_name} module is disabled!")
-
-        return True
-
-    async def on_ready(self):
         print(f"Logged in as {self.user} - {self.user.id}")
 
     async def close(self):
