@@ -10,7 +10,7 @@ cogs:
   - cogs.Errors
   - cogs.Moderation
   - cogs.Utility
-  - cogs.Modlogs
+  # - cogs.Modlogs
   - cogs.Settings
   # - cogs.Music
   # - cogs.Listeners
