@@ -158,7 +158,7 @@ class Developer(Cog, hidden=True):
 
         for cog in _to_load:
             try:
-                func(cog)
+                await func(cog)
                 _cogs.append(f"[Success] {cog}")
             except Exception as e:
                 _cogs.append(f"[ERROR] {cog}: {e}")
