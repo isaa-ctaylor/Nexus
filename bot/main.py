@@ -5,7 +5,7 @@ import aiohttp
 from dotenv import load_dotenv
 
 from utils.subclasses.bot import Nexus
-
+print("F")
 load_dotenv()
 print("a")
 bot = Nexus()
