@@ -474,5 +474,5 @@ class Music(Cog):
         await ctx.message.add_reaction("👍")
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Music(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Music(bot))

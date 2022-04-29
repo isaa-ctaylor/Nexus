@@ -39,7 +39,8 @@ class NewMusic(Cog):
                 return await ctx.error(f"I am already connected to a channel! ({channel.name})")
 
         try:
-            await channel.connect()
+            c = await channel.connect()
+            await ctx.guild.change_voice_state(self_deaf=True)
             await ctx.embed(description=f"Connected to {channel.mention}")
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
@@ -48,5 +49,5 @@ class NewMusic(Cog):
         except OpusNotLoaded:
             return await ctx.error("Sorry! I couldn't do that. Try again soon.")
 
-def setup(bot: Nexus):
-    bot.add_cog(NewMusic(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(NewMusic(bot))

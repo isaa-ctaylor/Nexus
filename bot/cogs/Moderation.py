@@ -532,5 +532,5 @@ class Moderation(Cog):
                         await history[0].delete()
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Moderation(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Moderation(bot))

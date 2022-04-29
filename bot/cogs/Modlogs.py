@@ -316,5 +316,5 @@ class Modlogs(Cog):
         ...
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Modlogs(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Modlogs(bot))

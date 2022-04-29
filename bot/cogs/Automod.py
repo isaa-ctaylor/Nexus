@@ -47,5 +47,5 @@ class Automod(Cog):
         self.cache = DotDict(_cache)
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Automod(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Automod(bot))

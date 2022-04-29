@@ -210,5 +210,5 @@ class Help(Cog, hidden=True):
         self.bot.help_command = self._old_help_command
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Help(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Help(bot))

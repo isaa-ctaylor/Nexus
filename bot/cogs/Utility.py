@@ -470,7 +470,9 @@ class Utility(Cog):
 
         self._current_reminders = []
         self._send_blacklist = set()
-        self._send_reminders.start()
+    
+    async def cog_load(self):
+        await self._send_reminders.start()
 
     @command(name="invite", aliases=["addme"])
     async def _invite(self, ctx: NexusContext):
@@ -1218,5 +1220,5 @@ class Utility(Cog):
         await ctx.paginate(embed)
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Utility(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Utility(bot))

@@ -216,5 +216,5 @@ class Errors(Cog, hidden=True):
             )
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Errors(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Errors(bot))

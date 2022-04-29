@@ -431,5 +431,5 @@ class Settings(Cog):
         await ctx.message.add_reaction("👍")
 
     
-def setup(bot: Nexus):
-    bot.add_cog(Settings(bot))
+async def setup(bot: Nexus):
+    await bot.add_cog(Settings(bot))

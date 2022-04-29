@@ -395,5 +395,5 @@ class Developer(Cog, hidden=True):
         await self.bot.get_channel(self.bot.config.channels.guilds).send(embed=embed)
 
 
-def setup(bot: Nexus) -> None:
-    bot.add_cog(Developer(bot))
+async def setup(bot: Nexus) -> None:
+    await bot.add_cog(Developer(bot))

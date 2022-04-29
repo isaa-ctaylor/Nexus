@@ -12,7 +12,7 @@ from . import Timer
 class Database:
     def __init__(self, bot, **kwargs):
         self.bot = bot
-        self.pool = asyncio.get_event_loop().run_until_complete(
+        self.pool = bot.loop.create_task(
             self.new_connection(**kwargs)
         )
 
