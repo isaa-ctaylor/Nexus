@@ -873,8 +873,8 @@ class Utility(Cog):
             await self.bot.db.pool.execute(
                 "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
                 _id,
-                owner,
-                channel,
+                owner.id,
+                channel.id,
                 end + 86400,
                 start,
                 reason,
@@ -885,8 +885,8 @@ class Utility(Cog):
             await self.bot.db.pool.execute(
                 "INSERT INTO reminders (reminder_id, owner_id, channel_id, timeend, timestart, reason, message_id, daily, repeat) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
                 _id,
-                owner,
-                channel,
+                owner.id,
+                channel.id,
                 end + 86400,
                 start,
                 reason,
@@ -897,7 +897,6 @@ class Utility(Cog):
 
     @tasks.loop(seconds=60)
     async def _send_reminders(self):
-        print("Hello from the task!")
         now = datetime.datetime.utcnow()
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE (timeend - $1) <= 120",

@@ -20,8 +20,8 @@ class Database:
 
     async def fetch(self, command: str, *args, one=True):
         if one:
-                async with self.pool.acquire() as con:
-                    return await con.fetchrow(command, *args)
+            async with self.pool.acquire() as con:
+                return await con.fetchrow(command, *args)
         async with self.pool.acquire() as con:
             return await con.fetch(command, *args)
 

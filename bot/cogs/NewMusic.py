@@ -12,14 +12,12 @@ import wavelink
 class NewMusic(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
-        
-        self.bot.loop.create_task(self._connect_node())
     
-    async def _connect_node(self):
+    async def cog_load(self):
         await self.bot.wait_until_ready()
 
         if not getattr(self.bot, "wavelink", None):
-            self.bot.wavelink = wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port=2333, password="youshallnotpass")
+            self.bot.wavelink = await wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", port=2333, password="youshallnotpass")
         
     @command(name="connect", aliases=["join"])
     async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None):
