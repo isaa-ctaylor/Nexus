@@ -6,10 +6,10 @@ from traceback import format_exception
 import topgg
 from aiohttp import ClientSession
 from discord.ext.commands import Bot, CheckFailure
-from discord.ext.commands.bot import _FakeSlashMessage, when_mentioned_or
-from discord.ext.commands.core import _CaseInsensitiveDict
+from discord.ext.commands.bot import when_mentioned_or
 from discord.flags import Intents
 from dotenv import load_dotenv
+from discord import Message
 
 from ..config import CONFIG
 from ..database import Database
@@ -24,8 +24,8 @@ _intents.members = True
 _intents.presences = False
 
 
-def get_prefix(bot, message):
-    if isinstance(message, _FakeSlashMessage):
+def get_prefix(bot, message: Message):
+    if not isinstance(message, Message):
         return when_mentioned_or("/")(bot, message)
 
     if hasattr(bot, "prefixes"):
