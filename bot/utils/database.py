@@ -24,15 +24,15 @@ class Database:
             kwargs.get("host", "localhost"),
         )
 
-        self.bot.logger.info(
-            f"Creating database connection with params user={user}, password={password}, database={database}, host={host}."
-        )
+        # self.bot.logger.info(
+        #     f"Creating database connection with params user={user}, password={password}, database={database}, host={host}."
+        # )
 
         pool = await asyncpg.create_pool(
             user=user, password=password, database=database, host=host
         )
 
-        self.bot.logger.info("Database pool created.")
+        # self.bot.logger.info("Database pool created.")
 
         return pool
 
