@@ -70,7 +70,7 @@ class Nexus(Bot):
         
         self._ready_ran = False
 
-    @Bot.event()
+    @Bot.event
     async def on_ready(self):
         if self._ready_ran == True:
             return
