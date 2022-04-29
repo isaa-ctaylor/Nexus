@@ -106,6 +106,9 @@ class Nexus(Bot):
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:
             return True
+        if ctx.author.id == ctx.guild.owner_id:
+            return True
+
         if ctx.command.cog_name in [
             cog.qualified_name
             for cog in self.cogs.values()
