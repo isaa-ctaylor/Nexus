@@ -454,8 +454,8 @@ class Utility(Cog):
         self._current_reminders = []
         self._send_blacklist = set()
     
-    # async def cog_load(self):
-    #     await self._send_reminders.start()
+    async def cog_load(self):
+        self._send_reminders.start()
 
     @command(name="invite", aliases=["addme"])
     async def _invite(self, ctx: NexusContext):
