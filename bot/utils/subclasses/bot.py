@@ -75,8 +75,6 @@ class Nexus(Bot):
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
 
-        self.topgg = topgg.DBLClient(self, getenv("TOPGG"), True, True)
-
         self.add_check(self._check_cog_not_blacklisted)
 
         self.loop.create_task(self.__ainit__())
