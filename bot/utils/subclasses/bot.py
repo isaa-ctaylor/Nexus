@@ -54,13 +54,6 @@ class Nexus(Bot):
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
 
-        if cogs := self.config.cogs:
-            for cog in cogs:
-                try:
-                    self.load_extension(cog)
-                except Exception as e:
-                    print("".join(format_exception(type(e), e, e.__traceback__)))
-
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
 
@@ -77,6 +70,7 @@ class Nexus(Bot):
         
         self._ready_ran = False
 
+    @Bot.event()
     async def on_ready(self):
         if self._ready_ran == True:
             return
@@ -101,6 +95,13 @@ class Nexus(Bot):
                 for r in await self.db.fetch("SELECT * FROM prefixes", one=False)
             ]
         }
+        
+        if cogs := self.config.cogs:
+            for cog in cogs:
+                try:
+                    await self.load_extension(cog)
+                except Exception as e:
+                    print("".join(format_exception(type(e), e, e.__traceback__)))
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:
