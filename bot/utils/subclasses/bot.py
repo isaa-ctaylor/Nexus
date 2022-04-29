@@ -67,8 +67,13 @@ class Nexus(Bot):
         self.database = self.db = Database(self)
 
         self.add_check(self._check_cog_not_blacklisted)
+        
+        self._ready_ran = False
 
-    async def setup_hook(self):
+    async def on_ready(self):
+        if self._ready_ran == True:
+            return
+        self._ready_ran == True
         await self.db.execute(
             r"""CREATE TABLE IF NOT EXISTS prefixes     (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
