@@ -1,3 +1,4 @@
+from time import sleep
 import asyncpg
 import asyncio
 from dotenv import load_dotenv
@@ -31,6 +32,8 @@ class Database:
         self.pool = await asyncpg.create_pool(
             user=user, password=password, database=database, host=host
         )
+        
+        sleep(10)
 
         # self.bot.logger.info("Database pool created.")
 
