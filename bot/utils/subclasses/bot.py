@@ -2,8 +2,10 @@ import re
 from logging import INFO, getLogger
 from time import sleep
 from traceback import format_exception
+from os import getenv
 
 from aiohttp import ClientSession
+import asyncpg
 from discord import Message
 from discord.ext.commands import Bot, CheckFailure
 from discord.ext.commands.bot import when_mentioned_or
@@ -62,7 +64,16 @@ class Nexus(Bot):
 
         self.database = self.db = Database(self)
 
-        sleep(10)
+        user, password, database, host = (
+            "postgres",
+            getenv("DATABASE"),
+            "nexus",
+            "localhost"
+        )
+
+        self.db.pool = await asyncpg.create_pool(
+            user=user, password=password, database=database, host=host
+        )
         
         self.add_check(self._check_cog_not_blacklisted)
 
