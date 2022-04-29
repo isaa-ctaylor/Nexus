@@ -16,4 +16,6 @@ class NewMusic(Cog):
         if not getattr(self.bot, "wavelink"):
             self.bot.wavelink = wavelink.NodePool.create_node(bot=self.bot, host="127.0.0.1", password="youshallnotpass")
         
-    
+
+def setup(bot: Nexus):
+    bot.add_cog(NewMusic(bot))
