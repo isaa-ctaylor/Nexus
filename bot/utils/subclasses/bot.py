@@ -57,13 +57,13 @@ class Nexus(Bot):
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
 
-        self.logger = getLogger("discord")
-        self.logger.setLevel(INFO)
-        self.logger.addHandler(
-            WebhookHandler(
-                level=INFO, bot=self, url=getenv("LOGGING"), session=self.session
-            )
-        )
+        # self.logger = getLogger("discord")
+        # self.logger.setLevel(INFO)
+        # self.logger.addHandler(
+        #     WebhookHandler(
+        #         level=INFO, bot=self, url=getenv("LOGGING"), session=self.session
+        #     )
+        # )
         self.database = self.db = Database(self)
 
         self.add_check(self._check_cog_not_blacklisted)
