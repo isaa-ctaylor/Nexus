@@ -27,11 +27,16 @@ class NewMusic(Cog):
         Connect Nexus to a voice channel
         """
         if not channel:
-            if vc := ctx.voice_client:
-                if vc.channel.id == channel.id:
-                    return await ctx.error(f"Already connected to {channel.name}!")
-                if not ctx.author.guild_permissions.manage_guild:
-                    return await ctx.error(f"I am already connected to a channel! ({channel.name})")
+            if ctx.author.voice:
+                channel = ctx.author.voice.channel
+            else:
+                return await ctx.error("Please join and/or specify a channel for me to join!")
+
+        if vc := ctx.voice_client:
+            if vc.channel.id == channel.id:
+                return await ctx.error(f"Already connected to {channel.name}!")
+            if not ctx.author.guild_permissions.manage_guild:
+                return await ctx.error(f"I am already connected to a channel! ({channel.name})")
 
         try:
             await channel.connect()
