@@ -77,9 +77,7 @@ class Nexus(Bot):
 
         self.add_check(self._check_cog_not_blacklisted)
 
-        self.loop.create_task(self.__ainit__())
-
-    async def __ainit__(self):
+    async def setup_hook(self):
         await self.db.execute(
             r"""CREATE TABLE IF NOT EXISTS prefixes     (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS automod      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
