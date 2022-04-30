@@ -119,7 +119,7 @@ class NewMusic(Cog):
         player.queue.extend(tracks)
 
         _ = f"`{tracks[0].title}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
-        return await ctx.embed(f"Added {_} to the queue")
+        return await ctx.embed(description=f"Added {_} to the queue")
 
 
 async def setup(bot: Nexus):
