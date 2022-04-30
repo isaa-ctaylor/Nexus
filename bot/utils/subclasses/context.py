@@ -1,6 +1,8 @@
 from discord.ext.commands import Context
 from discord import Embed
 from discord.message import Message
+
+from bot.utils.subclasses.bot import Nexus
 from ..helpers import Paginator
 from copy import copy
 from discord.errors import Forbidden
@@ -11,9 +13,7 @@ class NexusContext(Context):
         kwargs["colour"] = kwargs.pop("colour", self.bot.config.colours.neutral)
 
         destination = kwargs.pop("destination", self)
-        paginate = kwargs.pop("paginate", True)
-
-        if paginate:
+        if paginate := kwargs.pop("paginate", True):
             return await self.paginate(Embed(**kwargs), destination=destination)
 
         return await destination.send(embed=Embed(**kwargs))
