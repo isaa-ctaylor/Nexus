@@ -24,10 +24,6 @@ class SpotifyException(Exception):
     ...
 
 
-class Player(wavelink.Player):
-    ...
-
-
 class Query(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
         if decoded := spotify.decode_url(argument):
@@ -90,7 +86,7 @@ class NewMusic(Cog):
                 )
 
         try:
-            await channel.connect(self_deaf=True, cls=Player)
+            await channel.connect(self_deaf=True, cls=wavelink.Player)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
             return
@@ -118,7 +114,7 @@ class NewMusic(Cog):
         else:
             tracks = [query]
 
-        player: Player = await self.bot.wavelink.get_player(ctx.guild.id)
+        player: Player = self.bot.wavelink.get_player(ctx.guild.id)
         player.queue.extend(tracks)
 
         _ = f"`{tracks[0].title}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
