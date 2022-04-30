@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Union
 import async_timeout
 import discord
 import wavelink
-from discord import ClientException, TextChannel, VoiceChannel, VoiceProtocol
+from discord import ClientException, Member, TextChannel, VoiceChannel, VoiceProtocol
 from discord.ext.commands import CommandError, Converter
 from discord.opus import OpusNotLoaded
 from utils import codeblocksafe
@@ -27,6 +27,7 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 class Player(wavelink.Player):
     control_channel: TextChannel
+    requester: Member
     
     def __call__(
         self,
@@ -105,9 +106,9 @@ class NewMusic(Cog):
             )
 
     @Cog.listener(name="on_wavelink_track_end")
-    @Cog.listener(name="on_wavelink_track_exception")
-    async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, reason = None, error = None):
-        await player.control_channel.send(str(reason))
+    async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, reason = None):
+        if reason not in ("FINISHED", "STOPPED", "ERRORED"):
+            return
         try:
             with async_timeout.timeout(300): # 5 minutes
                 track = await player.queue.get_wait()
@@ -118,6 +119,10 @@ class NewMusic(Cog):
                 return
             await player.control_channel.send("👋 Disconnected due to inactivity.")
             await player.disconnect()
+
+    @Cog.listener(name="on_wavelink_track_exception")
+    async def _track_exception(self, player: Player, track: wavelink.Track, error: Any):
+        await self._play_next_or_disconnect(player, track, "ERRORED")
 
     @command(name="connect", aliases=["join"], usage="[channel]")
     async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None, /, invoked = False):
@@ -143,6 +148,7 @@ class NewMusic(Cog):
         try:
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
+            _.requester = ctx.author
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
             self.bot.loop.create_task(self._play_next_or_disconnect(_, None, None))
@@ -171,7 +177,7 @@ class NewMusic(Cog):
         else:
             tracks = [query]
 
-        player: Player = ctx.voice_client
+        player: Player = self.bot.wavelink.get_player(ctx.guild)
         player.queue.extend(tracks)
 
         _ = f"`{codeblocksafe(tracks[0].title)}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
