@@ -98,8 +98,8 @@ class NewMusic(Cog):
             return await ctx.error("Sorry! I couldn't do that. Try again soon.")
 
     @command(name="play")
-    async def _play(self, ctx: NexusContext, query: Query):
-        await ctx.send(query)
+    async def _play(self, ctx: NexusContext, *, query: Query):
+        await ctx.send(query.__repr__())
 
 
 async def setup(bot: Nexus):
