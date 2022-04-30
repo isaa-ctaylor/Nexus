@@ -2,7 +2,6 @@ from discord.ext.commands import Context
 from discord import Embed
 from discord.message import Message
 
-from bot.utils.subclasses.bot import Nexus
 from ..helpers import Paginator
 from copy import copy
 from discord.errors import Forbidden
