@@ -86,7 +86,8 @@ class NewMusic(Cog):
                 )
 
         try:
-            await channel.connect(self_deaf=True, cls=wavelink.Player)
+            _ = await channel.connect(self_deaf=True, cls=wavelink.Player)
+            self.bot.wavelink._players.append(_)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
             return
@@ -114,7 +115,7 @@ class NewMusic(Cog):
         else:
             tracks = [query]
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild)
+        player: wavelink.Player = self.bot.wavelink.get_player(ctx.guild)
         player.queue.extend(tracks)
 
         _ = f"`{tracks[0].title}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
