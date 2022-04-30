@@ -71,6 +71,7 @@ class NewMusic(Cog):
     @Cog.listener(name="on_wavelink_track_end")
     @Cog.listener(name="on_wavelink_track_exception")
     async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, _):
+        await player.control_channel.send("a")
         try:
             with async_timeout.timeout(300): # 5 minutes
                 track = await player.queue.get_wait()
