@@ -151,7 +151,7 @@ class NewMusic(Cog):
             _.requester = ctx.author
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
-            self.bot.loop.create_task(self._play_next_or_disconnect(self.bot.wavelink.get_player(ctx.guild), None, None))
+            self.bot.loop.create_task(self._play_next_or_disconnect(self.bot.wavelink.get_player(ctx.guild), None, "STOPPED"))
             return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
