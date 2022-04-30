@@ -8,7 +8,14 @@ from typing import Any, Dict, Optional, Union
 import async_timeout
 import discord
 import wavelink
-from discord import ClientException, Member, TextChannel, VoiceChannel, VoiceProtocol
+from discord import (
+    ClientException,
+    Embed,
+    Member,
+    TextChannel,
+    VoiceChannel,
+    VoiceProtocol,
+)
 from discord.ext.commands import CommandError, Converter
 from discord.opus import OpusNotLoaded
 from utils import codeblocksafe
@@ -28,7 +35,7 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 class Player(wavelink.Player):
     control_channel: TextChannel
     requester: Member
-    
+
     def __call__(
         self,
         client: discord.Client = MISSING,
@@ -76,15 +83,19 @@ class Query(Converter):
                 return _
         with suppress(Exception):
             _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
-            if _: return _
+            if _:
+                return _
         with suppress(Exception):
             _ = await wavelink.YouTubeTrack.convert(ctx, argument)
-            if _: return _
+            if _:
+                return _
         with suppress(Exception):
             _ = await wavelink.YouTubeMusicTrack.convert(ctx, argument)
-            if _: return _
-        
+            if _:
+                return _
+
         raise CommandError("Could not find any songs matching that query.")
+
 
 class NewMusic(Cog):
     def __init__(self, bot: Nexus):
@@ -106,14 +117,21 @@ class NewMusic(Cog):
             )
 
     @Cog.listener(name="on_wavelink_track_end")
-    async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, reason = None):
+    async def _play_next_or_disconnect(
+        self, player: Player, track: wavelink.Track, reason=None
+    ):
         if reason not in ("FINISHED", "STOPPED", "ERRORED"):
             return
         try:
-            with async_timeout.timeout(300): # 5 minutes
+            with async_timeout.timeout(300):  # 5 minutes
                 track = await player.queue.get_wait()
                 await player.play(track)
-                await player.control_channel.send(f"Now playing: `{codeblocksafe(track.title)}`")
+                await player.control_channel.send(
+                    embed=Embed(
+                        description=f"Now playing: `{codeblocksafe(track.title)}` | {track.requester.mention}",
+                        colour=self.bot.config.colours.neutral,
+                    )
+                )
         except asyncio.TimeoutError:
             if player.is_playing():
                 return
@@ -125,7 +143,13 @@ class NewMusic(Cog):
         await self._play_next_or_disconnect(player, track, "ERRORED")
 
     @command(name="connect", aliases=["join"], usage="[channel]")
-    async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None, /, invoked = False):
+    async def _connect(
+        self,
+        ctx: NexusContext,
+        channel: Optional[VoiceChannel] = None,
+        /,
+        invoked=False,
+    ):
         """
         Connect Nexus to a voice channel
         """
@@ -148,10 +172,13 @@ class NewMusic(Cog):
         try:
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
-            _.requester = ctx.author
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
-            self.bot.loop.create_task(self._play_next_or_disconnect(self.bot.wavelink.get_player(ctx.guild), None, "STOPPED"))
+            self.bot.loop.create_task(
+                self._play_next_or_disconnect(
+                    self.bot.wavelink.get_player(ctx.guild), None, "STOPPED"
+                )
+            )
             return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
@@ -164,7 +191,7 @@ class NewMusic(Cog):
     async def _play(self, ctx: NexusContext, *, query: Query):
         """
         Play a song.
-        
+
         This can be from spotify or youtube.
         """
         if not ctx.voice_client:
@@ -176,13 +203,36 @@ class NewMusic(Cog):
             tracks = query
         else:
             tracks = [query]
+            
+        for track in tracks:
+            track.requester = ctx.author
 
         player: Player = self.bot.wavelink.get_player(ctx.guild)
         player.queue.extend(tracks)
 
-        _ = f"`{codeblocksafe(tracks[0].title)}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
+        _ = (
+            f"`{codeblocksafe(tracks[0].title)}`"
+            if len(tracks) == 1
+            else f"{len(tracks)} tracks"
+        )
         return await ctx.embed(description=f"Added {_} to the queue")
 
+
+    @command(name="disconnect")
+    async def _disconnect(self, ctx: NexusContext):
+        """
+        Disconnect from the current voice channel
+        """
+        if not ctx.author.voice:
+            if len(ctx.me.voice.channel.members) != 1:
+                return await ctx.error("You are not in a voice channel!")
+        else:
+            if ctx.author.voice.channel != ctx.me.voice.channel:
+                return await ctx.error("You are not in the same voice channel as me!")   
+        
+        with suppress(Exception):
+            await self.bot.wavelink.get_player(ctx.guild).disconnect()
+            await ctx.message.add_reaction("👍")
 
 async def setup(bot: Nexus):
     await bot.add_cog(NewMusic(bot))
