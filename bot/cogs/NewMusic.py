@@ -99,7 +99,15 @@ class NewMusic(Cog):
 
     @command(name="play")
     async def _play(self, ctx: NexusContext, *, query: Query):
-        await ctx.send(query.__repr__())
+        """
+        Play a song.
+        
+        This can be from spotify or youtube.
+        """
+        if not ctx.voice_client:
+            await self._connect(ctx)
+            
+        await ctx.send(query)
 
 
 async def setup(bot: Nexus):
