@@ -1,3 +1,4 @@
+import asyncio
 import re
 from os import getenv
 from typing import Optional, Union
@@ -80,7 +81,7 @@ class NewMusic(Cog):
                 await player.play(track)
                 await player.control_channel.send("d")
                 await player.control_channel.send(f"Now playing: `{codeblocksafe(track.title)}`")
-        except TimeoutError:
+        except asyncio.TimeoutError:
             await player.control_channel.send("Oops")
             await player.disconnect()
 
@@ -111,7 +112,7 @@ class NewMusic(Cog):
             self.bot.wavelink._players.append(_)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
-            await self._play_next_or_disconnect(_, None, None)
+            self.bot.loop.create_task(self._play_next_or_disconnect(_, None, None))
             return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
