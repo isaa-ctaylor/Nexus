@@ -223,6 +223,8 @@ class NewMusic(Cog):
         """
         Disconnect from the current voice channel
         """
+        if not ctx.voice_client:
+            return await ctx.error("I am not in a voice channel!")
         if not ctx.author.voice:
             if len(ctx.me.voice.channel.members) != 1:
                 return await ctx.error("You are not in a voice channel!")
