@@ -74,10 +74,14 @@ class NewMusic(Cog):
         await player.control_channel.send("a")
         try:
             with async_timeout.timeout(300): # 5 minutes
+                await player.control_channel.send("b")
                 track = await player.queue.get_wait()
+                await player.control_channel.send("c")
                 await player.play(track)
+                await player.control_channel.send("d")
                 await player.control_channel.send(f"Now playing: `{codeblocksafe(track.title)}`")
         except TimeoutError:
+            await player.control_channel.send("Oops")
             await player.disconnect()
 
     @command(name="connect", aliases=["join"], usage="[channel]")
