@@ -3,7 +3,7 @@ from os import getenv
 import re
 from typing import Optional
 
-from discord import VoiceChannel, ClientException
+from discord import VoiceChannel, ClientException, VoiceProtocol
 from discord.ext.commands import Converter
 from discord.opus import OpusNotLoaded
 from utils.subclasses.command import command
@@ -105,7 +105,7 @@ class NewMusic(Cog):
         This can be from spotify or youtube.
         """
         if not ctx.voice_client:
-            await self._connect(ctx)
+            await self._connect(ctx, invoked=True)
 
         if isinstance(query, wavelink.YouTubePlaylist):
             tracks = query.tracks
