@@ -16,6 +16,7 @@ from utils.subclasses.cog import Cog
 from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
 from wavelink.ext import spotify
+from wavelink.utils import MISSING
 
 SPOTIFY = re.compile(
     r"https?://open.spotify.com/(?P<type>album|playlist|track)/(?P<id>[a-zA-Z0-9]+)"
