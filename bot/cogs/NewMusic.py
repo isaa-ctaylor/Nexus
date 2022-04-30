@@ -1,9 +1,11 @@
 import asyncio
+import datetime
 import re
 from os import getenv
-from typing import Optional, Union
+from typing import Dict, Optional, Union, Any
 
 import async_timeout
+import discord
 import wavelink
 from discord import ClientException, TextChannel, VoiceChannel, VoiceProtocol
 from discord.ext.commands import Converter
@@ -23,6 +25,33 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 class Player(wavelink.Player):
     control_channel: TextChannel
+    
+    def __call__(
+        self,
+        client: discord.Client = MISSING,
+        channel: VoiceChannel = MISSING,
+        *,
+        node: wavelink.Node = MISSING,
+    ):
+        self.client: discord.Client = client
+        self.channel: VoiceChannel = channel
+
+        if node is MISSING:
+            node = wavelink.NodePool.get_node()
+        self.node: wavelink.Node = node
+        self.node._players.append(self)
+
+        self._voice_state: Dict[str, Any] = {}
+
+        self.last_update: datetime.datetime = MISSING
+        self.last_position: float = MISSING
+
+        self.volume: float = 100
+        self._paused: bool = False
+        self._source: Optional[wavelink.abc.Playable] = None
+        # self._equalizer = Equalizer.flat()
+
+        self.queue = wavelink.WaitQueue()
 
 
 class SpotifyException(Exception):
@@ -72,14 +101,11 @@ class NewMusic(Cog):
     @Cog.listener(name="on_wavelink_track_end")
     @Cog.listener(name="on_wavelink_track_exception")
     async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, _):
-        await player.control_channel.send("a")
+        await player.control_channel.send(str(_))
         try:
             with async_timeout.timeout(300): # 5 minutes
-                await player.control_channel.send("b")
                 track = await player.queue.get_wait()
-                await player.control_channel.send("c")
                 await player.play(track)
-                await player.control_channel.send("d")
                 await player.control_channel.send(f"Now playing: `{codeblocksafe(track.title)}`")
         except asyncio.TimeoutError:
             await player.control_channel.send("Oops")
@@ -109,7 +135,6 @@ class NewMusic(Cog):
         try:
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
-            self.bot.wavelink._players.append(_)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
             self.bot.loop.create_task(self._play_next_or_disconnect(_, None, None))
