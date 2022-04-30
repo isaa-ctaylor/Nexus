@@ -1,14 +1,15 @@
 import asyncio
 import datetime
 import re
+from contextlib import suppress
 from os import getenv
-from typing import Dict, Optional, Union, Any
+from typing import Any, Dict, Optional, Union
 
 import async_timeout
 import discord
 import wavelink
 from discord import ClientException, TextChannel, VoiceChannel, VoiceProtocol
-from discord.ext.commands import Converter
+from discord.ext.commands import CommandError, Converter
 from discord.opus import OpusNotLoaded
 from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
@@ -72,13 +73,17 @@ class Query(Converter):
                 )
 
                 return _
-        elif _ := await wavelink.YouTubePlaylist.convert(ctx, argument):
-            return _
-        elif _ := await wavelink.YouTubeTrack.convert(ctx, argument):
-            return _
-        elif _ := await wavelink.YouTubeMusicTrack.convert(ctx, argument):
-            return _
-
+        with suppress(Exception):
+            _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
+            if _: return _
+        with suppress(Exception):
+            _ = await wavelink.YouTubeTrack.convert(ctx, argument)
+            if _: return _
+        with suppress(Exception):
+            _ = await wavelink.YouTubeMusicTrack.convert(ctx, argument)
+            if _: return _
+        
+        raise CommandError("Could not find any songs matching that query.")
 
 class NewMusic(Cog):
     def __init__(self, bot: Nexus):
