@@ -1,4 +1,5 @@
 import re
+import wavelink
 from logging import INFO, getLogger
 from time import sleep
 from traceback import format_exception
@@ -40,7 +41,7 @@ def get_prefix(bot, message: Message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
-
+        self.wavelink: wavelink.Node = None
         self.config = CONFIG
 
         kwargs["command_prefix"] = get_prefix
@@ -102,19 +103,11 @@ class Nexus(Bot):
         }
 
         if cogs := self.config.cogs:
-            print(1)
             for cog in cogs:
-                print(2)
                 try:
-                    print(3)
-                    print(cog)
                     await self.load_extension(cog)
-                    print(4)
                 except Exception as e:
-                    print(5)
                     print("".join(format_exception(type(e), e, e.__traceback__)))
-                    print(6)
-        print(11)
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:

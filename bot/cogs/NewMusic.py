@@ -68,8 +68,8 @@ class NewMusic(Cog):
                 ),
             )
 
-    @command(name="connect", aliases=["join"])
-    async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None):
+    @command(name="connect", aliases=["join"], usage="[channel]")
+    async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None, /, invoked = False):
         """
         Connect Nexus to a voice channel
         """
@@ -91,7 +91,9 @@ class NewMusic(Cog):
 
         try:
             await channel.connect(self_deaf=True, cls=Player)
-            await ctx.embed(description=f"Connected to {channel.mention}")
+            if not invoked:
+                await ctx.embed(description=f"Connected to {channel.mention}")
+            return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
         except ClientException:
@@ -108,8 +110,19 @@ class NewMusic(Cog):
         """
         if not ctx.voice_client:
             await self._connect(ctx)
-            
-        await ctx.send(query)
+
+        if isinstance(query, wavelink.YouTubePlaylist):
+            tracks = query.tracks
+        elif isinstance(query, list):
+            tracks = query
+        else:
+            tracks = [query]
+
+        player: Player = await self.bot.wavelink.get_player(ctx.guild.id)
+        player.queue.extend(tracks)
+
+        _ = f"`{tracks[0].title}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
+        return await ctx.embed(f"Added {_} to the queue")
 
 
 async def setup(bot: Nexus):
