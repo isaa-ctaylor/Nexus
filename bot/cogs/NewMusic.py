@@ -138,7 +138,7 @@ class NewMusic(Cog):
         else:
             tracks = [query]
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild)
+        player: Player = ctx.voice_client
         player.queue.extend(tracks)
 
         _ = f"`{codeblocksafe(tracks[0].title)}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
