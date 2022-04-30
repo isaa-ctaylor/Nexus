@@ -1,23 +1,27 @@
-from typing import Union
-from os import getenv
 import re
-from typing import Optional
+from os import getenv
+from typing import Optional, Union
 
-from discord import VoiceChannel, ClientException, VoiceProtocol
+import async_timeout
+import wavelink
+from discord import ClientException, TextChannel, VoiceChannel, VoiceProtocol
 from discord.ext.commands import Converter
 from discord.opus import OpusNotLoaded
-from utils.subclasses.command import command
-from utils.subclasses.cog import Cog
+from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
+from utils.subclasses.cog import Cog
+from utils.subclasses.command import command
 from utils.subclasses.context import NexusContext
-import wavelink
 from wavelink.ext import spotify
-
 
 SPOTIFY = re.compile(
     r"https?://open.spotify.com/(?P<type>album|playlist|track)/(?P<id>[a-zA-Z0-9]+)"
 )
 SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
+
+
+class Player(wavelink.Player):
+    control_channel: TextChannel
 
 
 class SpotifyException(Exception):
@@ -64,6 +68,17 @@ class NewMusic(Cog):
                 ),
             )
 
+    @Cog.listener(name="on_wavelink_track_end")
+    @Cog.listener(name="on_wavelink_track_exception")
+    async def _play_next_or_disconnect(self, player: Player, track: wavelink.Track, _):
+        try:
+            with async_timeout.timeout(300): # 5 minutes
+                track = await player.queue.get_wait()
+                await player.play(track)
+                await player.control_channel.send(f"Now playing: `{codeblocksafe(track.title)}`")
+        except TimeoutError:
+            await player.disconnect()
+
     @command(name="connect", aliases=["join"], usage="[channel]")
     async def _connect(self, ctx: NexusContext, channel: Optional[VoiceChannel] = None, /, invoked = False):
         """
@@ -86,10 +101,12 @@ class NewMusic(Cog):
                 )
 
         try:
-            _ = await channel.connect(self_deaf=True, cls=wavelink.Player)
+            _ = await channel.connect(self_deaf=True, cls=Player)
+            _.control_channel = ctx.channel
             self.bot.wavelink._players.append(_)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
+                await self._play_next_or_disconnect(_, None)
             return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
@@ -115,10 +132,10 @@ class NewMusic(Cog):
         else:
             tracks = [query]
 
-        player: wavelink.Player = self.bot.wavelink.get_player(ctx.guild)
+        player: Player = self.bot.wavelink.get_player(ctx.guild)
         player.queue.extend(tracks)
 
-        _ = f"`{tracks[0].title}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
+        _ = f"`{codeblocksafe(tracks[0].title)}`" if len(tracks) == 1 else f"{len(tracks)} tracks"
         return await ctx.embed(description=f"Added {_} to the queue")
 
 
