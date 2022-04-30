@@ -106,7 +106,7 @@ class NewMusic(Cog):
             self.bot.wavelink._players.append(_)
             if not invoked:
                 await ctx.embed(description=f"Connected to {channel.mention}")
-                await self._play_next_or_disconnect(_, None)
+            await self._play_next_or_disconnect(_, None)
             return
         except TimeoutError:
             return await ctx.error("Connecting timed out...")
