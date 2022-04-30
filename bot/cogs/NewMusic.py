@@ -41,6 +41,8 @@ class Query(Converter):
                 )
 
                 return _
+        elif _ := await wavelink.YouTubePlaylist.convert(ctx, argument):
+            return _
         elif _ := await wavelink.YouTubeTrack.convert(ctx, argument):
             return _
         elif _ := await wavelink.YouTubeMusicTrack.convert(ctx, argument):
