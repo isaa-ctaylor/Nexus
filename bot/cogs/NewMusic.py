@@ -479,9 +479,11 @@ class NewMusic(Cog):
         if not player:
             return await ctx.error("I am not playing anything at the moment!")
 
-        await ctx.embed(
-            title="Currently playing",
-            description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
+        await ctx.paginate(
+            Embed(
+                title="Currently playing",
+                description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
+            ).set_image(getattr(player.track, "thumbnail", None))
         )
 
 
