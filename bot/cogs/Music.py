@@ -103,7 +103,7 @@ class Query(Converter):
         raise CommandError("Could not find any songs matching that query.")
 
 
-class NewMusic(Cog):
+class Music(Cog):
     def __init__(self, bot: Nexus):
         self.bot = bot
 
@@ -526,4 +526,4 @@ class NewMusic(Cog):
 
 
 async def setup(bot: Nexus):
-    await bot.add_cog(NewMusic(bot))
+    await bot.add_cog(Music(bot))
