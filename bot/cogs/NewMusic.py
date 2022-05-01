@@ -224,7 +224,7 @@ class NewMusic(Cog):
             if len(tracks) == 1
             else f"{len(tracks)} tracks"
         )
-        return await ctx.embed(description=f"Added {_} to the queue")
+        return await ctx.embed(description=f"Added {_} to the queue", paginate=False)
 
     @guild_only()
     @command(name="disconnect", aliases=["leave", "dc"])
