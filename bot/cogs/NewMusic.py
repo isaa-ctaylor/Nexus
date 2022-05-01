@@ -483,7 +483,13 @@ class NewMusic(Cog):
             Embed(
                 title="Currently playing",
                 description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
-            ).set_image(url=getattr(player.track, "thumbnail", None))
+                colour=self.bot.config.colours.neutral,
+            )
+            .set_image(url=getattr(player.track, "thumbnail", None))
+            .add_field(
+                name="Position",
+                value=f"{math.floor(player.position/player.track.length)*'🟪'}{10-math.floor(player.position/player.track.length)*'⬛'} [{player.position}/{player.track.length}]",
+            )
         )
 
 
