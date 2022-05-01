@@ -40,5 +40,6 @@ class Fun(Cog):
         )
 
 
-def setup(bot: Nexus):
-    bot.add_cog(Fun(bot))
+
+async def setup(bot: Nexus):
+    await bot.add_cog(Fun(bot))
