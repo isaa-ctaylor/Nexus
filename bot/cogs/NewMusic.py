@@ -483,7 +483,7 @@ class NewMusic(Cog):
             Embed(
                 title="Currently playing",
                 description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
-            ).set_image(getattr(player.track, "thumbnail", None))
+            ).set_image(url=getattr(player.track, "thumbnail", None))
         )
 
 
