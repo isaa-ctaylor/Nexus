@@ -19,6 +19,7 @@ from discord import (
 )
 from discord.ext.commands import CommandError, Converter, guild_only
 from discord.opus import OpusNotLoaded
+from bot.utils import hyperlink
 from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
@@ -202,28 +203,29 @@ class NewMusic(Cog):
 
         This can be from spotify or youtube.
         """
-        if not ctx.voice_client:
-            await self._connect(ctx, invoked=True)
+        async with ctx.typing():
+            if not ctx.voice_client:
+                await self._connect(ctx, invoked=True)
 
-        if isinstance(query, wavelink.YouTubePlaylist):
-            tracks = query.tracks
-        elif isinstance(query, list):
-            tracks = query
-        else:
-            tracks = [query]
-            
-        for track in tracks:
-            track.requester = ctx.author
-            track.ctx = ctx
+            if isinstance(query, wavelink.YouTubePlaylist):
+                tracks = query.tracks
+            elif isinstance(query, list):
+                tracks = query
+            else:
+                tracks = [query]
+                
+            for track in tracks:
+                track.requester = ctx.author
+                track.ctx = ctx
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild)
-        player.queue.extend(tracks)
+            player: Player = self.bot.wavelink.get_player(ctx.guild)
+            player.queue.extend(tracks)
 
-        _ = (
-            f"`{codeblocksafe(tracks[0].title)}`"
-            if len(tracks) == 1
-            else f"{len(tracks)} tracks"
-        )
+            _ = (
+                f"`{codeblocksafe(tracks[0].title)}`"
+                if len(tracks) == 1
+                else f"{len(tracks)} tracks"
+            )
         return await ctx.embed(description=f"Added {_} to the queue", paginate=False)
 
     @guild_only()
@@ -285,6 +287,50 @@ class NewMusic(Cog):
 
         await player.stop()
         await ctx.message.add_reaction("👍")
+        
+    @guild_only()
+    @command(name="queue")
+    async def _queue(self, ctx: NexusContext):
+        """
+        See the current queue
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        pages = [
+            list(player.queue)[i : i + 10]
+            for i in range(0, len(player.queue), 10)
+        ]
+
+        embeds = [
+            Embed(
+                description="\n".join(
+                    f"{list(player.queue).index(t) + 1}) {hyperlink(f'`{t.title}`', t.uri)}"
+                    for t in l
+                ),
+                colour=self.bot.config.colours.neutral,
+            )
+            for l in pages
+        ]
+
+        if not embeds:
+            embeds = [Embed(colour=self.bot.config.colours.neutral)]
+
+        embeds[0].description = (
+            f"**Now playing**: {hyperlink(player.track.title, player.track.uri)}\n\n"
+            + (
+                embeds[0].description.strip()
+                if isinstance(embeds[0].description, str)
+                else ""
+            )
+        )
+
+        if thumb := getattr(player.track, "thumbnail", None):
+            embeds[0].set_thumbnail(url=thumb)
+
+        await ctx.paginate(embeds)
 
 async def setup(bot: Nexus):
     await bot.add_cog(NewMusic(bot))
