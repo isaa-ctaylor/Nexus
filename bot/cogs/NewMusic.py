@@ -194,7 +194,7 @@ class NewMusic(Cog):
         except OpusNotLoaded:
             return await ctx.error("Sorry! I couldn't do that. Try again soon.")
 
-    @guild_only
+    @guild_only()
     @command(name="play")
     async def _play(self, ctx: NexusContext, *, query: Query):
         """
@@ -226,7 +226,7 @@ class NewMusic(Cog):
         )
         return await ctx.embed(description=f"Added {_} to the queue")
 
-    @guild_only
+    @guild_only()
     @command(name="disconnect", aliases=["leave", "dc"])
     async def _disconnect(self, ctx: NexusContext):
         """
@@ -245,7 +245,7 @@ class NewMusic(Cog):
             await self.bot.wavelink.get_player(ctx.guild).disconnect()
             await ctx.message.add_reaction("👍")
             
-    @guild_only
+    @guild_only()
     @command(name="skip")
     async def _skip(self, ctx: NexusContext):
         """
