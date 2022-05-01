@@ -179,7 +179,7 @@ class NewMusic(Cog):
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
             if not invoked:
-                await ctx.embed(description=f"Connected to {channel.mention}")
+                await ctx.embed(description=f"Connected to {channel.mention}", paginate=False)
             if not _.is_playing():
                 self.bot.loop.create_task(
                     self._play_next_or_disconnect(
