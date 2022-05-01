@@ -179,7 +179,9 @@ class NewMusic(Cog):
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
             if not invoked:
-                await ctx.embed(description=f"Connected to {channel.mention}", paginate=False)
+                await ctx.embed(
+                    description=f"Connected to {channel.mention}", paginate=False
+                )
             if not _.is_playing():
                 self.bot.loop.create_task(
                     self._play_next_or_disconnect(
@@ -212,7 +214,7 @@ class NewMusic(Cog):
                 tracks = query
             else:
                 tracks = [query]
-                
+
             for track in tracks:
                 track.requester = ctx.author
                 track.ctx = ctx
@@ -240,12 +242,12 @@ class NewMusic(Cog):
                 return await ctx.error("You are not in a voice channel!")
         else:
             if ctx.author.voice.channel != ctx.me.voice.channel:
-                return await ctx.error("You are not in the same voice channel as me!")   
-        
+                return await ctx.error("You are not in the same voice channel as me!")
+
         with suppress(Exception):
             await self.bot.wavelink.get_player(ctx.guild).disconnect()
             await ctx.message.add_reaction("👍")
-            
+
     @guild_only()
     @command(name="skip")
     async def _skip(self, ctx: NexusContext):
@@ -286,7 +288,7 @@ class NewMusic(Cog):
 
         await player.stop()
         await ctx.message.add_reaction("👍")
-        
+
     @guild_only()
     @command(name="queue")
     async def _queue(self, ctx: NexusContext):
@@ -299,8 +301,7 @@ class NewMusic(Cog):
             return await ctx.error("I am not playing anything at the moment!")
 
         pages = [
-            list(player.queue)[i : i + 10]
-            for i in range(0, len(player.queue), 10)
+            list(player.queue)[i : i + 10] for i in range(0, len(player.queue), 10)
         ]
 
         embeds = [
@@ -330,6 +331,35 @@ class NewMusic(Cog):
             embeds[0].set_thumbnail(url=thumb)
 
         await ctx.paginate(embeds)
+
+    @guild_only()
+    @command(name="remove")
+    async def _remove(self, ctx: NexusContext, index: int):
+        """
+        Remove a song from the queue
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
+        try:
+            track: wavelink.Track = list(player.queue._queue)[index - 1]
+        except IndexError:
+            return await ctx.error("Please provide a valid song index!")
+
+        if track.requester.id != ctx.author.id:
+            return await ctx.error("You did not request this song!")
+
+        del player.queue[index - 1]
+        await ctx.embed(description=f"👍 Removed `{codeblocksafe(track.title)}` from the queue")
+
 
 async def setup(bot: Nexus):
     await bot.add_cog(NewMusic(bot))

@@ -194,6 +194,9 @@ class Errors(Cog, hidden=True):
 
         elif isinstance(error, commands.CheckFailure):
             return await ctx.error(str(error))
+        
+        elif isinstance(error, commands.CommandError):
+            return await ctx.error(str(error))
 
         else:
             channel = self.bot.get_channel(self.bot.config.channels.errors)
