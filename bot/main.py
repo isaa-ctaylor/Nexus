@@ -1,6 +1,5 @@
 import asyncio
 from os import getenv
-import aiohttp
 
 from dotenv import load_dotenv
 
