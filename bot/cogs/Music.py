@@ -88,11 +88,11 @@ class Query(Converter):
 
                     return _
             with suppress(Exception):
-                _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
+                _ = await wavelink.YouTubeTrack.convert(ctx, argument)
                 if _:
                     return _
             with suppress(Exception):
-                _ = await wavelink.YouTubeTrack.convert(ctx, argument)
+                _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
                 if _:
                     return _
             with suppress(Exception):
