@@ -141,8 +141,13 @@ class NewMusic(Cog):
         except asyncio.TimeoutError:
             if player.is_playing():
                 return
-            await player.control_channel.send("👋 Disconnected due to inactivity.")
             await player.disconnect()
+            await player.control_channel.send(
+                embed=Embed(
+                    description="👋 Disconnected due to inactivity.",
+                    colour=self.bot.config.colours.neutral,
+                )
+            )
 
     @Cog.listener(name="on_wavelink_track_exception")
     async def _track_exception(self, player: Player, track: wavelink.Track, error: Any):
@@ -198,12 +203,15 @@ class NewMusic(Cog):
 
     @guild_only()
     @command(name="play")
-    async def _play(self, ctx: NexusContext, *, query: Query):
+    async def _play(self, ctx: NexusContext, *, query: Query = None):
         """
-        Play a song.
+        Play a song. This can be from spotify or youtube.
 
-        This can be from spotify or youtube.
+        Can also be used as shorthand for the `resume` command
         """
+        if not query:
+            return await self._resume(ctx)
+
         async with ctx.typing():
             if not ctx.voice_client:
                 await self._connect(ctx, invoked=True)
@@ -354,11 +362,127 @@ class NewMusic(Cog):
         except IndexError:
             return await ctx.error("Please provide a valid song index!")
 
-        if track.requester.id != ctx.author.id:
+        if track.requester.id != ctx.author.id and track.requester.id in [
+            m.id for m in player.channel.members
+        ]:
             return await ctx.error("You did not request this song!")
 
         del player.queue[index - 1]
-        await ctx.embed(description=f"👍 Removed `{codeblocksafe(track.title)}` from the queue")
+        await ctx.embed(
+            description=f"👍 Removed `{codeblocksafe(track.title)}` from the queue"
+        )
+
+    @guild_only()
+    @command(name="pause")
+    async def _pause(self, ctx: NexusContext):
+        """
+        Pause the current song
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
+        if player.is_paused():
+            return await ctx.error("The player is already paused!")
+
+        await player.set_pause(True)
+        await ctx.message.add_reaction("👍")
+
+        try:
+            await self.bot.wait_for(
+                "command",
+                check=lambda ctx: ctx.command.name in ["resume", "play"],
+                timeout=300,
+            )
+        except asyncio.TimeoutError:
+            if not player.is_playing():
+                await player.disconnect()
+                await player.control_channel.send(
+                    embed=Embed(
+                        description="👋 Disconnected due to inactivity.",
+                        colour=self.bot.config.colours.neutral,
+                    )
+                )
+
+    @guild_only()
+    @command(name="resume")
+    async def _resume(self, ctx: NexusContext):
+        """
+        Resume the paused song
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
+        if not player.is_paused:
+            return await ctx.error("The player is not paused!")
+
+        await player.set_pause(False)
+        await ctx.message.add_reaction("👍")
+
+    @guild_only()
+    @command(name="volume")
+    async def _volume(self, ctx: NexusContext, volume: Union[int, str]):
+        """
+        Set the volume of the player
+
+        Please allow 10 seconds for the volume to update
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
+        if isinstance(volume, str):
+            if volume.lower() == "reset":
+                volume = 100
+            else:
+                return await ctx.error(
+                    'Please specify a number between 1 and 200, or "reset"'
+                )
+
+        if volume > 200 or volume < 1:
+            return await ctx.error(
+                'Please specify a number between 1 and 200, or "reset"'
+            )
+
+        await player.set_volume(volume)
+        await ctx.message.add_reaction("👍")
+
+    @guild_only()
+    @command(name="now")
+    async def _now(self, ctx: NexusContext):
+        """
+        See what song is currently playing
+        """
+        player: Player = ctx.voice_client
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        await ctx.embed(
+            title="Currently playing",
+            description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
+        )
 
 
 async def setup(bot: Nexus):
