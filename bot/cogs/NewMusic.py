@@ -75,29 +75,30 @@ class SpotifyException(Exception):
 
 class Query(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
-        if decoded := spotify.decode_url(argument):
-            if decoded["type"] in [
-                spotify.SpotifySearchType.track,
-                spotify.SpotifySearchType.playlist,
-                spotify.SpotifySearchType.album,
-            ]:
-                _ = await spotify.SpotifyTrack.search(
-                    decoded["id"], type=decoded["type"]
-                )
+        async with ctx.typing():
+            if decoded := spotify.decode_url(argument):
+                if decoded["type"] in [
+                    spotify.SpotifySearchType.track,
+                    spotify.SpotifySearchType.playlist,
+                    spotify.SpotifySearchType.album,
+                ]:
+                    _ = await spotify.SpotifyTrack.search(
+                        decoded["id"], type=decoded["type"]
+                    )
 
-                return _
-        with suppress(Exception):
-            _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
-            if _:
-                return _
-        with suppress(Exception):
-            _ = await wavelink.YouTubeTrack.convert(ctx, argument)
-            if _:
-                return _
-        with suppress(Exception):
-            _ = await wavelink.YouTubeMusicTrack.convert(ctx, argument)
-            if _:
-                return _
+                    return _
+            with suppress(Exception):
+                _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
+                if _:
+                    return _
+            with suppress(Exception):
+                _ = await wavelink.YouTubeTrack.convert(ctx, argument)
+                if _:
+                    return _
+            with suppress(Exception):
+                _ = await wavelink.YouTubeMusicTrack.convert(ctx, argument)
+                if _:
+                    return _
 
         raise CommandError("Could not find any songs matching that query.")
 
