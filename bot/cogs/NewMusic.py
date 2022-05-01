@@ -17,7 +17,7 @@ from discord import (
     VoiceChannel,
     VoiceProtocol,
 )
-from discord.ext.commands import CommandError, Converter
+from discord.ext.commands import CommandError, Converter, guild_only
 from discord.opus import OpusNotLoaded
 from utils import codeblocksafe
 from utils.subclasses.bot import Nexus
@@ -194,6 +194,7 @@ class NewMusic(Cog):
         except OpusNotLoaded:
             return await ctx.error("Sorry! I couldn't do that. Try again soon.")
 
+    @guild_only()
     @command(name="play")
     async def _play(self, ctx: NexusContext, *, query: Query):
         """
@@ -225,7 +226,7 @@ class NewMusic(Cog):
         )
         return await ctx.embed(description=f"Added {_} to the queue")
 
-
+    @guild_only
     @command(name="disconnect", aliases=["leave", "dc"])
     async def _disconnect(self, ctx: NexusContext):
         """
