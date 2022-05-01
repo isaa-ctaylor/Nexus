@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import math
 import re
 from contextlib import suppress
 from os import getenv
@@ -34,7 +35,7 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 class Player(wavelink.Player):
     control_channel: TextChannel
-    requester: Member
+    skippers: set
 
     def __call__(
         self,
@@ -115,6 +116,11 @@ class NewMusic(Cog):
                     client_secret=getenv("SPOTIFY_SECRET"),
                 ),
             )
+
+    def required(self, ctx: NexusContext):
+        player: Player = ctx.voice_client
+        channel = self.bot.get_channel(int(player.channel.id))
+        return math.ceil((len(channel.members) - 1) / 2.5)
 
     @Cog.listener(name="on_wavelink_track_end")
     async def _play_next_or_disconnect(
@@ -206,6 +212,7 @@ class NewMusic(Cog):
             
         for track in tracks:
             track.requester = ctx.author
+            track.ctx = ctx
 
         player: Player = self.bot.wavelink.get_player(ctx.guild)
         player.queue.extend(tracks)
@@ -218,7 +225,7 @@ class NewMusic(Cog):
         return await ctx.embed(description=f"Added {_} to the queue")
 
 
-    @command(name="disconnect")
+    @command(name="disconnect", aliases=["leave", "dc"])
     async def _disconnect(self, ctx: NexusContext):
         """
         Disconnect from the current voice channel
@@ -235,6 +242,47 @@ class NewMusic(Cog):
         with suppress(Exception):
             await self.bot.wavelink.get_player(ctx.guild).disconnect()
             await ctx.message.add_reaction("👍")
+            
+    @guild_only()
+    @command(name="skip")
+    async def _skip(self, ctx: NexusContext):
+        """
+        Skip the current song
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+
+        if (
+            ctx.author.id != player.track.requester.id
+            or not ctx.author.guild_permissions.manage_guild
+        ):
+            required = self.required(ctx)
+
+            _ = player.skippers.copy()
+            player.skippers.add(ctx.author.id)
+
+            if player.skippers == _:
+                return await ctx.send(
+                    "You have already voted to skip!", mention_author=False
+                )
+
+            if len(player.skippers) < required:
+                return await ctx.reply(
+                    f"Voted to skip ({len(player.skippers)}/{required})"
+                )
+
+        player.skippers.clear()
+
+        await player.stop()
+        await ctx.message.add_reaction("👍")
 
 async def setup(bot: Nexus):
     await bot.add_cog(NewMusic(bot))
