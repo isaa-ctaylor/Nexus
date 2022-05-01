@@ -35,7 +35,7 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 class Player(wavelink.Player):
     control_channel: TextChannel
-    skippers: set
+    skippers: set = set()
 
     def __call__(
         self,
