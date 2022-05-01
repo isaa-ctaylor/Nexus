@@ -12,7 +12,7 @@ cogs:
   - cogs.Utility
   # - cogs.Modlogs
   - cogs.Settings
-  # - cogs.Music
+  - cogs.Music
   # - cogs.Listeners
   # - Jishaku
 
