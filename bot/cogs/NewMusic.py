@@ -515,10 +515,12 @@ class NewMusic(Cog):
         
         if player.shuffled:
             player.queue = player.original_queue
+            player.shuffled = False
             return await ctx.embed(description=f"Shuffle toggled off")
         else:
             player.original_queue = player.queue
             random.shuffle(player.queue._queue)
+            player.shuffled = True
             return await ctx.embed(description=f"Shuffle toggled on")
 
 
