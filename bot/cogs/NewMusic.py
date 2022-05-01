@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import math
+import random
 import re
 from contextlib import suppress
 from os import getenv
@@ -36,6 +37,9 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 class Player(wavelink.Player):
     control_channel: TextChannel
     skippers: set = set()
+    
+    shuffled: bool = False
+    original_queue: wavelink.WaitQueue
 
     def __call__(
         self,
@@ -491,6 +495,31 @@ class NewMusic(Cog):
                 value=f"{int(math.floor(player.track.length/player.position)/10)*'🟪'}{(10-int(math.floor(player.track.length/player.position)/10))*'⬛'} [{datetime.timedelta(seconds=int(player.position))}/{datetime.timedelta(seconds=int(player.track.length))}]",
             )
         )
+        
+    @guild_only()
+    @command(name="shuffle")
+    async def _shuffle(self, ctx: NexusContext):
+        """
+        Toggle the shuffle of the queue
+        """
+        player: Player = ctx.voice_client
+
+        if not player:
+            return await ctx.error("I am not playing anything at the moment!")
+
+        if ctx.author.voice and ctx.author.voice.channel.id != player.channel.id:
+            return await ctx.error("You are not in the same channel as me!")
+
+        if not ctx.author.voice:
+            return await ctx.error("You are not in a voice channel!")
+        
+        if player.shuffled:
+            player.queue = player.original_queue
+            return await ctx.embed(description=f"Shuffle toggled off")
+        else:
+            player.original_queue = player.queue
+            random.shuffle(player.queue._queue)
+            return await ctx.embed(description=f"Shuffle toggled on")
 
 
 async def setup(bot: Nexus):
