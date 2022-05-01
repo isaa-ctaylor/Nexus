@@ -108,8 +108,6 @@ class Music(Cog):
         self.bot = bot
 
     async def cog_load(self):
-        await self.bot.wait_until_ready()
-
         if not getattr(self.bot, "wavelink", None):
             self.bot.wavelink = await wavelink.NodePool.create_node(
                 bot=self.bot,
