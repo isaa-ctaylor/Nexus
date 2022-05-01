@@ -488,7 +488,7 @@ class NewMusic(Cog):
             .set_image(url=getattr(player.track, "thumbnail", None))
             .add_field(
                 name="Position",
-                value=f"{int(math.floor(player.track.length/player.position)/10)*'🟪'}{(10-int(math.floor(player.track.length/player.position)/10))*'⬛'} [{datetime.timedelta(seconds=player.position)}/{datetime.timedelta(seconds=player.track.length)}]",
+                value=f"{int(math.floor(player.track.length/player.position)/10)*'🟪'}{(10-int(math.floor(player.track.length/player.position)/10))*'⬛'} [{datetime.timedelta(seconds=int(player.position))}/{datetime.timedelta(seconds=int(player.track.length))}]",
             )
         )
 
