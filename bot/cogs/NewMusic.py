@@ -19,8 +19,7 @@ from discord import (
 )
 from discord.ext.commands import CommandError, Converter, guild_only
 from discord.opus import OpusNotLoaded
-from bot.utils import hyperlink
-from utils import codeblocksafe
+from utils import codeblocksafe, hyperlink
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command
