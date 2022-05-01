@@ -515,11 +515,11 @@ class NewMusic(Cog):
             return await ctx.error("You are not in a voice channel!")
         
         if player.shuffled:
-            player.queue = player.original_queue
+            player.queue = player.original_queue.copy()
             player.shuffled = False
             return await ctx.embed(description=f"Shuffle toggled off")
         else:
-            player.original_queue = player.queue
+            player.original_queue = player.queue.copy()
             random.shuffle(player.queue._queue)
             player.shuffled = True
             return await ctx.embed(description=f"Shuffle toggled on")
