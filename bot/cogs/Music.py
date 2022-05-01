@@ -83,16 +83,18 @@ class Query(Converter):
                     spotify.SpotifySearchType.album,
                 ]:
                     _ = await spotify.SpotifyTrack.search(
-                        decoded["id"], type=decoded["type"]
+                        decoded["id"],
+                        type=decoded["type"],
+                        return_first=decoded["type"] == spotify.SpotifySearchType.track,
                     )
 
                     return _
             with suppress(Exception):
-                _ = await wavelink.YouTubeTrack.convert(ctx, argument)
+                _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
                 if _:
                     return _
             with suppress(Exception):
-                _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
+                _ = await wavelink.YouTubeTrack.convert(ctx, argument)
                 if _:
                     return _
             with suppress(Exception):
