@@ -77,11 +77,13 @@ class Query(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
         async with ctx.typing():
             if decoded := spotify.decode_url(argument):
-                if decoded["type"] in [
-                    spotify.SpotifySearchType.track,
+                if (t := decoded["type"]) in [
                     spotify.SpotifySearchType.playlist,
                     spotify.SpotifySearchType.album,
                 ]:
+                    return list(await spotify.SpotifyTrack.iterator(query=decoded["id"], type=t, partial_tracks=True))
+                    
+                elif decoded["type"] == spotify.SpotifySearchType.track:
                     _ = await spotify.SpotifyTrack.search(
                         decoded["id"],
                         type=decoded["type"],
