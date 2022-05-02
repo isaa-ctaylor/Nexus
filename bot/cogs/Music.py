@@ -35,12 +35,25 @@ SPOTIFY = re.compile(
 SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 
+class Queue(wavelink.WaitQueue):
+    looped: bool = False
+    _track: Optional[wavelink.Track] = None
+    
+    def _get(self) -> wavelink.abc.Playable:
+        if self.looped:
+            return self._track
+        item = super()._get()
+        self.history.put(item)
+
+        return item
+
+
 class Player(wavelink.Player):
     control_channel: TextChannel
     skippers: set = set()
 
     shuffled: bool = False
-    original_queue: wavelink.WaitQueue
+    original_queue: Queue
     
     looped: Literal["none", "song"] = "none"
 
@@ -69,7 +82,7 @@ class Player(wavelink.Player):
         self._source: Optional[wavelink.abc.Playable] = None
         # self._equalizer = Equalizer.flat()
 
-        self.queue = wavelink.WaitQueue()
+        self.queue = Queue()
 
 
 class SpotifyException(Exception):
@@ -148,8 +161,6 @@ class Music(Cog):
             with async_timeout.timeout(300):  # 5 minutes
                 while player.channel.members == 1:
                     continue
-                if player.looped == "song":
-                    return await player.play(track)
                 track = await player.queue.get_wait()
                 await player.play(track)
                 await player.control_channel.send(
@@ -502,7 +513,7 @@ class Music(Cog):
         await ctx.paginate(
             Embed(
                 title="Currently playing",
-                description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.ctx.author.mention}",
+                description=f"{hyperlink(f'`{player.track.title}`', player.track.uri)} requested by {player.track.requester.mention}",
                 colour=self.bot.config.colours.neutral,
             )
             .set_image(url=getattr(player.track, "thumbnail", None))
@@ -571,6 +582,8 @@ class Music(Cog):
         else:
             if type == "song":
                 player.looped = "song"
+                player.queue.looped = True
+                player.queue._track = player.track
                 return await ctx.embed(description="Looped the current song")
 
 async def setup(bot: Nexus):
