@@ -37,7 +37,7 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 class Player(wavelink.Player):
     control_channel: TextChannel
     skippers: set = set()
-    
+
     shuffled: bool = False
     original_queue: wavelink.WaitQueue
 
@@ -81,8 +81,13 @@ class Query(Converter):
                     spotify.SpotifySearchType.playlist,
                     spotify.SpotifySearchType.album,
                 ]:
-                    return list(await spotify.SpotifyTrack.iterator(query=decoded["id"], type=t, partial_tracks=True))
-                    
+                    return [
+                        _
+                        async for _ in spotify.SpotifyTrack.iterator(
+                            query=decoded["id"], type=t, partial_tracks=True
+                        )
+                    ]
+
                 elif decoded["type"] == spotify.SpotifySearchType.track:
                     _ = await spotify.SpotifyTrack.search(
                         decoded["id"],
@@ -498,7 +503,7 @@ class Music(Cog):
                 value=f"{int(math.floor(player.track.length/player.position)/10)*'🟪'}{(10-int(math.floor(player.track.length/player.position)/10))*'⬛'} [{datetime.timedelta(seconds=int(player.position))}/{datetime.timedelta(seconds=int(player.track.length))}]",
             )
         )
-        
+
     @guild_only()
     @command(name="shuffle")
     async def _shuffle(self, ctx: NexusContext):
@@ -515,7 +520,7 @@ class Music(Cog):
 
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
-        
+
         if player.shuffled:
             player.queue = player.original_queue.copy()
             player.shuffled = False
