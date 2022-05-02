@@ -42,8 +42,7 @@ class Player(wavelink.Player):
     shuffled: bool = False
     original_queue: wavelink.WaitQueue
     
-    looped: Literal["none", "song", "queue"] = "none"
-    looped_queue: wavelink.WaitQueue
+    looped: Literal["none", "song"] = "none"
 
     def __call__(
         self,
@@ -149,11 +148,8 @@ class Music(Cog):
             with async_timeout.timeout(300):  # 5 minutes
                 while player.channel.members == 1:
                     continue
-                if player.looped != "none":
-                    if player.looped == "song":
-                        await player.play(track)
-                    elif player.looped == "queue":
-                        track = await player.looped_queue.get_wait()
+                if player.looped == "song":
+                    return await player.play(track)
                 track = await player.queue.get_wait()
                 await player.play(track)
                 await player.control_channel.send(
@@ -560,8 +556,8 @@ class Music(Cog):
         if not ctx.author.voice:
             return await ctx.error("You are not in a voice channel!")
         
-        if type.lower() not in ("none", "song", "queue"):
-            return await ctx.error("Type must be one of 'none', 'song' or 'queue', or left blank to disable")
+        if type.lower() not in ("none", "song"):
+            return await ctx.error("Type must be one of 'none' or 'song', or left blank to disable")
         
         type = type.lower()
         
@@ -570,22 +566,12 @@ class Music(Cog):
         
         if player.looped in ("song", "queue") and type == "none":
             player.looped = "none"
-            if player.looped == "queue":
-                index = player.queue._index(player.track)
-                player.queue = wavelink.WaitQueue()
-                with suppress(IndexError):
-                    player.queue.extend(player.queue[index + 1:])
-            player.looped_queue.clear()
             return await ctx.embed(description="Disabled loop")
         
         else:
             if type == "song":
                 player.looped = "song"
                 return await ctx.embed(description="Looped the current song")
-            if type == "queue":
-                player.looped = "queue"
-                player.queue = list(player.queue)
-                player.looped_queue = cycle(player.queue)
 
 async def setup(bot: Nexus):
     await bot.add_cog(Music(bot))
