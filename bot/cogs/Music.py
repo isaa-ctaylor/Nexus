@@ -40,7 +40,7 @@ class Player(wavelink.Player):
     skippers: set = set()
 
     shuffled: bool = False
-    original_queue: Queue
+    original_queue: wavelink.WaitQueue
     
     looped: Literal["none", "song"] = "none"
 
