@@ -38,8 +38,11 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 class Queue(wavelink.WaitQueue):
     __slots__ = ("history", "_waiters", "_finished", "looped", "_track")
     
-    looped: bool = False
-    _track: Optional[wavelink.Track] = None
+    def __init__(self, max_size: Optional[int] = None, history_max_size: Optional[int] = None, history_cls=...):
+        super().__init__(max_size, history_max_size, history_cls)
+        
+        self.looped: bool = False
+        self._track: Optional[wavelink.Track] = None
     
     def _get(self) -> wavelink.abc.Playable:
         if self.looped:
