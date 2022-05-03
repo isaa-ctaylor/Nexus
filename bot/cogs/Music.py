@@ -49,7 +49,7 @@ class Queue(wavelink.WaitQueue):
 
         return item
     
-    async def get_wait(self) -> abc.Playable:
+    async def get_wait(self) -> wavelink.abc.Playable:
         """|coro|
 
         Return the next item in queue once available.
