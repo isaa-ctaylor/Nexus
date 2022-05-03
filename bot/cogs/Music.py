@@ -36,6 +36,8 @@ SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 
 class Queue(wavelink.WaitQueue):
+    __slots__ = ("history", "_waiters", "_finished", "looped", "_track")
+    
     looped: bool = False
     _track: Optional[wavelink.Track] = None
     
@@ -46,6 +48,39 @@ class Queue(wavelink.WaitQueue):
         self.history.put(item)
 
         return item
+    
+    async def get_wait(self) -> abc.Playable:
+        """|coro|
+
+        Return the next item in queue once available.
+
+
+        .. note::
+            This will wait until an item is available to be retrieved.
+        """
+        if not self.looped:
+            while self.is_empty:
+                loop = asyncio.get_event_loop()
+                waiter = loop.create_future()
+
+                self._waiters.append(waiter)
+
+                try:
+                    await waiter
+                except:  # noqa
+                    waiter.cancel()
+
+                    try:
+                        self._waiters.remove(waiter)
+                    except ValueError:  # pragma: no branch
+                        pass
+
+                    if not self.is_empty and not waiter.cancelled():  # pragma: no cover
+                        # something went wrong with this waiter, move on to next
+                        self._wakeup_next()
+                    raise
+
+        return self.get()
 
 
 class Player(wavelink.Player):
