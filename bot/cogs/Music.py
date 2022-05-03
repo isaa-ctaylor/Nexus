@@ -35,57 +35,6 @@ SPOTIFY = re.compile(
 SPOTIFY_REQUEST = "https://api.spotify.com/v1/{type}s/{id}"
 
 
-class Queue(wavelink.WaitQueue):
-    __slots__ = ("history", "_waiters", "_finished", "looped", "_track")
-    
-    def __init__(self, max_size: Optional[int] = None, history_max_size: Optional[int] = None, history_cls=...):
-        super().__init__(max_size, history_max_size, history_cls)
-        
-        self.looped: bool = False
-        self._track: Optional[wavelink.Track] = None
-    
-    def _get(self) -> wavelink.abc.Playable:
-        if self.looped:
-            return self._track
-        item = super()._get()
-        self.history.put(item)
-
-        return item
-    
-    async def get_wait(self) -> wavelink.abc.Playable:
-        """|coro|
-
-        Return the next item in queue once available.
-
-
-        .. note::
-            This will wait until an item is available to be retrieved.
-        """
-        if not self.looped:
-            while self.is_empty:
-                loop = asyncio.get_event_loop()
-                waiter = loop.create_future()
-
-                self._waiters.append(waiter)
-
-                try:
-                    await waiter
-                except:  # noqa
-                    waiter.cancel()
-
-                    try:
-                        self._waiters.remove(waiter)
-                    except ValueError:  # pragma: no branch
-                        pass
-
-                    if not self.is_empty and not waiter.cancelled():  # pragma: no cover
-                        # something went wrong with this waiter, move on to next
-                        self._wakeup_next()
-                    raise
-
-        return self.get()
-
-
 class Player(wavelink.Player):
     control_channel: TextChannel
     skippers: set = set()
@@ -120,7 +69,7 @@ class Player(wavelink.Player):
         self._source: Optional[wavelink.abc.Playable] = None
         # self._equalizer = Equalizer.flat()
 
-        self.queue = Queue()
+        self.queue = wavelink.WaitQueue()
 
 
 class SpotifyException(Exception):
@@ -131,25 +80,28 @@ class Query(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
         async with ctx.typing():
             if decoded := spotify.decode_url(argument):
-                if (t := decoded["type"]) in [
-                    spotify.SpotifySearchType.playlist,
-                    spotify.SpotifySearchType.album,
-                ]:
-                    return [
-                        _
-                        async for _ in spotify.SpotifyTrack.iterator(
-                            query=decoded["id"], type=t, partial_tracks=True
+                try:
+                    if (t := decoded["type"]) in [
+                        spotify.SpotifySearchType.playlist,
+                        spotify.SpotifySearchType.album,
+                    ]:
+                        return [
+                            _
+                            async for _ in spotify.SpotifyTrack.iterator(
+                                query=decoded["id"], type=t, partial_tracks=True
+                            )
+                        ]
+
+                    elif decoded["type"] == spotify.SpotifySearchType.track:
+                        _ = await spotify.SpotifyTrack.search(
+                            decoded["id"],
+                            type=decoded["type"],
+                            return_first=decoded["type"] == spotify.SpotifySearchType.track,
                         )
-                    ]
 
-                elif decoded["type"] == spotify.SpotifySearchType.track:
-                    _ = await spotify.SpotifyTrack.search(
-                        decoded["id"],
-                        type=decoded["type"],
-                        return_first=decoded["type"] == spotify.SpotifySearchType.track,
-                    )
-
-                    return _
+                        return _
+                except spotify.SpotifyRequestError:
+                    raise CommandError(f"Couldn't access that {decoded['type']}!")
                 
             with suppress(Exception):
                 _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
