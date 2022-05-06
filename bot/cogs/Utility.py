@@ -1283,9 +1283,13 @@ class Utility(Cog):
         """
         Set your timezone in the database
         """
-        await self.bot.db.execute("INSERT INTO timezones VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2 WHERE timezones.user_id = $1", ctx.author.id, timezone)
+        d = await self.bot.db.fetch("SELECT * FROM timezones WHERE user_id = $1", ctx.author.id)
+        if d:
+            command = "UPDATE timezones SET timezone = $2 WHERE user_id = $1"
+        else:
+            command = "INSERT INTO timezones VALUES ($1, $2)"
+        await self.bot.db.execute(command, ctx.author.id, timezone)
         return await ctx.embed(description=f"Set your timezone to `{timezone}`")
-
 
 async def setup(bot: Nexus):
     await bot.add_cog(Utility(bot))
