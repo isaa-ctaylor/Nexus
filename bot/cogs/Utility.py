@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import contextlib
 import datetime
+import difflib
 import re
 import shlex
 from collections import namedtuple
@@ -438,6 +439,30 @@ class InviteView(View):
     def __init__(self, url: str):
         super().__init__()
         self.add_item(Button(label="Click here", url=url))
+
+
+def timezone(argument: str):
+    timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
+    if argument in pytz.all_timezones:
+        return argument
+    for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
+        if ret := difflib.get_close_matches(format, timezones.keys()):
+            return timezones[ret[0]]
+    return None
+
+
+class TimeTarget(Converter):
+    async def convert(self, ctx: NexusContext, argument: str):
+        ret = None
+
+        with contextlib.suppress(CommandError):
+            ret = await MemberConverter().convert(ctx, argument)
+
+        if not ret:
+            if tz := timezone(argument):
+                return tz
+
+            raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
 
 
 class Utility(Cog):
@@ -1201,6 +1226,13 @@ class Utility(Cog):
         embed.set_image(url=f"https://mc-heads.net/body/{player['id']}")
 
         await ctx.paginate(embed)
+        
+    @group(name="time")
+    async def _time(self, ctx: NexusContext, target: TimeTarget):
+        """
+        See a members time, or time in a particular timezone
+        """
+        await ctx.send(str(target))
 
 
 async def setup(bot: Nexus):
