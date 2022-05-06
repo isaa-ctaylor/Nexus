@@ -469,7 +469,7 @@ class TimeTarget(Converter):
             ret = await MemberConverter().convert(ctx, argument)
 
         if not ret:
-            if tz := timezone(argument):
+            if tz := await timezone(argument):
                 return tz
 
             raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
