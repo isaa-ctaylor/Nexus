@@ -1243,11 +1243,21 @@ class Utility(Cog):
         await ctx.paginate(embed)
         
     @group(name="time")
-    async def _time(self, ctx: NexusContext, target: TimeTarget):
+    async def _time(self, ctx: NexusContext, target: TimeTarget = None):
         """
         See a members time, or time in a particular timezone
         """
-        await ctx.send(str(target))
+        target = target or ctx.author
+        if isinstance(target, Member):
+            d = await self.bot.db.fetch("SELECT * FROM timezones WHERE user_id = $1", target.id)
+            
+            if not d:
+                return await ctx.error(f"{target} does not have a timezone set!")
+            
+            else:
+                target = d["timezone"]
+                
+        return await ctx.embed(title=f"Time in {target}", description=f"It is {pytz.timezone(target).localize(ctx.message.created_at).strftime('%x, %X')} in {target}")
 
 
 async def setup(bot: Nexus):
