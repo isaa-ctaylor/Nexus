@@ -1265,7 +1265,7 @@ class Utility(Cog):
 
         return await ctx.embed(
             title=f"Time in {target}",
-            description=f"It is `{pytz.timezone(target).localize(ctx.message.created_at.replace(tzinfo=None)).strftime('%X, %x')}`",
+            description=f"It is `{pytz.timezone(target).localize(datetime.datetime.now()).strftime('%X, %x')}`",
         )
         
     @command(name="set-time")
