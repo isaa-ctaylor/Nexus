@@ -454,7 +454,10 @@ async def timezone(argument: str):
     timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
     if argument in pytz.all_timezones:
         return argument
-    for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
+    for format in [
+        argument.title().replace(" ", "_"),
+        argument.upper().replace(" ", "_"),
+    ]:
         if ret := difflib.get_close_matches(format, timezones.keys()):
             return timezones[ret[0]]
     return None
@@ -463,7 +466,7 @@ async def timezone(argument: str):
 class TimeTarget(Converter):
     def __init__(self, only_tz: bool = False) -> None:
         self._only_tz = only_tz
-        
+
     async def convert(self, ctx: NexusContext, argument: str):
         async with ctx.typing():
             ret = None
@@ -1265,21 +1268,24 @@ class Utility(Cog):
 
         return await ctx.embed(
             title=f"Time in {target}",
-            description=f"It is `{pytz.timezone(target).localize(datetime.datetime.now()).strftime('%X, %x')}`",
+            description=f"It is `{datetime.datetime.now(pytz.timezone(target)).strftime('%X, %x')}`",
         )
-        
+
     @command(name="set-time")
     async def _set_time(self, ctx: NexusContext, timezone: TimeTarget(only_tz=True)):
         """
         Set your timezone in the database
         """
-        d = await self.bot.db.fetch("SELECT * FROM timezones WHERE user_id = $1", ctx.author.id)
+        d = await self.bot.db.fetch(
+            "SELECT * FROM timezones WHERE user_id = $1", ctx.author.id
+        )
         if d:
             command = "UPDATE timezones SET timezone = $2 WHERE user_id = $1"
         else:
             command = "INSERT INTO timezones VALUES ($1, $2)"
         await self.bot.db.execute(command, ctx.author.id, timezone)
         return await ctx.embed(description=f"Set your timezone to `{timezone}`")
+
 
 async def setup(bot: Nexus):
     await bot.add_cog(Utility(bot))
