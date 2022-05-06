@@ -13,6 +13,7 @@ from sqlite3 import adapt
 from typing import Any, List, Optional, Union
 
 import discord
+import geopy
 import parsedatetime
 import pytesseract
 import pytz
@@ -24,23 +25,23 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import (
-    MemberConverter,
-    TextChannelConverter,
-    UserConverter,
-    clean_content,
-)
-from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
+from discord.ext.commands.converter import (MemberConverter,
+                                            TextChannelConverter,
+                                            UserConverter, clean_content)
+from discord.ext.commands.core import (bot_has_guild_permissions,
+                                       has_guild_permissions)
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.mentions import AllowedMentions
 from discord.ui import Button, View
 from discord.utils import MISSING
 from dotenv.main import load_dotenv
+from geopy.adapters import AioHTTPAdapter
 from idevision import async_client
 from idevision.errors import InvalidRtfmLibrary
 from parsedatetime import Calendar
 from PIL import Image, ImageColor, ImageOps, UnidentifiedImageError
+from tzwhere.tzwhere import tzwhere
 from utils import Timer, codeblock, codeblocksafe, executor, hyperlink
 from utils.helpers import paginatorinput
 from utils.scraper import Search, Website
@@ -48,9 +49,8 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-import geopy
-from tzwhere.tzwhere import tzwhere
-from geopy.adapters import AioHTTPAdapter
+from cache import AsyncLRU
+
 load_dotenv()
 
 
@@ -444,7 +444,10 @@ class InviteView(View):
         self.add_item(Button(label="Click here", url=url))
 
 
+@AsyncLRU(maxsize=None)
 async def timezone(argument: str):
+    if argument in pytz.all_timezones:
+        return argument
     async with geopy.Nominatim(user_agent="DiscordBot/Nexus", adapter_factory=AioHTTPAdapter) as g:
         with contextlib.suppress(Exception):
             geocode: geopy.Location = await g.geocode(argument)
@@ -463,16 +466,17 @@ async def timezone(argument: str):
 
 class TimeTarget(Converter):
     async def convert(self, ctx: NexusContext, argument: str):
-        ret = None
+        async with ctx.typing():
+            ret = None
 
-        with contextlib.suppress(CommandError):
-            ret = await MemberConverter().convert(ctx, argument)
+            with contextlib.suppress(CommandError):
+                ret = await MemberConverter().convert(ctx, argument)
 
-        if not ret:
-            if tz := await timezone(argument):
-                return tz
+            if not ret:
+                if tz := await timezone(argument):
+                    return tz
 
-            raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
+                raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
 
 
 class Utility(Cog):
