@@ -1257,7 +1257,7 @@ class Utility(Cog):
             else:
                 target = d["timezone"]
                 
-        return await ctx.embed(title=f"Time in {target}", description=f"It is {pytz.timezone(target).localize(ctx.message.created_at).strftime('%x, %X')} in {target}")
+        return await ctx.embed(title=f"Time in {target}", description=f"It is {pytz.timezone(target).localize(ctx.message.created_at.replace(tzinfo=None)).strftime('%x, %X')} in {target}")
 
 
 async def setup(bot: Nexus):
