@@ -25,11 +25,13 @@ from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
 from discord.ext.commands import Converter
-from discord.ext.commands.converter import (MemberConverter,
-                                            TextChannelConverter,
-                                            UserConverter, clean_content)
-from discord.ext.commands.core import (bot_has_guild_permissions,
-                                       has_guild_permissions)
+from discord.ext.commands.converter import (
+    MemberConverter,
+    TextChannelConverter,
+    UserConverter,
+    clean_content,
+)
+from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.mentions import AllowedMentions
@@ -448,13 +450,17 @@ class InviteView(View):
 async def timezone(argument: str):
     if argument in pytz.all_timezones:
         return argument
-    async with geopy.Nominatim(user_agent="DiscordBot/Nexus", adapter_factory=AioHTTPAdapter) as g:
+    async with geopy.Nominatim(
+        user_agent="DiscordBot/Nexus", adapter_factory=AioHTTPAdapter
+    ) as g:
         with contextlib.suppress(Exception):
             geocode: geopy.Location = await g.geocode(argument)
-            
+
             if geocode:
-                return tzwhere(forceTZ=True).tzNameAt(geocode.latitude, geocode.longitude, forceTZ=True)
-    
+                return tzwhere(forceTZ=True).tzNameAt(
+                    geocode.latitude, geocode.longitude, forceTZ=True
+                )
+
     # timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
     # if argument in pytz.all_timezones:
     #     return argument
@@ -465,20 +471,28 @@ async def timezone(argument: str):
 
 
 class TimeTarget(Converter):
+    def __init__(self, only_tz: bool = False) -> None:
+        self._only_tz = only_tz
+        
     async def convert(self, ctx: NexusContext, argument: str):
         async with ctx.typing():
             ret = None
 
-            with contextlib.suppress(CommandError):
-                ret = await MemberConverter().convert(ctx, argument)
+            if not self._only_tz:
+                with contextlib.suppress(CommandError):
+                    ret = await MemberConverter().convert(ctx, argument)
 
             if not ret:
                 if tz := await timezone(argument):
                     ret = tz
-        
-        if not ret: raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
+
+        if not ret:
+            raise CommandError(
+                "Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7"
+            )
 
         return ret
+
 
 class Utility(Cog):
     """
@@ -493,7 +507,7 @@ class Utility(Cog):
 
         self._current_reminders = []
         self._send_blacklist = set()
-    
+
     async def cog_load(self):
         self._send_reminders.start()
 
@@ -986,7 +1000,7 @@ class Utility(Cog):
         to_del = [_id for _id, v in {_id: _id in _ids for _id in index}.items() if v]
         await self.bot.db.pool.executemany(
             "DELETE FROM reminders WHERE (owner_id = $1 and reminder_id = $2)",
-            ((ctx.author.id, i) for i in to_del)
+            ((ctx.author.id, i) for i in to_del),
         )
 
         for index in to_del:
@@ -1241,23 +1255,36 @@ class Utility(Cog):
         embed.set_image(url=f"https://mc-heads.net/body/{player['id']}")
 
         await ctx.paginate(embed)
-        
-    @group(name="time")
-    async def _time(self, ctx: NexusContext, target: TimeTarget = None):
+
+    @command(name="time")
+    async def _time(self, ctx: NexusContext, target: TimeTarget(only_tz=False) = None):
         """
         See a members time, or time in a particular timezone
         """
         target = target or ctx.author
         if isinstance(target, Member):
-            d = await self.bot.db.fetch("SELECT * FROM timezones WHERE user_id = $1", target.id)
-            
+            d = await self.bot.db.fetch(
+                "SELECT * FROM timezones WHERE user_id = $1", target.id
+            )
+
             if not d:
                 return await ctx.error(f"{target} does not have a timezone set!")
-            
+
             else:
                 target = d["timezone"]
-                
-        return await ctx.embed(title=f"Time in {target}", description=f"It is {pytz.timezone(target).localize(ctx.message.created_at.replace(tzinfo=None)).strftime('%x, %X')} in {target}")
+
+        return await ctx.embed(
+            title=f"Time in {target}",
+            description=f"It is `{pytz.timezone(target).localize(ctx.message.created_at.replace(tzinfo=None)).strftime('%X, %x')}`",
+        )
+        
+    @command(name="set-time")
+    async def _set_time(self, ctx: NexusContext, timezone: TimeTarget(only_tz=True)):
+        """
+        Set your timezone in the database
+        """
+        await self.bot.db.execute("INSERT INTO timezones VALUES ($1, $2)", ctx.author.id, timezone)
+        return await ctx.embed(description=f"Set your timezone to `{timezone}`")
 
 
 async def setup(bot: Nexus):
