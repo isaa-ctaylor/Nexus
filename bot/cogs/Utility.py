@@ -9,6 +9,7 @@ from collections import namedtuple
 from io import BytesIO
 from math import floor, log10
 from os import getenv
+from sqlite3 import adapt
 from typing import Any, List, Optional, Union
 
 import discord
@@ -47,7 +48,9 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-
+import geopy
+from tzwhere.tzwhere import tzwhere
+from geopy.adapters import AioHTTPAdapter
 load_dotenv()
 
 
@@ -441,14 +444,21 @@ class InviteView(View):
         self.add_item(Button(label="Click here", url=url))
 
 
-def timezone(argument: str):
-    timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
-    if argument in pytz.all_timezones:
-        return argument
-    for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
-        if ret := difflib.get_close_matches(format, timezones.keys()):
-            return timezones[ret[0]]
-    return None
+async def timezone(argument: str):
+    async with geopy.Nominatim(user_agent="DiscordBot/Nexus", adapter_factory=AioHTTPAdapter) as g:
+        with contextlib.suppress(Exception):
+            geocode: geopy.Location = await g.geocode(argument)
+            
+            if geocode:
+                return tzwhere(forceTZ=True).tzNameAt(geocode.latitude, geocode.longitude, forceTZ=True)
+    
+    # timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
+    # if argument in pytz.all_timezones:
+    #     return argument
+    # for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
+    #     if ret := difflib.get_close_matches(format, timezones.keys()):
+    #         return timezones[ret[0]]
+    # return None
 
 
 class TimeTarget(Converter):
