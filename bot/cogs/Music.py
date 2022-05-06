@@ -100,9 +100,9 @@ class Query(Converter):
                         )
 
                         return _
-                except spotify.SpotifyRequestError:
-                    raise CommandError(f"Couldn't access that {decoded['type'].name}!")
-                
+                except spotify.SpotifyRequestError as e:
+                    raise CommandError(f"Couldn't access that {decoded['type'].name}!") from e
+
             with suppress(Exception):
                 _ = await wavelink.YouTubePlaylist.convert(ctx, argument)
                 if _:
