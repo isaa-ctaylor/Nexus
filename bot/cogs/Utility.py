@@ -450,24 +450,14 @@ class InviteView(View):
 async def timezone(argument: str):
     if argument in pytz.all_timezones:
         return argument
-    async with geopy.Nominatim(
-        user_agent="DiscordBot/Nexus", adapter_factory=AioHTTPAdapter
-    ) as g:
-        with contextlib.suppress(Exception):
-            geocode: geopy.Location = await g.geocode(argument)
 
-            if geocode:
-                return tzwhere(forceTZ=True).tzNameAt(
-                    geocode.latitude, geocode.longitude, forceTZ=True
-                )
-
-    # timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
-    # if argument in pytz.all_timezones:
-    #     return argument
-    # for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
-    #     if ret := difflib.get_close_matches(format, timezones.keys()):
-    #         return timezones[ret[0]]
-    # return None
+    timezones = {tz.split("/")[-1]: tz for tz in pytz.all_timezones}
+    if argument in pytz.all_timezones:
+        return argument
+    for format in [argument.title().replace(" ", "_"), argument.upper().replace(" ", "_")]:
+        if ret := difflib.get_close_matches(format, timezones.keys()):
+            return timezones[ret[0]]
+    return None
 
 
 class TimeTarget(Converter):
