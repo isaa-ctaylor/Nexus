@@ -1283,7 +1283,7 @@ class Utility(Cog):
         """
         Set your timezone in the database
         """
-        await self.bot.db.execute("INSERT INTO timezones VALUES ($1, $2)", ctx.author.id, timezone)
+        await self.bot.db.execute("INSERT INTO timezones VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2 WHERE user_id = $1", ctx.author.id, timezone)
         return await ctx.embed(description=f"Set your timezone to `{timezone}`")
 
 
