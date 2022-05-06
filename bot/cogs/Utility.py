@@ -475,8 +475,8 @@ class TimeTarget(Converter):
             if not ret:
                 if tz := await timezone(argument):
                     ret = tz
-                else:
-                    raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
+        
+        if not ret: raise CommandError("Timezone not recognised! Full list of supported timezones can be found here:\nhttps://gist.github.com/isaa-ctaylor/f0ec3c363f46f384565c003475eefae7")
 
         return ret
 
