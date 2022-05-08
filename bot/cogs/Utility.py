@@ -925,7 +925,7 @@ class Utility(Cog):
                 end + 86400,
                 start,
                 reason,
-                message,
+                message.id if message else 1,
                 True,
             )
         elif repeat:
@@ -937,7 +937,7 @@ class Utility(Cog):
                 end + 86400,
                 start,
                 reason,
-                message,
+                message.id if message else 1,
                 False,
                 max(0, repeat - 1),
             )
