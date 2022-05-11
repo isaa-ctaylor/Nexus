@@ -690,6 +690,8 @@ class Utility(Cog):
                 )
 
                 await ctx.send(embed=embed)
+                
+                await asyncio.sleep(2)
 
     @command(name="vote")
     async def _vote(self, ctx: NexusContext):
