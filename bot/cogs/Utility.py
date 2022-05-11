@@ -644,8 +644,8 @@ class Utility(Cog):
         await m.edit(embed=embed)
 
     @executor
-    def _do_ocr(self, image):
-        config = r"--oem 1 --tessdata-dir /opt/tessdata --psm 4"
+    def _do_ocr(self, image, psm = 11):
+        config = f"--oem 1 --tessdata-dir /opt/tessdata --psm {psm}"
         return pytesseract.image_to_string(image, config=config)
 
     @command(name="ocr")
@@ -683,12 +683,13 @@ class Utility(Cog):
             image = ImageOps.invert(image)
 
         async with ctx.typing():
-            embed = Embed(
-                description=await self._do_ocr(image),
-                colour=self.bot.config.colours.neutral,
-            )
+            for psm in range(14):
+                embed = Embed(
+                    description=await self._do_ocr(image, psm=psm),
+                    colour=self.bot.config.colours.neutral,
+                )
 
-        await ctx.paginate(embed)
+                await ctx.send(embed=embed)
 
     @command(name="vote")
     async def _vote(self, ctx: NexusContext):
