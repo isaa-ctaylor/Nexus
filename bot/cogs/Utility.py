@@ -683,7 +683,7 @@ class Utility(Cog):
             image = ImageOps.invert(image)
 
         async with ctx.typing():
-            for psm in range(1, 14):
+            for psm in [2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]:
                 embed = Embed(
                     description=await self._do_ocr(image, psm=psm),
                     colour=self.bot.config.colours.neutral,
