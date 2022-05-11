@@ -645,7 +645,7 @@ class Utility(Cog):
 
     @executor
     def _do_ocr(self, image):
-        config = r"--oem 1 --tessdata-dir /opt/tessdata --psm 11"
+        config = r"--oem 1 --tessdata-dir /opt/tessdata --psm 4"
         return pytesseract.image_to_string(image, config=config)
 
     @command(name="ocr")
