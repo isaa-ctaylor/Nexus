@@ -645,7 +645,7 @@ class Utility(Cog):
 
     @executor
     def _do_ocr(self, image):
-        config = r"--oem 1 --tessdata-dir /opt/tessdata"
+        config = r"--oem 1 --tessdata-dir /opt/tessdata --psm 11"
         return pytesseract.image_to_string(image, config=config)
 
     @command(name="ocr")
@@ -1272,7 +1272,7 @@ class Utility(Cog):
         )
 
     @command(name="set-time")
-    async def _set_time(self, ctx: NexusContext, timezone: TimeTarget(only_tz=True)):
+    async def _set_time(self, ctx: NexusContext, *, timezone: TimeTarget(only_tz=True)):
         """
         Set your timezone in the database
         """
