@@ -42,6 +42,7 @@ def get_prefix(bot, message: Message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
+        print(1)
         self.wavelink: wavelink.Node = None
         self.config = CONFIG
 
@@ -64,8 +65,10 @@ class Nexus(Bot):
         #     )
         # )
         
+        print(2)
+        
     async def setup_hook(self) -> None:
-
+        print(3)
         self.session = ClientSession()
 
         self.database = self.db = Database(self)
@@ -105,12 +108,19 @@ class Nexus(Bot):
             ]
         }
 
+        print(4)
+        
         if cogs := self.config.cogs:
             for cog in cogs:
+                print("a")
                 try:
+                    print("b")
                     await self.load_extension(cog)
+                    print("c")
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
+                    
+        print(5)
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:
