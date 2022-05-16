@@ -179,8 +179,6 @@ class Music(Cog):
         self,
         ctx: NexusContext,
         channel: Optional[VoiceChannel] = None,
-        /,
-        invoked=False,
     ):
         """
         Connect Nexus to a voice channel
@@ -204,10 +202,10 @@ class Music(Cog):
         try:
             _ = await channel.connect(self_deaf=True, cls=Player)
             _.control_channel = ctx.channel
-            if not invoked:
-                await ctx.embed(
-                    description=f"Connected to {channel.mention}", paginate=False
-                )
+
+            await ctx.embed(
+                description=f"Connected to {channel.mention}", paginate=False
+            )
             if not _.is_playing():
                 self.bot.loop.create_task(
                     self._play_next_or_disconnect(
@@ -235,7 +233,7 @@ class Music(Cog):
 
         async with ctx.typing():
             if not ctx.voice_client:
-                await self._connect(ctx, invoked=True)
+                await self._connect(ctx)
 
             if isinstance(query, wavelink.YouTubePlaylist):
                 tracks = query.tracks
