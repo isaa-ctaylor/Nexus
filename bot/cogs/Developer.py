@@ -171,7 +171,7 @@ class Developer(Cog, hidden=True):
         name="load",
         examples=["cogs.Developer", "Jishaku", "cogs.Help cogs.Developer"],
     )
-    async def _load(self, ctx: NexusContext, *cogs: List[str]):
+    async def _load(self, ctx: NexusContext, *cogs: str):
         """
         Load the given cogs
 
