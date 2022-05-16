@@ -112,6 +112,7 @@ class Nexus(Bot):
         
         if cogs := self.config.cogs:
             for cog in cogs:
+                print(cog)
                 print("a")
                 try:
                     print("b")
