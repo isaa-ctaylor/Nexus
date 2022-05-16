@@ -135,8 +135,10 @@ class Developer(Cog, hidden=True):
             await ctx.paginate(embeds)
 
     async def _operate_on_cogs(
-        self, cogs: List[str], func: Callable, options: List[str]
+        self, cogs: str, func: Callable, options: List[str]
     ):
+        if isinstance(cogs, str):
+            cogs = [cogs]
         if not cogs:
             return await self._operate_on_cogs(self.bot.cogs, func, options)
 
@@ -171,7 +173,7 @@ class Developer(Cog, hidden=True):
         name="load",
         examples=["cogs.Developer", "Jishaku", "cogs.Help cogs.Developer"],
     )
-    async def _load(self, ctx: NexusContext, *cogs: str):
+    async def _load(self, ctx: NexusContext, cogs: str):
         """
         Load the given cogs
 
@@ -202,7 +204,7 @@ class Developer(Cog, hidden=True):
         name="unload",
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
-    async def _unload(self, ctx: NexusContext, *cogs: str):
+    async def _unload(self, ctx: NexusContext, cogs: str):
         """
         Unoad the given cogs
 
@@ -233,7 +235,7 @@ class Developer(Cog, hidden=True):
         name="reload",
         examples=["cogs.Developer", "Jishaku", "Help cogs.Developer"],
     )
-    async def _reload(self, ctx: NexusContext, *cogs: str):
+    async def _reload(self, ctx: NexusContext, cogs: str):
         """
         Reload the given cogs
 

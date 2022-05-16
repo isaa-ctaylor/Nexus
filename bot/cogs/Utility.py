@@ -980,10 +980,13 @@ class Utility(Cog):
             )
 
     @_remind.command(name="remove", usage="<id(s)>", aliases=["rm"], examples=["1"])
-    async def _remind_remove(self, ctx: NexusContext, *index: int):
+    async def _remind_remove(self, ctx: NexusContext, index: int):
         """
         Remove a set reminder given its id
         """
+        if isinstance(index, int):
+            index = [index]
+
         data = await self.bot.db.fetch(
             "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
         )
