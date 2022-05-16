@@ -362,11 +362,6 @@ class Developer(Cog, hidden=True):
             name="Guild members", value=f"```\n{guild.member_count}```", inline=True
         )
         embed.add_field(
-            name="Guild region",
-            value=f"```\n{str(guild.region).capitalize()}```",
-            inline=True,
-        )
-        embed.add_field(
             name="Guild created",
             value=f"```\n{humanize.naturaldate(guild.created_at)}```",
             inline=True,
