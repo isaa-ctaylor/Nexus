@@ -1,4 +1,5 @@
 import re
+from wsgiref.util import application_uri
 import wavelink
 from logging import INFO, getLogger
 from time import sleep
@@ -47,6 +48,8 @@ class Nexus(Bot):
         kwargs["command_prefix"] = get_prefix
         kwargs["case_insensitive"] = kwargs.pop("case_insensitive", True)
         kwargs["slash_commands"] = kwargs.pop("slash_commands", True)
+        
+        kwargs["application_id"] = 869487103703138364
 
         super().__init__(intents=intents or _intents, *args, **kwargs)
 
