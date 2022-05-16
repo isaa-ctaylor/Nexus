@@ -578,3 +578,4 @@ class Music(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Music(bot))
+    await bot.tree.sync()

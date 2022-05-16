@@ -397,3 +397,4 @@ class Developer(Cog, hidden=True):
 
 async def setup(bot: Nexus) -> None:
     await bot.add_cog(Developer(bot))
+    await bot.tree.sync()

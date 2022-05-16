@@ -645,8 +645,8 @@ class Utility(Cog):
 
     @executor
     def _do_ocr(self, image, psm = 11):
-        config = f"--oem 2 --tessdata-dir /opt/tessdata --psm {psm}"
-        return pytesseract.image_to_string(image, config=config)
+        # config = f"--oem 2 --tessdata-dir /opt/tessdata --psm {psm}"
+        return pytesseract.image_to_string(image, config="")
 
     @command(name="ocr")
     async def _ocr(self, ctx: NexusContext, *, image: str = None):
@@ -1079,7 +1079,7 @@ class Utility(Cog):
 
     @has_guild_permissions(manage_messages=True)
     @command(name="say", usage="<message> [flags]")
-    async def _say(self, ctx: NexusContext, *, messageandargs):  # sourcery no-metrics
+    async def _say(self, ctx: NexusContext, *, messageandargs: str):  # sourcery no-metrics
         """
         Say something
 
@@ -1292,3 +1292,4 @@ class Utility(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Utility(bot))
+    await bot.tree.sync()

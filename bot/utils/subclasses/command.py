@@ -1,8 +1,8 @@
 from discord.ext.commands import (
-    Command as DiscordCommand,
-    Group as DiscordGroup,
-    command,
-    group,
+    HybridCommand as DiscordCommand,
+    HybridGroup as DiscordGroup,
+    hybrid_command,
+    hybrid_group,
 )
 from typing import Any, Tuple
 from discord.utils import MISSING

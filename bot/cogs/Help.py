@@ -212,3 +212,4 @@ class Help(Cog, hidden=True):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Help(bot))
+    await bot.tree.sync()

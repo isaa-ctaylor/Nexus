@@ -49,3 +49,4 @@ class Automod(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Automod(bot))
+    await bot.tree.sync()

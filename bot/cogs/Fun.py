@@ -43,3 +43,4 @@ class Fun(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Fun(bot))
+    await bot.tree.sync()
