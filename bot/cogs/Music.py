@@ -455,12 +455,15 @@ class Music(Cog):
 
     @guild_only()
     @command(name="volume")
-    async def _volume(self, ctx: NexusContext, volume: Union[int, str]):
+    async def _volume(self, ctx: NexusContext, volume: str):
         """
         Set the volume of the player
 
         Please allow 10 seconds for the volume to update
         """
+        with suppress(Exception):
+            volume = int(volume)
+
         player: Player = ctx.voice_client
 
         if not player:
