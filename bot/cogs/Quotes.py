@@ -1,5 +1,6 @@
+from contextlib import suppress
 import random
-from typing import Optional, Union
+from typing import Optional
 
 from discord.embeds import Embed
 from discord.enums import ButtonStyle
@@ -150,12 +151,15 @@ class Quotes(Cog):
         return pages
 
     @command(name="view", usage="<id> [number]", invoke_without_command=True)
-    async def _quote(self, ctx: NexusContext, *, index: Union[int, str]):
+    async def _quote(self, ctx: NexusContext, *, index: str):
         """
         See a quote's information, given the id
 
         If id is "random", then number can be specified, and a maximum of that many quotes will be returned
         """
+        with suppress(Exception):
+            index = int(index.strip())
+
         if ctx.invoked_subcommand:
             return
 
