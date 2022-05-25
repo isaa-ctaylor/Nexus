@@ -71,7 +71,15 @@ class Developer(Cog, hidden=True):
             return "\n".join([str(i) async for i in result])
 
         return await result
-
+    
+    @is_owner()
+    @command(name="sql")
+    async def _sql(self, ctx: NexusContext, *, statement: str):
+        if statement.lower().startswith("select"):
+            return await self.bot.db.fetch(statement, one=not statement.lower().startswith("select *"))
+        else:
+            return await self.bot.db.execute(statement)
+    
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
     @command(name="eval", examples=["print('Hello world!')"])
