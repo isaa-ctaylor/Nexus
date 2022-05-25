@@ -118,7 +118,9 @@ class Quotes(Cog):
                     "SELECT upvotes FROM quotes WHERE id = $1", index
                 )
                 embed.remove_field(1)
-                embed.insert_field_at(1, name="Likes", value=len(set(upvotes["upvotes"])))
+                embed.insert_field_at(
+                    1, name="Likes", value=len(set(upvotes["upvotes"]))
+                )
                 await interaction.message.edit(embed=embed)
 
         await ctx.send(
@@ -298,7 +300,7 @@ class Quotes(Cog):
         """
         See all quotes by a specified member, or all quotes for your server if no member specified
 
-        Quotes are displayed in the format "quote (ID: id)"
+        Quotes are displayed in the format "ID: quote"
         """
         if member:
             quotes = await self.bot.db.fetch(
@@ -314,7 +316,7 @@ class Quotes(Cog):
             x = 0
             pages = [""]
             for quote in quotes:
-                if len(pages[x] + f"\n**{quote['id']}:** {quote['quote']}") > 4096:
+                if len(f"{pages[x]}\n**{quote['id']}:** {quote['quote']}") > 4096:
                     pages.append(f"**{quote['id']}:** {quote['quote']}")
                     x += 1
                 else:
@@ -360,9 +362,9 @@ class Quotes(Cog):
         await ctx.paginate(
             Embed(
                 title="Done!",
-                description="Removed the role lock, now everyone can use quote commands!"
-                if not role
-                else f"Set the role lock to {role.mention}. Now only users with the {role.mention} role can use quote commands!",
+                description=f"Set the role lock to {role.mention}. Now only users with the {role.mention} role can use quote commands!"
+                if role
+                else "Removed the role lock, now everyone can use quote commands!",
                 colour=self.bot.config.colours.good,
             )
         )
@@ -388,12 +390,11 @@ class Quotes(Cog):
             )
         )
 
-        if not quotes:
-            _ = "No quotes yet!"
-        else:
-            _ = "\n".join(
-                f"{i+1}) {q['quote']}" for i, q in enumerate(list(quotes)[:5])
-            )
+        _ = (
+            "\n".join(f"{i+1}) {q['quote']}" for i, q in enumerate(list(quotes)[:5]))
+            if quotes
+            else "No quotes yet!"
+        )
 
         embed = (
             Embed(title=f"{member}'s profile", colour=self.bot.config.colours.neutral)
@@ -406,64 +407,64 @@ class Quotes(Cog):
         )
         await ctx.paginate(embed)
 
-    @has_guild_permissions(manage_messages=True)
-    @command(name="import")
-    async def _import(self, ctx: NexusContext, *, bulk: BulkQuotes):
-        """
-        A temporary command to import quotes in bulk
+    # @has_guild_permissions(manage_messages=True)
+    # @command(name="import")
+    # async def _import(self, ctx: NexusContext, *, bulk: BulkQuotes):
+    #     """
+    #     A temporary command to import quotes in bulk
 
-        This command will parse a message containing a bulk of quotes, then prompt you to identify each person it finds. This can be done by mentioning or sending the person's id/name
-        """
-        assigned = {}
-        message: Optional[Message] = None
-        for owner in bulk:
-            embed = Embed(
-                title="Who is it?",
-                description=f"Please identify {owner}!",
-                colour=self.bot.config.colours.neutral,
-            )
-            if message is not None:
-                await message.edit(embed=embed)
-            else:
-                message = await ctx.send(embed=embed)
+    #     This command will parse a message containing a bulk of quotes, then prompt you to identify each person it finds. This can be done by mentioning or sending the person's id/name
+    #     """
+    #     assigned = {}
+    #     message: Optional[Message] = None
+    #     for owner in bulk:
+    #         embed = Embed(
+    #             title="Who is it?",
+    #             description=f"Please identify {owner}!",
+    #             colour=self.bot.config.colours.neutral,
+    #         )
+    #         if message is not None:
+    #             await message.edit(embed=embed)
+    #         else:
+    #             message = await ctx.send(embed=embed)
 
-            m = await self.bot.wait_for(
-                "message",
-                check=lambda m: m.channel.id == ctx.channel.id
-                and m.author.id == ctx.author.id,
-            )
-            try:
-                member = await MemberConverter().convert(ctx, m.content)
-            except (BadArgument, CommandError):
-                return await message.edit("Invalid member passed, aborting!")
-            if assigned.get(member, None) is None:
-                assigned[member] = []
-            assigned[member] += bulk[owner]
+    #         m = await self.bot.wait_for(
+    #             "message",
+    #             check=lambda m: m.channel.id == ctx.channel.id
+    #             and m.author.id == ctx.author.id,
+    #         )
+    #         try:
+    #             member = await MemberConverter().convert(ctx, m.content)
+    #         except (BadArgument, CommandError):
+    #             return await message.edit("Invalid member passed, aborting!")
+    #         if assigned.get(member, None) is None:
+    #             assigned[member] = []
+    #         assigned[member] += bulk[owner]
 
-        for member, quotes in assigned.items():
-            await self.bot.db.executemany(
-                "INSERT INTO quotes (guild_id, owner_id, upvotes, created, quote) VALUES ($1, $2, $3, $4, $5)",
-                [
-                    [
-                        ctx.guild.id,
-                        member.id,
-                        [],
-                        int(ctx.message.created_at.timestamp()),
-                        quote,
-                    ]
-                    for quote in quotes
-                ],
-            )
+    #     for member, quotes in assigned.items():
+    #         await self.bot.db.executemany(
+    #             "INSERT INTO quotes (guild_id, owner_id, upvotes, created, quote) VALUES ($1, $2, $3, $4, $5)",
+    #             [
+    #                 [
+    #                     ctx.guild.id,
+    #                     member.id,
+    #                     [],
+    #                     int(ctx.message.created_at.timestamp()),
+    #                     quote,
+    #                 ]
+    #                 for quote in quotes
+    #             ],
+    #         )
 
-        allquotes = []
-        for q in assigned.values():
-            allquotes += q
+    #     allquotes = []
+    #     for q in assigned.values():
+    #         allquotes += q
 
-        return await ctx.embed(
-            title="Done!",
-            description=f"Inserted {len(allquotes)} quotes!",
-            colour=self.bot.config.colours.good,
-        )
+    #     return await ctx.embed(
+    #         title="Done!",
+    #         description=f"Inserted {len(allquotes)} quotes!",
+    #         colour=self.bot.config.colours.good,
+    #     )
 
 
 async def setup(bot: Nexus):
