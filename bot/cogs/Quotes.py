@@ -249,7 +249,7 @@ class Quotes(Cog):
             member = ctx.author
 
         await self.bot.db.execute(
-            "INSERT INTO quotes (guild_id, owner_id, likes, created, quote) VALUES ($1, $2, $3, $4, $5)",
+            "INSERT INTO quotes (guild_id, owner_id, upvotes, created, quote) VALUES ($1, $2, $3, $4, $5)",
             ctx.guild.id,
             member.id,
             [],
@@ -384,7 +384,7 @@ class Quotes(Cog):
         quotes = reversed(
             sorted(
                 q,
-                key=lambda x: len(x["likes"]),
+                key=lambda x: len(x["upvotes"]),
             )
         )
 
