@@ -3,13 +3,13 @@ import asyncio
 import contextlib
 import datetime
 import difflib
+import itertools
 import re
 import shlex
 from collections import namedtuple
 from io import BytesIO
 from math import floor, log10
 from os import getenv
-from sqlite3 import adapt
 from typing import Any, List, Optional, Union
 
 import discord
@@ -19,8 +19,9 @@ import pytesseract
 import pytz
 from aiohttp import InvalidURL
 from async_timeout import timeout
+from cache import AsyncLRU
 from dateutil.relativedelta import relativedelta
-from discord import ButtonStyle
+from discord import ButtonStyle, Interaction, Role, SelectOption
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
@@ -31,19 +32,17 @@ from discord.ext.commands.converter import (
     UserConverter,
     clean_content,
 )
-from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
+from discord.ext.commands.core import has_guild_permissions
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.mentions import AllowedMentions
-from discord.ui import Button, View
+from discord.ui import Button, Select, View
 from discord.utils import MISSING
 from dotenv.main import load_dotenv
-from geopy.adapters import AioHTTPAdapter
 from idevision import async_client
 from idevision.errors import InvalidRtfmLibrary
 from parsedatetime import Calendar
 from PIL import Image, ImageColor, ImageOps, UnidentifiedImageError
-from tzwhere.tzwhere import tzwhere
 from utils import Timer, codeblock, codeblocksafe, executor, hyperlink
 from utils.helpers import paginatorinput
 from utils.scraper import Search, Website
@@ -51,7 +50,6 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-from cache import AsyncLRU
 
 load_dotenv()
 
@@ -487,6 +485,116 @@ class TimeTarget(Converter):
         return ret
 
 
+class RoleSelector(Select):
+    def __init__(self, options: List[Role], _min, _max):
+        options = [SelectOption(label=role.name) for role in options]
+        super().__init__(
+            placeholder=f"{'Get' if len(options) == 1 else 'Choose'} your role{'s' if len(options) > 1 else ''}!",
+            min_values=_min,
+            max_values=_max,
+            options=options,
+            custom_id="roleselector:Select",
+        )
+
+    async def callback(self, interaction: Interaction):
+        await interaction.response.defer(ephemeral=True)
+        roles = []
+        for selection in self.values:
+            role = discord.utils.get(interaction.guild.roles, name=selection)
+            if role is not None and role not in interaction.user.roles:
+                roles.append(role)
+        try:
+            await interaction.user.add_roles(
+                *roles,
+                reason="Self role selection",
+            )
+            _given = roles
+        except discord.HTTPException:
+            return await interaction.followup.send(
+                "Uh oh! I couldn't seem to do that! "
+                "This may be because you have a higher top role than me, "
+                "or I do not have the Manage Roles permission. "
+                "If you believe this to be an error, "
+                "please contact your server owner/administrator to sort out my permissions!",
+                ephemeral=True,
+            )
+        user = await interaction.guild.fetch_member(interaction.user.id)
+        roles = []
+        resp = await self.view.bot.db.fetch(
+            "SELECT roles FROM selfrole WHERE message_id = $1",
+            interaction.message.id,
+        )
+        options = [
+            discord.utils.get(interaction.guild.roles, id=int(r))
+            for r in (resp["roles"])
+        ]
+        for role in options:
+            if (
+                role.name not in self.values
+                and (role := discord.utils.get(interaction.guild.roles, name=role.name))
+                in interaction.user.roles
+            ):
+                roles.append(role)
+        try:
+            await user.remove_roles(
+                *roles,
+                reason="Self role selection",
+            )
+            _taken = roles
+        except discord.HTTPException:
+            return await interaction.followup.send(
+                "Uh oh! I couldn't seem to do that! "
+                "This may be because you have a higher top role than me, "
+                "or I do not have the Manage Roles permission. "
+                "If you believe this to be an error, "
+                "please contact your server owner/administrator to sort out my permissions!",
+                ephemeral=True,
+            )
+        await interaction.followup.send(
+            embed=Embed(
+                title="Done!",
+                description=f"{'Added:' if _given else ''}\n{' '.join(r.mention for r in _given)}\n{'Removed:' if _taken else ''}\n{' '.join(r.mention for r in _taken)}",
+                colour=self.view.bot.config.colours.neutral,
+            ),
+            ephemeral=True,
+        )
+
+
+class RolesConverter(Converter):
+    async def convert(self, ctx: NexusContext, argument: Any):
+        _ = set(re.findall(r"<@&([0-9]+)>", argument))
+        if _ is None:
+            return
+        roles = []
+        for r in list(_):
+            if role := discord.utils.get(ctx.guild.roles, id=int(r)):
+                roles.append(role)
+        return roles or None
+
+
+class IntegerConverter(Converter):
+    MIN = 0
+
+    async def convert(self, ctx: NexusContext, argument: Any):
+        try:
+            _ = int(argument)
+        except ValueError:
+            return BadArgument(f"Could not convert {argument} into a string!")
+
+        return max(_, self.MIN)
+
+
+class Stop(CommandError):
+    ...
+
+
+class RoleView(View):
+    def __init__(self, options: List[Role], _min, _max, bot=None):
+        super().__init__(timeout=None)
+        self.add_item(RoleSelector(options, _min, _max))
+        self.bot = bot
+
+
 class Utility(Cog):
     """
     Useful commands
@@ -503,6 +611,18 @@ class Utility(Cog):
 
     async def cog_load(self):
         self._send_reminders.start()
+
+        _selfroles = await self.bot.db.fetch("SELECT * FROM selfrole", one=False)
+        _allroles = itertools.chain(*[g.roles for g in self.bot.guilds])
+        for selfrole in _selfroles:
+            roles = []
+            for r in selfrole["roles"]:
+                if role := discord.utils.get(_allroles, id=r):
+                    roles.append(role)
+            self.bot.add_view(
+                RoleView(roles, selfrole["_min"], selfrole["_max"], self.bot),
+                message_id=selfrole["message_id"],
+            )
 
     @command(name="invite", aliases=["addme"])
     async def _invite(self, ctx: NexusContext):
@@ -644,7 +764,7 @@ class Utility(Cog):
         await m.edit(embed=embed)
 
     @executor
-    def _do_ocr(self, image, psm = 11):
+    def _do_ocr(self, image, psm=11):
         # config = f"--oem 2 --tessdata-dir /opt/tessdata --psm {psm}"
         return pytesseract.image_to_string(image, config="")
 
@@ -690,7 +810,7 @@ class Utility(Cog):
                 )
 
                 await ctx.send(embed=embed)
-                
+
                 await asyncio.sleep(2)
 
     @command(name="vote")
@@ -1082,7 +1202,9 @@ class Utility(Cog):
 
     @has_guild_permissions(manage_messages=True)
     @command(name="say", usage="<message> [flags]")
-    async def _say(self, ctx: NexusContext, *, messageandargs: str):  # sourcery no-metrics
+    async def _say(
+        self, ctx: NexusContext, *, messageandargs: str
+    ):  # sourcery no-metrics
         """
         Say something
 
@@ -1291,6 +1413,111 @@ class Utility(Cog):
             command = "INSERT INTO timezones VALUES ($1, $2)"
         await self.bot.db.execute(command, ctx.author.id, timezone)
         return await ctx.embed(description=f"Set your timezone to `{timezone}`")
+
+    @bot_has_guild_permissions(manage_roles=True)
+    @has_guild_permissions(manage_roles=True)
+    @command(name="self-role", aliases=["selfrole"])
+    async def _selfrole(self, ctx: NexusContext):  # sourcery no-metrics
+        """
+        Initiate a self-role setup wizard
+
+        This wizard will guide you through setting up a self-role menu for all to use
+        At any point, you can enter "exit" to cancel, and "None" to
+        """
+
+        async def question(prompt: str, converter: Converter = None):
+            await ctx.send(
+                embed=Embed(
+                    colour=self.bot.config.colours.neutral, description=prompt
+                ).set_footer(text='Type "exit" to stop.')
+            )
+            m: Message = await self.bot.wait_for(
+                "message",
+                check=lambda m: m.author.id == ctx.author.id
+                and m.channel.id == ctx.channel.id,
+            )
+            if m.content.lower().strip() in ["exit", "cancel", "stop"]:
+                raise Stop
+            if m.content.lower().strip() == "none":
+                return
+            if converter:
+                return await converter().convert(ctx, m.content)
+            return m.content
+
+        try:
+            channel = await question(
+                "Which channel do you want the selfrole menu to be in?",
+                TextChannelConverter,
+            )
+
+            title = await question(
+                "What do you want the embed title to be?", clean_content
+            )
+            body = await question("What do you want the embed body to be?")
+
+            if not (title or body):
+                return await ctx.error(
+                    "You must specify at least title or body! Aborted."
+                )
+
+            colour = await question("What do you want the embed colour to be?", Colour)
+
+            roles = await question(
+                "Now, ping all the roles you want to add to this menu in one message",
+                RolesConverter,
+            )
+            if not roles:
+                return await ctx.error("You must specify at least one role! Aborted.")
+            if len(roles) > 25:
+                return await ctx.error(
+                    "Apologies, but due to discord limitations, you may only choose up to 25 roles! Aborted."
+                )
+
+            _min = await question(
+                "What is the minimum amount of roles someone can choose?",
+                IntegerConverter,
+            )
+            _min = min(25, _min) if _min is not None else 1
+
+            _max = await question(
+                "What is the maximum amount of roles someone can choose?",
+                IntegerConverter,
+            )
+            _max = min(25, _max) if _max is not None else len(roles)
+
+        except Stop:
+            return await ctx.embed(
+                title="Stopped!",
+                description="Aborted the selfrole wizard.",
+                colour=self.bot.config.colours.bad,
+            )
+        except (ChannelNotFound, CommandInvokeError, BadArgument, CommandError) as e:
+            return await ctx.error(str(e) + " Aborted.")
+
+        m = await (channel or ctx).send(
+            embed=Embed(
+                title=title or None,
+                description=body or None,
+                colour=colour or None,
+            ),
+            view=RoleView(roles, _min, _max, self.bot),
+        )
+
+        await self.bot.db.execute(
+            "INSERT INTO selfrole (guild_id, message_id, roles, _min, _max, channel_id) VALUES ($1, $2, $3, $4, $5, $6)",
+            ctx.guild.id,
+            m.id,
+            [r.id for r in roles],
+            _min,
+            _max,
+            channel.id if channel is not None else ctx.channel.id,
+        )
+
+    @Cog.listener(name="on_raw_message_delete")
+    async def _remove_deleted_messages(self, payload: RawMessageDeleteEvent):
+        await self.bot.db.execute(
+            "DELETE FROM selfrole WHERE message_id = $1", payload.message_id
+        )
 
 
 async def setup(bot: Nexus):
