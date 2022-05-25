@@ -87,15 +87,15 @@ class Nexus(Bot):
         self.add_check(self._check_cog_not_blacklisted)
 
         await self.db.execute(
-            r"""CREATE TABLE IF NOT EXISTS prefixes     (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
-                CREATE TABLE IF NOT EXISTS automod      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
-                CREATE TABLE IF NOT EXISTS spamchecker  (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
-                CREATE TABLE IF NOT EXISTS modlogs      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel TEXT);
-                CREATE TABLE IF NOT EXISTS chatlimit    (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
-                CREATE TABLE IF NOT EXISTS welcome      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);
-                CREATE TABLE IF NOT EXISTS reminders    (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, timeend BIGINT NOT NULL, timestart BIGINT NOT NULL, reason TEXT NOT NULL, message_id BIGINT NOT NULL);
-                CREATE TABLE IF NOT EXISTS dailyreminders    (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, hour INT, minute INT, second INT, reason TEXT NOT NULL);
-                CREATE TABLE IF NOT EXISTS cogblacklist (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}')
+            r"""CREATE TABLE IF NOT EXISTS prefixes         (guild_id BIGINT NOT NULL, prefixes TEXT[] DEFAULT '{}');
+                CREATE TABLE IF NOT EXISTS automod          (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
+                CREATE TABLE IF NOT EXISTS spamchecker      (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false');
+                CREATE TABLE IF NOT EXISTS modlogs          (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel TEXT);
+                CREATE TABLE IF NOT EXISTS chatlimit        (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
+                CREATE TABLE IF NOT EXISTS welcome          (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);
+                CREATE TABLE IF NOT EXISTS reminders        (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, timeend BIGINT NOT NULL, timestart BIGINT NOT NULL, reason TEXT NOT NULL, message_id BIGINT NOT NULL);
+                CREATE TABLE IF NOT EXISTS cogblacklist     (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}')
+                CREATE TABLE IF NOT EXISTS quotes           (id SERIAL NOT NULL, guild_id BIGINT NOT NULL, owner_id BIGINT NOT NULL, upvotes BIGINT[] DEFAULT '{}', downvotes BIGINT[] DEFAULT '{}', created BIGINT NOT NULL, quote TEXT);
             """
         )
 
