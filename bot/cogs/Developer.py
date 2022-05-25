@@ -9,7 +9,7 @@ from re import findall
 from textwrap import indent
 from traceback import format_exception
 from typing import Callable, List, Tuple
-import tb
+import traceback as tb
 
 import humanize
 from discord.embeds import Embed
