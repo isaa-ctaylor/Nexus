@@ -32,7 +32,7 @@ from discord.ext.commands.converter import (
     UserConverter,
     clean_content,
 )
-from discord.ext.commands.core import has_guild_permissions
+from discord.ext.commands.core import has_guild_permissions, bot_has_guild_permissions
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.mentions import AllowedMentions
