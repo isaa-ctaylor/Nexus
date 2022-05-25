@@ -82,7 +82,7 @@ class Developer(Cog, hidden=True):
             else:
                 return await ctx.embed(description=await self.bot.db.execute(statement))
         except Exception as e:
-            return await ctx.error("\n".join(tb.format_exc(type(e), e, e.__traceback__)))
+            return await ctx.error("\n".join(tb.format_exception(type(e), e, e.__traceback__)))
     
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
