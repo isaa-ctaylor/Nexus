@@ -21,7 +21,7 @@ from aiohttp import InvalidURL
 from async_timeout import timeout
 from cache import AsyncLRU
 from dateutil.relativedelta import relativedelta
-from discord import ButtonStyle, Interaction, Role, SelectOption
+from discord import ButtonStyle, Interaction, RawMessageDeleteEvent, Role, SelectOption
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
@@ -50,6 +50,7 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
+
 
 load_dotenv()
 
