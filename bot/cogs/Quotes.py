@@ -72,7 +72,7 @@ class Quotes(Cog):
                 colour=self.bot.config.colours.neutral,
             )
             .add_field(name="Owner", value=owner.mention)
-            .add_field(name="Likes", value=len(set(quote["likes"])))
+            .add_field(name="Upvotes", value=len(set(quote["upvotes"])))
             .add_field(name="Created", value=f"<t:{quote['created']}:D>")
         )
 
@@ -82,7 +82,7 @@ class Quotes(Cog):
                 data = await self.bot.db.fetch(
                     "SELECT * FROM quotes WHERE id = $1", index
                 )
-                likes: set = set(data["likes"])
+                upvotes: set = set(data["upvotes"])
                 if interaction.user.id == data["owner_id"]:
                     return await interaction.response.send_message(
                         embed=Embed(
@@ -92,8 +92,8 @@ class Quotes(Cog):
                         ),
                         ephemeral=True,
                     )
-                if interaction.user.id in likes:
-                    likes.remove(interaction.user.id)
+                if interaction.user.id in upvotes:
+                    upvotes.remove(interaction.user.id)
                     await interaction.response.send_message(
                         embed=Embed(
                             description=f"You unliked {owner.mention}'s quote!",
@@ -103,7 +103,7 @@ class Quotes(Cog):
                     )
 
                 else:
-                    likes.add(interaction.user.id)
+                    upvotes.add(interaction.user.id)
                     await interaction.response.send_message(
                         embed=Embed(
                             description=f"You liked {owner.mention}'s quote!",
@@ -112,13 +112,13 @@ class Quotes(Cog):
                         ephemeral=True,
                     )
                 await self.bot.db.execute(
-                    "UPDATE quotes SET likes = $1 WHERE id = $2", likes, index
+                    "UPDATE quotes SET upvotes = $1 WHERE id = $2", upvotes, index
                 )
-                likes = await self.bot.db.fetch(
-                    "SELECT likes FROM quotes WHERE id = $1", index
+                upvotes = await self.bot.db.fetch(
+                    "SELECT upvotes FROM quotes WHERE id = $1", index
                 )
                 embed.remove_field(1)
-                embed.insert_field_at(1, name="Likes", value=len(set(likes["likes"])))
+                embed.insert_field_at(1, name="Likes", value=len(set(upvotes["upvotes"])))
                 await interaction.message.edit(embed=embed)
 
         await ctx.send(
@@ -442,7 +442,7 @@ class Quotes(Cog):
 
         for member, quotes in assigned.items():
             await self.bot.db.executemany(
-                "INSERT INTO quotes (guild_id, owner_id, likes, created, quote) VALUES ($1, $2, $3, $4, $5)",
+                "INSERT INTO quotes (guild_id, owner_id, upvotes, created, quote) VALUES ($1, $2, $3, $4, $5)",
                 [
                     [
                         ctx.guild.id,
