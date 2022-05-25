@@ -9,6 +9,7 @@ from re import findall
 from textwrap import indent
 from traceback import format_exception
 from typing import Callable, List, Tuple
+import tb
 
 import humanize
 from discord.embeds import Embed
@@ -75,10 +76,13 @@ class Developer(Cog, hidden=True):
     @is_owner()
     @command(name="sql")
     async def _sql(self, ctx: NexusContext, *, statement: str):
-        if statement.lower().startswith("select"):
-            return await self.bot.db.fetch(statement, one=not statement.lower().startswith("select *"))
-        else:
-            return await self.bot.db.execute(statement)
+        try:
+            if statement.lower().startswith("select"):
+                return await ctx.embed(description=await self.bot.db.fetch(statement, one=not statement.lower().startswith("select *")))
+            else:
+                return await ctx.embed(description=await self.bot.db.execute(statement))
+        except Exception as e:
+            return await ctx.error("\n".join(tb.format_traceback(type(e), e, e.__traceback__)))
     
     @is_owner()
     @bot_has_permissions(send_messages=True, embed_links=True)
