@@ -1112,6 +1112,8 @@ class Utility(Cog):
             "SELECT * FROM reminders WHERE owner_id = $1", ctx.author.id, one=False
         )
 
+        data += [r for r in self._current_reminders if r["reminder_id"] in index]
+
         if not data:
             return await ctx.error("No reminders set!")
 
