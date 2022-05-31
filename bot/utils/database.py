@@ -11,6 +11,7 @@ from . import Timer
 
 
 class Database:
+    pool: asyncpg.pool.Pool
     def __init__(self, bot, **kwargs):
         self.bot = bot
 
