@@ -1276,9 +1276,9 @@ class Utility(Cog):
             pfp = await member.display_avatar.read()
             name = member.display_name
 
-        if not name and pfp:
-            if profile := args.profile:
-                pfp = await ImageConverter().convert(ctx, profile)
+        if profile := args.profile:
+            pfp = await ImageConverter().convert(ctx, profile)
+        if name := args.name:
             name = args.name
 
         embed = Embed() if args.embed else None
