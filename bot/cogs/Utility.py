@@ -1279,7 +1279,7 @@ class Utility(Cog):
         if profile := args.profile:
             pfp = await ImageConverter().convert(ctx, profile)
         if name := args.name:
-            name = args.name
+            name = " ".join(args.name)
 
         embed = Embed() if args.embed else None
 
