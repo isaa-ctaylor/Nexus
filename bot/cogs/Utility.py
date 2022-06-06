@@ -10,10 +10,12 @@ from collections import namedtuple
 from io import BytesIO
 from math import floor, log10
 from os import getenv
+from time import time
 from typing import Any, List, Optional, Union
 
 import discord
 import geopy
+import humanize
 import parsedatetime
 import pytesseract
 import pytz
@@ -1521,8 +1523,18 @@ class Utility(Cog):
         await self.bot.db.execute(
             "DELETE FROM selfrole WHERE message_id = $1", payload.message_id
         )
+        
+    @command(name="uptime")
+    async def _uptime(self, ctx: NexusContext):
+        """
+        See how long the bot has been online for
+        """
+        await ctx.embed(
+            title="Uptime",
+            description=f"I have been online for `{humanize.naturaldelta(time() - self.bot.start_time)}`",
+        )
 
 
 async def setup(bot: Nexus):
     await bot.add_cog(Utility(bot))
-    await bot.tree.sync()
+    

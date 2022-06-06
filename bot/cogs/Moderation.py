@@ -534,4 +534,4 @@ class Moderation(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Moderation(bot))
-    await bot.tree.sync()
+    

@@ -221,4 +221,4 @@ class Errors(Cog, hidden=True):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Errors(bot))
-    await bot.tree.sync()
+    

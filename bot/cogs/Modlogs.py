@@ -318,4 +318,4 @@ class Modlogs(Cog):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Modlogs(bot))
-    await bot.tree.sync()
+    

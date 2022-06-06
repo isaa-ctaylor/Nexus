@@ -2,7 +2,7 @@ import re
 from wsgiref.util import application_uri
 import wavelink
 from logging import INFO, getLogger
-from time import sleep
+from time import sleep, time
 from traceback import format_exception
 from os import getenv
 
@@ -42,7 +42,6 @@ def get_prefix(bot, message: Message):
 
 class Nexus(Bot):
     def __init__(self, intents: Intents = None, *args, **kwargs):
-        print(1)
         self.wavelink: wavelink.Node = None
         self.config = CONFIG
 
@@ -56,6 +55,8 @@ class Nexus(Bot):
 
         self.owner_id = self.config.owner
         self.strip_after_prefix = True
+        
+        self.start_time = time()
 
         # self.logger = getLogger("discord")
         # self.logger.setLevel(INFO)
@@ -65,10 +66,7 @@ class Nexus(Bot):
         #     )
         # )
         
-        print(2)
-        
     async def setup_hook(self) -> None:
-        print(3)
         self.session = ClientSession()
 
         self.database = self.db = Database(self)
@@ -108,20 +106,13 @@ class Nexus(Bot):
             ]
         }
 
-        print(4)
-        
         if cogs := self.config.cogs:
             for cog in cogs:
-                print(cog)
-                print("a")
                 try:
-                    print("b")
                     await self.load_extension(cog)
-                    print("c")
                 except Exception as e:
                     print("".join(format_exception(type(e), e, e.__traceback__)))
-                    
-        print(5)
+            await self.tree.sync()
 
     async def _check_cog_not_blacklisted(self, ctx: NexusContext) -> bool:
         if ctx.author.id == self.owner_id:

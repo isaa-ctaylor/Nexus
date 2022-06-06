@@ -433,4 +433,4 @@ class Settings(Cog):
     
 async def setup(bot: Nexus):
     await bot.add_cog(Settings(bot))
-    await bot.tree.sync()
+    
