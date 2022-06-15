@@ -14,7 +14,6 @@ from time import time
 from typing import Any, List, Optional, Union
 
 import discord
-import geopy
 import humanize
 import parsedatetime
 import pytesseract
@@ -23,7 +22,14 @@ from aiohttp import InvalidURL
 from async_timeout import timeout
 from cache import AsyncLRU
 from dateutil.relativedelta import relativedelta
-from discord import ButtonStyle, Interaction, RawMessageDeleteEvent, Role, SelectOption
+from discord import (
+    ButtonStyle,
+    Interaction,
+    Message,
+    RawMessageDeleteEvent,
+    Role,
+    SelectOption,
+)
 from discord.channel import TextChannel
 from discord.embeds import Embed
 from discord.ext import commands, tasks
@@ -34,7 +40,7 @@ from discord.ext.commands.converter import (
     UserConverter,
     clean_content,
 )
-from discord.ext.commands.core import has_guild_permissions, bot_has_guild_permissions
+from discord.ext.commands.core import bot_has_guild_permissions, has_guild_permissions
 from discord.ext.commands.errors import BadArgument, CommandError
 from discord.member import Member
 from discord.mentions import AllowedMentions
@@ -52,7 +58,6 @@ from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import command, group
 from utils.subclasses.context import NexusContext
-
 
 load_dotenv()
 
@@ -611,6 +616,8 @@ class Utility(Cog):
 
         self._current_reminders = []
         self._send_blacklist = set()
+
+        self._afk_members = {}
 
     async def cog_load(self):
         self._send_reminders.start()
@@ -1523,7 +1530,7 @@ class Utility(Cog):
         await self.bot.db.execute(
             "DELETE FROM selfrole WHERE message_id = $1", payload.message_id
         )
-        
+
     @command(name="uptime")
     async def _uptime(self, ctx: NexusContext):
         """
@@ -1534,7 +1541,32 @@ class Utility(Cog):
             description=f"I have been online for `{humanize.naturaldelta(time() - self.bot.start_time)}`",
         )
 
+    @command(name="afk")
+    async def _afk(self, ctx: NexusContext, *, reason: clean_content = None):
+        """
+        Set your afk reason
+        """
+        reason = reason or "No reason given"
+        
+        self._afk_members[ctx.author.id] = {"reason": reason, "time": ctx.message.created_at.timestamp()}
+        await ctx.message.add_reaction("👍")
+
+    @Cog.listener(name="on_message")
+    async def _handle_afk(self, message: Message):
+        if message.author.bot or not message.guild or not message.mentions:
+            return
+
+        if message.author.id in self._afk_members.keys():
+            del self._afk_members[message.author.id]
+            await message.reply("You are no longer AFK.")
+
+        if m := [
+            f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
+            for mention in message.mentions
+            if mention.id in self._afk_members.keys()
+        ]:
+            await message.reply("\n".join(m), mention_author=False)
+
 
 async def setup(bot: Nexus):
     await bot.add_cog(Utility(bot))
-    
