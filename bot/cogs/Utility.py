@@ -1562,7 +1562,7 @@ class Utility(Cog):
 
         if message.author.id in self._afk_members and message.id != self._afk_members[message.author.id]["message"]:
             del self._afk_members[message.author.id]
-            return await message.reply("You are no longer AFK.")
+            return await message.add_reaction("👋")
 
         if message.mentions:
             if m := [
