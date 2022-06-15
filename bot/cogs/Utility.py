@@ -1547,8 +1547,11 @@ class Utility(Cog):
         Set your afk reason
         """
         reason = reason or "No reason given"
-        
-        self._afk_members[ctx.author.id] = {"reason": reason, "time": ctx.message.created_at.timestamp()}
+
+        self._afk_members[ctx.author.id] = {
+            "reason": reason,
+            "time": ctx.message.created_at.timestamp(),
+        }
         await ctx.message.add_reaction("👍")
 
     @Cog.listener(name="on_message")
@@ -1558,12 +1561,13 @@ class Utility(Cog):
 
         if message.author.id in self._afk_members.keys():
             del self._afk_members[message.author.id]
-            await message.reply("You are no longer AFK.")
+            return await message.reply("You are no longer AFK.")
 
         if m := [
             f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
             for mention in message.mentions
             if mention.id in self._afk_members.keys()
+            and mention.id != message.author.id
         ]:
             await message.reply("\n".join(m), mention_author=False)
 
