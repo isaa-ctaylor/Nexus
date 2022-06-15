@@ -1559,14 +1559,14 @@ class Utility(Cog):
         if message.author.bot or not message.guild or not message.mentions:
             return
 
-        if message.author.id in self._afk_members.keys():
+        if message.author.id in self._afk_members:
             del self._afk_members[message.author.id]
             return await message.reply("You are no longer AFK.")
 
         if m := [
             f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
             for mention in message.mentions
-            if mention.id in self._afk_members.keys()
+            if mention.id in self._afk_members
             and mention.id != message.author.id
         ]:
             await message.reply("\n".join(m), mention_author=False)
