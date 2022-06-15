@@ -1556,20 +1556,21 @@ class Utility(Cog):
 
     @Cog.listener(name="on_message")
     async def _handle_afk(self, message: Message):
-        if message.author.bot or not message.guild or not message.mentions:
+        if message.author.bot or not message.guild:
             return
 
         if message.author.id in self._afk_members:
             del self._afk_members[message.author.id]
             return await message.reply("You are no longer AFK.")
 
-        if m := [
-            f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
-            for mention in message.mentions
-            if mention.id in self._afk_members
-            and mention.id != message.author.id
-        ]:
-            await message.reply("\n".join(m), mention_author=False)
+        if message.mentions:
+            if m := [
+                f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
+                for mention in message.mentions
+                if mention.id in self._afk_members
+                and mention.id != message.author.id
+            ]:
+                await message.reply("\n".join(m), mention_author=False)
 
 
 async def setup(bot: Nexus):
