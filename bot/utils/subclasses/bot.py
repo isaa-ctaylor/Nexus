@@ -92,7 +92,7 @@ class Nexus(Bot):
                 CREATE TABLE IF NOT EXISTS chatlimit        (guild_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, num INT NOT NULL);
                 CREATE TABLE IF NOT EXISTS welcome          (guild_id BIGINT NOT NULL, enabled BOOL DEFAULT 'false', channel BIGINT, message TEXT NOT NULL, role BIGINT);
                 CREATE TABLE IF NOT EXISTS reminders        (reminder_id SERIAL, owner_id BIGINT NOT NULL, channel_id BIGINT NOT NULL, timeend BIGINT NOT NULL, timestart BIGINT NOT NULL, reason TEXT NOT NULL, message_id BIGINT NOT NULL);
-                CREATE TABLE IF NOT EXISTS cogblacklist     (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}')
+                CREATE TABLE IF NOT EXISTS cogblacklist     (guild_id BIGINT NOT NULL, blacklist TEXT[] DEFAULT '{}');
                 CREATE TABLE IF NOT EXISTS quotes           (id SERIAL NOT NULL, guild_id BIGINT NOT NULL, owner_id BIGINT NOT NULL, upvotes BIGINT[] DEFAULT '{}', downvotes BIGINT[] DEFAULT '{}', created BIGINT NOT NULL, quote TEXT);
             """
         )
