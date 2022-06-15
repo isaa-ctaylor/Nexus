@@ -1551,6 +1551,7 @@ class Utility(Cog):
         self._afk_members[ctx.author.id] = {
             "reason": reason,
             "time": ctx.message.created_at.timestamp(),
+            "message": ctx.message.id,
         }
         await ctx.message.add_reaction("👍")
 
@@ -1559,7 +1560,7 @@ class Utility(Cog):
         if message.author.bot or not message.guild:
             return
 
-        if message.author.id in self._afk_members:
+        if message.author.id in self._afk_members and message.id != self._afk_members["message"]:
             del self._afk_members[message.author.id]
             return await message.reply("You are no longer AFK.")
 
