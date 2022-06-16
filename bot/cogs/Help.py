@@ -2,7 +2,7 @@ from contextlib import suppress
 from utils.subclasses.context import NexusContext
 from typing import List, Mapping, Optional, Union
 
-from discord import Embed
+from discord import Embed, File
 from discord.abc import Messageable
 from discord.ext.commands.core import bot_has_permissions, command
 from discord.ext.commands.help import HelpCommand, _HelpCommandImpl
@@ -12,6 +12,7 @@ from utils import naturallist
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command, Group
+from .Utility import InviteView
 
 PER_PAGE = 10
 
@@ -49,6 +50,33 @@ class NexusHelp(HelpCommand):
         **kwargs,
     ) -> None:
         destination = destination or self.get_destination()
+
+        if isinstance(items, list):
+            if not isinstance(items[0], paginatorinput):
+                items = [
+                    i
+                    if isinstance(i, paginatorinput)
+                    else paginatorinput(
+                        content=None if isinstance(i, (Embed, File, View)) else i,
+                        embed=i if isinstance(i, Embed) else None,
+                        file=i if isinstance(i, File) else None,
+                        view=i if isinstance(i, View) else None,
+                    )
+                    for i in items
+                ]
+            items[0].view = InviteView("https://discord.gg/a2rCNWFUUs")
+        else:
+            items = (
+                items
+                if isinstance(items, paginatorinput)
+                else paginatorinput(
+                    content=None if isinstance(items, (Embed, File, View)) else items,
+                    embed=items if isinstance(items, Embed) else None,
+                    file=items if isinstance(items, File) else None,
+                    view=items if isinstance(items, View) else None,
+                )
+            )
+            items.view = InviteView("https://discord.gg/a2rCNWFUUs")
 
         await self.context.paginate(items, destination=destination, view=view, **kwargs)
 
@@ -212,4 +240,3 @@ class Help(Cog, hidden=True):
 
 async def setup(bot: Nexus):
     await bot.add_cog(Help(bot))
-    
