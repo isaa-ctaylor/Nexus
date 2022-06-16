@@ -446,10 +446,10 @@ class IdevisionLocation(Converter):
         raise BadArgument(f"{arg} is not a valid rtfm location!")
 
 
-class InviteView(View):
-    def __init__(self, url: str):
+class LinkView(View):
+    def __init__(self, url: str, *, label: str = "Click here"):
         super().__init__()
-        self.add_item(Button(label="Click here", url=url))
+        self.add_item(Button(label=label, url=url))
 
 
 @AsyncLRU(maxsize=None)
@@ -646,7 +646,7 @@ class Utility(Cog):
         )
         await ctx.reply(
             embed=embed,
-            view=InviteView(
+            view=LinkView(
                 "https://discord.com/api/oauth2/authorize?client_id=869487103703138364&permissions=1644938390775&scope=bot%20applications.commands"
             ),
             mention_author=False,
@@ -664,7 +664,7 @@ class Utility(Cog):
         )
         await ctx.reply(
             embed=embed,
-            view=InviteView(
+            view=LinkView(
                 "https://discord.gg/a2rCNWFUUs"
             ),
             mention_author=False,

@@ -12,7 +12,7 @@ from utils import naturallist
 from utils.subclasses.bot import Nexus
 from utils.subclasses.cog import Cog
 from utils.subclasses.command import Command, Group
-from .Utility import InviteView
+from .Utility import LinkView
 
 PER_PAGE = 10
 
@@ -64,7 +64,7 @@ class NexusHelp(HelpCommand):
                     )
                     for i in items
                 ]
-            items[0].view = InviteView("https://discord.gg/a2rCNWFUUs")
+            items[0].view = LinkView("https://discord.gg/a2rCNWFUUs", label="Support server")
         else:
             items = (
                 items
@@ -76,7 +76,7 @@ class NexusHelp(HelpCommand):
                     view=items if isinstance(items, View) else None,
                 )
             )
-            items.view = InviteView("https://discord.gg/a2rCNWFUUs")
+            items.view = LinkView("https://discord.gg/a2rCNWFUUs", label="Support server")
 
         await self.context.paginate(items, destination=destination, view=view, **kwargs)
 
