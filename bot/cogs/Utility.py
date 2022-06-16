@@ -651,6 +651,24 @@ class Utility(Cog):
             ),
             mention_author=False,
         )
+    
+    @command(name="support")
+    async def _support(self, ctx: NexusContext):
+        """
+        Get an invite link to the official Nexus support
+        """
+        embed = Embed(
+            title="Help is on the way!",
+            description="Click below to access the official Nexus support server!",
+            colour=self.bot.config.colours.neutral,
+        )
+        await ctx.reply(
+            embed=embed,
+            view=InviteView(
+                "https://discord.gg/a2rCNWFUUs"
+            ),
+            mention_author=False,
+        )
 
     @command(
         name="redirectcheck",
@@ -1560,7 +1578,10 @@ class Utility(Cog):
         if message.author.bot or not message.guild:
             return
 
-        if message.author.id in self._afk_members and message.id != self._afk_members[message.author.id]["message"]:
+        if (
+            message.author.id in self._afk_members
+            and message.id != self._afk_members[message.author.id]["message"]
+        ):
             del self._afk_members[message.author.id]
             return await message.add_reaction("👋")
 
@@ -1568,10 +1589,13 @@ class Utility(Cog):
             if m := [
                 f"{mention.mention} is AFK: {self._afk_members[mention.id]['reason']}"
                 for mention in message.mentions
-                if mention.id in self._afk_members
-                and mention.id != message.author.id
+                if mention.id in self._afk_members and mention.id != message.author.id
             ]:
                 await message.reply("\n".join(m), mention_author=False)
+        if message.reference and message.reference.resolved.author.id in self._afk_members:
+            await message.reply(
+                f"{message.reference.resolved.author.mention} is AFK: {self._afk_members[message.reference.resolved.author.id]['reason']}"
+            )
 
 
 async def setup(bot: Nexus):
