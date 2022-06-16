@@ -120,6 +120,9 @@ class Query(Converter):
 
 
 class Music(Cog):
+    """
+    A powerful music player.
+    """
     def __init__(self, bot: Nexus):
         self.bot = bot
 
