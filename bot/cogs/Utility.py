@@ -1426,7 +1426,7 @@ class Utility(Cog):
 
         return await ctx.embed(
             title=f"Time in {target}",
-            description=f"It is `{datetime.datetime.now(pytz.timezone(target)).strftime('%X, %x')}`",
+            description=f"It is `{datetime.datetime.now(pytz.timezone(target)).strftime('%I:%M:%S %p, %x')}`",
         )
 
     @command(name="set-time")
