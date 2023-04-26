@@ -72,7 +72,7 @@ class Nexus(Bot):
         self.database = self.db = Database(self)
 
         user, password, database, host = (
-            "postgres",
+            "nexus",
             getenv("DATABASE"),
             "nexus",
             "localhost"
