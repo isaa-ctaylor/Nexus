@@ -4,5 +4,5 @@ aiofile==3.5
 python-dotenv==0.19
 aiohttp==3.7.4
 asyncpg==0.24
-requests==2.26
+requests==2.31.0
 jishaku==2.3
