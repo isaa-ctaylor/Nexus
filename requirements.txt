@@ -2,7 +2,7 @@ git+https://github.com/Gnome-py/enhanced-discord.py@2.0
 pyyaml==5.4
 aiofile==3.5
 python-dotenv==0.19
-aiohttp==3.8.5
+aiohttp==3.8.6
 asyncpg==0.24
 requests==2.31.0
 jishaku==2.3
