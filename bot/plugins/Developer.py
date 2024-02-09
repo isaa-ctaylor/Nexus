@@ -11,7 +11,7 @@ class Developer(Cog):
     @commands.guild_only()
     @commands.is_owner()
     @commands.command(name="sync")
-    async def _sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal["~", "*", "^"]] = None) -> None:
+    async def _sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object], spec: Optional[Literal["~", "*", "^", "^*"]] = None) -> None:
         if not guilds:
             if spec == "~":
                 synced = await self.bot.tree.sync(guild=ctx.guild)
@@ -22,6 +22,9 @@ class Developer(Cog):
                 self.bot.tree.clear_commands(guild=ctx.guild)
                 await self.bot.tree.sync(guild=ctx.guild)
                 synced = []
+            elif spec == "^*":
+                self.bot.tree.clear_commands()
+                await self.bot.tree.sync()
             else:
                 synced = await self.bot.tree.sync()
 
