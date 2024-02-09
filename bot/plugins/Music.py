@@ -513,12 +513,12 @@ class Music(Cog):
         if not match:
             raise QueueItemMissing
 
-        item = int(match.group(1))
+        item = int(match.group(1)) - 1
         
         removed = player.queue._queue[item]
         await player.queue.delete(item)
         
-        await interaction.response.send_message(embed=SuccessEmbed(f"Removed {removed} from the queue"))
+        await interaction.response.send_message(embed=SuccessEmbed(f"Removed {removed} from the queue"), ephemeral=True)
         
 
     @app_commands.command(name="nowplaying")
