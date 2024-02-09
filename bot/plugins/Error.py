@@ -24,6 +24,9 @@ class Error(Cog):
         if isinstance(error, commands.CommandInvokeError):
             error_ = error.original
 
+        if isinstance(error_, commands.CommandNotFound):
+            return
+
         if getattr(error_, "message", None):
             message = error_.message
 
