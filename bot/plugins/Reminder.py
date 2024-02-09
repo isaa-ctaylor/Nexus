@@ -100,7 +100,7 @@ class Reminder(Cog):
         if channel:
             owner: typing.Optional[discord.Member] = await channel.guild.fetch_member(reminder['member'])
             if owner:
-                await channel.send(f"{owner.mention}, {discord.utils.format_dt(reminder['created'], "R")}\n{reminder['reason']}")
+                await channel.send(f"{owner.mention}, {discord.utils.format_dt(reminder['created'], 'R')}\n{reminder['reason']}")
                 await self.bot.database.execute("DELETE FROM reminder WHERE id = $1", reminder['id'])
 
     @reminder.command(name="create")
