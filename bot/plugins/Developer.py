@@ -23,7 +23,7 @@ class Developer(Cog):
                 await self.bot.tree.sync(guild=ctx.guild)
                 synced = []
             elif spec == "^*":
-                self.bot.tree.clear_commands()
+                self.bot.tree.clear_commands(guild=None)
                 await self.bot.tree.sync()
             else:
                 synced = await self.bot.tree.sync()
