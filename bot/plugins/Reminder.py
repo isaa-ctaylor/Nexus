@@ -131,7 +131,7 @@ class Reminder(Cog):
             datetime,
         )
         
-        await interaction.followup.send(f"Ok, {discord.utils.format_dt(r['due'], "R")}: {r['reason']} (ID: `{r['id']}`)", ephemeral=True)
+        await interaction.followup.send(f"Ok, {discord.utils.format_dt(r['due'], 'R')}: {r['reason']} (ID: `{r['id']}`)", ephemeral=True)
         
         self.bot.dispatch("reminder_created", r)
         
@@ -169,7 +169,7 @@ class Reminder(Cog):
             lines = []
 
             for r in reminders:
-                lines.append(f"{discord.utils.format_dt(r['due'], "R")}) {r['reason']} (ID: `{r['id']}`)")
+                lines.append(f"{discord.utils.format_dt(r['due'], 'R')}) {r['reason']} (ID: `{r['id']}`)")
                 if len("\n".join(lines)) > 4096:
                     lines.pop()
                     break
