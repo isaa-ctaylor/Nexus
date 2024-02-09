@@ -29,7 +29,7 @@ class Developer(Cog):
                 synced = await self.bot.tree.sync()
 
             await ctx.send(
-                f"Synced {len(synced)} commands {'globally' if spec in [None, "^*"] else 'to the current guild.'}"
+                f"Synced {len(synced)} commands {'globally' if spec in [None, '^*'] else 'to the current guild.'}"
             )
             return
 
