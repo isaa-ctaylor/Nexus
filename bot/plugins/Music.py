@@ -493,7 +493,8 @@ class Music(Cog):
         :param item: Item to remove
         :type item: str
         """
-        if not interaction.guild.voice_client:
+        player: Player = interaction.guild.voice_client
+        if not player:
             raise BotNotInVoiceChannel
 
         if (
@@ -513,6 +514,12 @@ class Music(Cog):
             raise QueueItemMissing
 
         item = int(match.group(1))
+        
+        removed = player.queue._queue[item]
+        await player.queue.delete(item)
+        
+        await interaction.response.send_message(embed=SuccessEmbed(f"Removed {removed} from the queue"))
+        
 
     @app_commands.command(name="nowplaying")
     async def _nowplaying(self, interaction: discord.Interaction) -> None:
