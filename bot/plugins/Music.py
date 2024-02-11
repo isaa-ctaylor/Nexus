@@ -175,7 +175,9 @@ class Music(Cog):
             now = datetime.utcnow()
             await player.channel.send(
                 embed=SuccessEmbed(
-                    "👋 Disconnected due to inactivity", title=discord.utils.MISSING, timestamp=now
+                    "👋 Disconnected due to inactivity",
+                    title=discord.utils.MISSING,
+                    timestamp=now,
                 )
             )
             self.logger.debug(
@@ -516,12 +518,13 @@ class Music(Cog):
             raise QueueItemMissing
 
         item = int(match.group(1)) - 1
-        
+
         removed = player.queue._queue[item]
         await player.queue.delete(item)
-        
-        await interaction.response.send_message(embed=SuccessEmbed(f"Removed {removed} from the queue"), ephemeral=True)
-        
+
+        await interaction.response.send_message(
+            embed=SuccessEmbed(f"Removed {removed} from the queue"), ephemeral=True
+        )
 
     @app_commands.command(name="nowplaying")
     async def _nowplaying(self, interaction: discord.Interaction) -> None:
@@ -554,7 +557,6 @@ class Music(Cog):
 
         await self._send_current_playing(interaction.response, player)
 
-
     @app_commands.command(name="skip")
     async def _skip(self, interaction: discord.Interaction) -> None:
         """Skip the current song
@@ -565,26 +567,23 @@ class Music(Cog):
         if not interaction.guild.voice_client:
             raise BotNotInVoiceChannel
 
-        if (
-            not interaction.user.voice
-        ):
+        if not interaction.user.voice:
             raise UserNotInVoiceChannel
 
-        if (
-            interaction.user.voice.channel.id != interaction.guild.me.voice.channel.id
-        ):
+        if interaction.user.voice.channel.id != interaction.guild.me.voice.channel.id:
             raise UserNotInSameVoiceChannel
-        
+
         player: Player = interaction.guild.voice_client
-        
+
         skipped: typing.Optional[wavelink.Playable] = await player.skip()
-        
+
         if not skipped:
             raise NothingPlaying
-        
+
         else:
-            await interaction.response.send_message(embed=SuccessEmbed(f"Skipped {hyperlink(skipped.title, skipped.uri)}"))
-        
+            await interaction.response.send_message(
+                embed=SuccessEmbed(f"Skipped {hyperlink(skipped.title, skipped.uri)}")
+            )
 
 
 async def setup(bot: Bot):
