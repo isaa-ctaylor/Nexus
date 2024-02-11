@@ -16,6 +16,7 @@ from .utils import hyperlink
 from .utils.embed import ErrorEmbed, NeutralEmbed, SuccessEmbed
 from .utils.transformer import PlayableTransformer, QueueItemTransformer
 from .utils.view import Confirm
+from datetime import datetime
 
 TIMEOUT = 300  # 5 minutes
 
@@ -171,9 +172,10 @@ class Music(Cog):
                 self._tasks.pop(player.channel.id, None)
         except asyncio.TimeoutError:
             await player.disconnect()
+            now = datetime.utcnow()
             await player.channel.send(
                 embed=SuccessEmbed(
-                    "👋 Disconnected due to inactivity", title=discord.utils.MISSING
+                    "👋 Disconnected due to inactivity", title=discord.utils.MISSING, timestamp=now
                 )
             )
             self.logger.debug(
@@ -551,6 +553,38 @@ class Music(Cog):
             raise NothingPlaying
 
         await self._send_current_playing(interaction.response, player)
+
+
+    @app_commands.command(name="skip")
+    async def _skip(self, interaction: discord.Interaction) -> None:
+        """Skip the current song
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        """
+        if not interaction.guild.voice_client:
+            raise BotNotInVoiceChannel
+
+        if (
+            not interaction.user.voice
+        ):
+            raise UserNotInVoiceChannel
+
+        if (
+            interaction.user.voice.channel.id != interaction.guild.me.voice.channel.id
+        ):
+            raise UserNotInSameVoiceChannel
+        
+        player: Player = interaction.guild.voice_client
+        
+        skipped: typing.Optional[wavelink.Playable] = await player.skip()
+        
+        if not skipped:
+            raise NothingPlaying
+        
+        else:
+            await interaction.response.send_message(embed=SuccessEmbed(f"Skipped {hyperlink(skipped.title, skipped.uri)}"))
+        
 
 
 async def setup(bot: Bot):
