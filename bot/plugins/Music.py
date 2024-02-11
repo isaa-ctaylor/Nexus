@@ -585,6 +585,55 @@ class Music(Cog):
                 embed=SuccessEmbed(f"Skipped {hyperlink(skipped.title, skipped.uri)}")
             )
 
+    @app_commands.command(name="loop")
+    @app_commands.rename(type_="type")
+    async def _loop(
+        self,
+        interaction: discord.Interaction,
+        type_: typing.Optional[typing.Literal["off", "one", "all"]] = None,
+    ) -> None:
+        """Loop the queue
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param type_: Loop type
+        :type type_: typing.Optional[typing.Literal["off", "one", "all"]], optional
+        """
+        player: Player = interaction.guild.voice_client
+
+        if not player:
+            raise BotNotInVoiceChannel
+
+        if not interaction.user.voice:
+            raise UserNotInVoiceChannel
+
+        if interaction.user.voice.channel.id != interaction.guild.me.voice.channel.id:
+            raise UserNotInSameVoiceChannel
+
+        if not player.current:
+            raise NothingPlaying
+
+        m = {
+            wavelink.QueueMode.normal: wavelink.QueueMode.loop,
+            wavelink.QueueMode.loop_all: wavelink.QueueMode.loop,
+            wavelink.QueueMode.loop: wavelink.QueueMode.normal,
+        }
+
+        sm = {
+            "off": wavelink.QueueMode.normal,
+            "one": wavelink.QueueMode.loop,
+            "all": wavelink.QueueMode.loop_all,
+        }
+
+        if not type_:
+            player.queue.mode = m[player.queue.mode]
+        else:
+            player.queue.mode = sm[type_]
+            
+        await interaction.response.send_message(
+            embed=SuccessEmbed(f"Changed the loop mode to {str(player.queue.mode).replace("_", " ").capitalize()}")
+        )
+
 
 async def setup(bot: Bot):
     await bot.add_cog(Music(bot))
