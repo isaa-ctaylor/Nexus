@@ -614,7 +614,7 @@ class Music(Cog):
             raise NothingPlaying
 
         m = {
-            wavelink.QueueMode.normal: wavelink.QueueMode.loop,
+            wavelink.QueueMode.normal: wavelink.QueueMode.loop_all,
             wavelink.QueueMode.loop_all: wavelink.QueueMode.loop,
             wavelink.QueueMode.loop: wavelink.QueueMode.normal,
         }
