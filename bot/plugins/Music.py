@@ -157,32 +157,36 @@ class Music(Cog):
             f"{payload.reason} in guild {player.guild.name} ({player.guild.id})"
         )
         try:
-            task = self.bot.loop.create_task(
-                asyncio.wait_for(player.queue.get_wait(), TIMEOUT)
-            )
-            self._tasks[player.channel.id] = task
+            playable = player.queue.get()
+            await player.play(playable)
+        except wavelink.QueueEmpty:
             try:
-                playable = await task
-                await player.play(playable)
-            except asyncio.CancelledError:
+                task = self.bot.loop.create_task(
+                    asyncio.wait_for(player.queue.get_wait(), TIMEOUT)
+                )
+                self._tasks[player.channel.id] = task
+                try:
+                    playable = await task
+                    await player.play(playable)
+                except asyncio.CancelledError:
+                    self.logger.debug(
+                        f"{payload.player.guild.name} ({payload.player.guild.id}) Retrieving next song cancelled"
+                    )
+                finally:
+                    self._tasks.pop(player.channel.id, None)
+            except asyncio.TimeoutError:
+                await player.disconnect()
+                now = datetime.utcnow()
+                await player.channel.send(
+                    embed=SuccessEmbed(
+                        "👋 Disconnected due to inactivity",
+                        title=discord.utils.MISSING,
+                        timestamp=now,
+                    )
+                )
                 self.logger.debug(
-                    f"{payload.player.guild.name} ({payload.player.guild.id}) Retrieving next song cancelled"
+                    f"{payload.player.guild.name} ({payload.player.guild.id}) Timed out getting next song."
                 )
-            finally:
-                self._tasks.pop(player.channel.id, None)
-        except asyncio.TimeoutError:
-            await player.disconnect()
-            now = datetime.utcnow()
-            await player.channel.send(
-                embed=SuccessEmbed(
-                    "👋 Disconnected due to inactivity",
-                    title=discord.utils.MISSING,
-                    timestamp=now,
-                )
-            )
-            self.logger.debug(
-                f"{payload.player.guild.name} ({payload.player.guild.id}) Timed out getting next song."
-            )
 
     async def _send_current_playing(
         self,
