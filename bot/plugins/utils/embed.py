@@ -26,7 +26,7 @@ class CustomEmbed(discord.Embed):
             description = message
 
         if not timestamp:
-            timestamp = datetime.utcnow()
+            timestamp = datetime.now()
 
         super().__init__(
             colour=colour,
