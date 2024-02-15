@@ -59,7 +59,7 @@ class Moderation(Cog):
         member: discord.User,
         reason: typing.Optional[str],
     ) -> None:
-        """Ban someone
+        """Ban a member
 
         :param interaction: Interaction provided by discord
         :type interaction: discord.Interaction
@@ -73,15 +73,35 @@ class Moderation(Cog):
         try:
             await interaction.guild.ban(member, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Banned {member}\nReason: {reason}")
+                embed=SuccessEmbed(f"Banned {member}\nReason: {reason}"), ephemeral=True
             )
         except discord.Forbidden:
             raise NoPermission
-        
-    # @app_commands.command(name="unban")
-    # @app_commands.checks.has_permissions(ban_members=True)
-    # @app_commands.checks.bot_has_permissions(ban_members=True)
-    
+
+    @app_commands.command(name="unban")
+    @app_commands.checks.has_permissions(ban_members=True)
+    @app_commands.checks.bot_has_permissions(ban_members=True)
+    async def _unban(
+        self, interaction: discord.Interaction, user: discord.User, reason: str
+    ) -> None:
+        """Unban a user
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param user: User to unban
+        :type user: discord.User
+        :param reason: Reason for unban
+        :type reason: str
+        """
+        reason = reason or "No reason provided"
+
+        try:
+            await interaction.guild.unban(user, reason=reason)
+            await interaction.response.send_message(
+                embed=SuccessEmbed(f"Unbanned {user}\nReason: {reason}"), ephemeral=True
+            )
+        except discord.Forbidden:
+            raise NoPermission
 
 
 async def setup(bot: Bot):
