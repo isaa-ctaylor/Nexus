@@ -110,6 +110,31 @@ class Moderation(Cog):
             raise NoPermission
         except discord.NotFound:
             raise BanNotFound
+        
+    @app_commands.command(name="kick")
+    @app_commands.checks.has_permissions(kick_members=True)
+    @app_commands.checks.bot_has_permissions(kick_members=True)
+    async def _kick(self, interaction: discord.Interaction, member: discord.Member, reason: str) -> None:
+        """Kick a member
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param member: User to kick
+        :type member: discord.Member
+        :param reason: Reason for kick
+        :type reason: str
+        """
+        reason = reason or "No reason provided"
+
+        try:
+            await interaction.guild.kick(member, reason=reason)
+            await interaction.response.send_message(
+                embed=SuccessEmbed(f"Kicked {member}\nReason: {reason}"), ephemeral=True
+            )
+        except discord.Forbidden:
+            raise NoPermission
+        except discord.NotFound:
+            raise UserNotFound
 
 
 async def setup(bot: Bot):
