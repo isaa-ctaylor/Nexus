@@ -16,6 +16,13 @@ class NoPermission(ModerationError):
     """I don't have permission to do that!"""
 
 
+class UserNotFound(ModerationError):
+    """User not found! Please check the name or id provided"""
+    
+class BanNotFound(ModerationError):
+    """Ban not found! Please check the name or id provided"""
+
+
 class Moderation(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -30,12 +37,9 @@ class Moderation(Cog):
 
         if isinstance(
             error,
-            (NoPermission),
+            (NoPermission, UserNotFound, BanNotFound),
         ):
             message = error.__doc__
-
-        elif isinstance(error, app_commands.TransformerError):
-            message = f"Couldn't find a song matching '{error.value}'"
 
         else:
             message = f"An error occured. If the issue persists, please contact the support team."
@@ -77,6 +81,8 @@ class Moderation(Cog):
             )
         except discord.Forbidden:
             raise NoPermission
+        except discord.NotFound:
+            raise UserNotFound
 
     @app_commands.command(name="unban")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -102,6 +108,8 @@ class Moderation(Cog):
             )
         except discord.Forbidden:
             raise NoPermission
+        except discord.NotFound:
+            raise BanNotFound
 
 
 async def setup(bot: Bot):
