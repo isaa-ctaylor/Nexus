@@ -6,6 +6,7 @@ from subclasses.bot import Bot
 from discord import app_commands
 from .utils.embed import SuccessEmbed, ErrorEmbed
 import logging
+import datetime
 
 
 class ModerationError(Exception):
@@ -18,7 +19,8 @@ class NoPermission(ModerationError):
 
 class UserNotFound(ModerationError):
     """User not found! Please check the name or id provided"""
-    
+
+
 class BanNotFound(ModerationError):
     """Ban not found! Please check the name or id provided"""
 
@@ -77,7 +79,7 @@ class Moderation(Cog):
         try:
             await interaction.guild.ban(member, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Banned {member}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Banned {member.mention}\nReason: {reason}"), ephemeral=True
             )
         except discord.Forbidden:
             raise NoPermission
@@ -88,7 +90,10 @@ class Moderation(Cog):
     @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.checks.bot_has_permissions(ban_members=True)
     async def _unban(
-        self, interaction: discord.Interaction, user: discord.User, reason: str
+        self,
+        interaction: discord.Interaction,
+        user: discord.User,
+        reason: typing.Optional[str],
     ) -> None:
         """Unban a user
 
@@ -97,24 +102,29 @@ class Moderation(Cog):
         :param user: User to unban
         :type user: discord.User
         :param reason: Reason for unban
-        :type reason: str
+        :type reason: typing.Optional[str]
         """
         reason = reason or "No reason provided"
 
         try:
             await interaction.guild.unban(user, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Unbanned {user}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Unbanned {user.mention}\nReason: {reason}"), ephemeral=True
             )
         except discord.Forbidden:
             raise NoPermission
         except discord.NotFound:
             raise BanNotFound
-        
+
     @app_commands.command(name="kick")
     @app_commands.checks.has_permissions(kick_members=True)
     @app_commands.checks.bot_has_permissions(kick_members=True)
-    async def _kick(self, interaction: discord.Interaction, member: discord.Member, reason: str) -> None:
+    async def _kick(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+        reason: typing.Optional[str],
+    ) -> None:
         """Kick a member
 
         :param interaction: Interaction provided by discord
@@ -122,14 +132,56 @@ class Moderation(Cog):
         :param member: User to kick
         :type member: discord.Member
         :param reason: Reason for kick
-        :type reason: str
+        :type reason: typing.Optional[str]
         """
         reason = reason or "No reason provided"
 
         try:
             await interaction.guild.kick(member, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Kicked {member}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Kicked {member.mention}\nReason: {reason}"), ephemeral=True
+            )
+        except discord.Forbidden:
+            raise NoPermission
+        except discord.NotFound:
+            raise UserNotFound
+
+    @app_commands.command(name="timeout")
+    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_commands.checks.bot_has_permissions(moderate_members=True)
+    @app_commands.choices(
+        duration=[
+            app_commands.Choice(name="60 seconds", value=60),
+            app_commands.Choice(name="5 minutes", value=300),
+            app_commands.Choice(name="10 minutes", value=600),
+            app_commands.Choice(name="1 hour", value=3600),
+            app_commands.Choice(name="1 day", value=86400),
+            app_commands.Choice(name="1 week", value=604800),
+        ]
+    )
+    async def _timeout(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+        duration: app_commands.Choice[int],
+        reason: typing.Optional[str],
+    ) -> None:
+        """Timeout a member
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param member: Member to timeout
+        :type member: discord.Member
+        :param reason: Reason for timeout
+        :type reason: typing.Optional[str]
+        """
+        duration_ = datetime.timedelta(seconds=duration)
+        reason = reason or "No reason provided"
+
+        try:
+            await member.timeout(until=duration_, reason=reason)
+            await interaction.response.send_message(
+                embed=SuccessEmbed(f"Timed {member.mention} out for {duration.name} \nReason: {reason}"), ephemeral=True
             )
         except discord.Forbidden:
             raise NoPermission
