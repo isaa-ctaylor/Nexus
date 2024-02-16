@@ -25,6 +25,14 @@ class BanNotFound(ModerationError):
     """Ban not found! Please check the name or id provided"""
 
 
+class MemberHigherThanMe(ModerationError):
+    """The requested user has a higher role than me!"""
+
+
+class MemberIsBot(ModerationError):
+    """Selected member is me!"""
+
+
 class Moderation(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -39,7 +47,7 @@ class Moderation(Cog):
 
         if isinstance(
             error,
-            (NoPermission, UserNotFound, BanNotFound),
+            (NoPermission, UserNotFound, BanNotFound, MemberHigherThanMe, MemberIsBot),
         ):
             message = error.__doc__
 
@@ -55,6 +63,13 @@ class Moderation(Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.InteractionResponded:
             await interaction.followup.send(embed=embed)
+            
+    async def verify_roles(self, interaction: discord.Interaction, member: typing.Union[discord.Member, discord.User]) -> None:
+        if member.top_role > interaction.guild.me.top_role:
+            raise MemberHigherThanMe
+
+        if member.id == interaction.guild.me.id:
+            raise MemberIsBot
 
     @app_commands.command(name="ban")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -79,7 +94,8 @@ class Moderation(Cog):
         try:
             await interaction.guild.ban(member, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Banned {member.mention}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Banned {member.mention}\nReason: {reason}"),
+                ephemeral=True,
             )
         except discord.Forbidden:
             raise NoPermission
@@ -109,7 +125,8 @@ class Moderation(Cog):
         try:
             await interaction.guild.unban(user, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Unbanned {user.mention}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Unbanned {user.mention}\nReason: {reason}"),
+                ephemeral=True,
             )
         except discord.Forbidden:
             raise NoPermission
@@ -139,7 +156,8 @@ class Moderation(Cog):
         try:
             await interaction.guild.kick(member, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Kicked {member.mention}\nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(f"Kicked {member.mention}\nReason: {reason}"),
+                ephemeral=True,
             )
         except discord.Forbidden:
             raise NoPermission
@@ -175,13 +193,18 @@ class Moderation(Cog):
         :param reason: Reason for timeout
         :type reason: typing.Optional[str]
         """
-        duration_ = datetime.timedelta(seconds=duration)
+        await self.verify_roles(interaction, member)
+
+        duration_ = datetime.timedelta(seconds=duration.value)
         reason = reason or "No reason provided"
 
         try:
             await member.timeout(until=duration_, reason=reason)
             await interaction.response.send_message(
-                embed=SuccessEmbed(f"Timed {member.mention} out for {duration.name} \nReason: {reason}"), ephemeral=True
+                embed=SuccessEmbed(
+                    f"Timed {member.mention} out for {duration.name} \nReason: {reason}"
+                ),
+                ephemeral=True,
             )
         except discord.Forbidden:
             raise NoPermission
