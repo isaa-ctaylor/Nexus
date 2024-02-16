@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
 from subclasses.bot import Bot
-from utils.embed import NeutralEmbed
+from .utils.embed import NeutralEmbed
 
 
 class Event(Cog):
