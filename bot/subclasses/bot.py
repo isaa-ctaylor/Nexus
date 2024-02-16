@@ -100,7 +100,7 @@ class Bot(Bot):
         if debug := self.config.get("debug", False):
             self.logger.info("DEBUG mode is ON")
             if debug.get("sync", False):
-                guild = self.config.get("dev-guild", None)
+                guild = self.config.get("dev", {}).get("guild")
                 if guild:
                     self.logger.info("Syncing to development guild")
                     guild = discord.Object(guild)
