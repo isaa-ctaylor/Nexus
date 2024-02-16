@@ -173,7 +173,7 @@ class Moderation(Cog):
     @app_commands.checks.bot_has_permissions(moderate_members=True)
     @app_commands.choices(
         duration=[
-            app_commands.Choice(name="Remove", value=None),
+            app_commands.Choice(name="Remove", value=0),
             app_commands.Choice(name="60 seconds", value=60),
             app_commands.Choice(name="5 minutes", value=300),
             app_commands.Choice(name="10 minutes", value=600),
@@ -200,7 +200,7 @@ class Moderation(Cog):
         """
         await self.verify_roles(interaction, member)
 
-        if duration.value is not None:
+        if duration.value != 0:
             duration_ = datetime.timedelta(seconds=duration.value)
         else:
             duration_ = None
