@@ -63,8 +63,12 @@ class Moderation(Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.InteractionResponded:
             await interaction.followup.send(embed=embed)
-            
-    async def verify_roles(self, interaction: discord.Interaction, member: typing.Union[discord.Member, discord.User]) -> None:
+
+    async def verify_roles(
+        self,
+        interaction: discord.Interaction,
+        member: typing.Union[discord.Member, discord.User],
+    ) -> None:
         if member.top_role > interaction.guild.me.top_role:
             raise MemberHigherThanMe
 
@@ -164,7 +168,9 @@ class Moderation(Cog):
         except discord.NotFound:
             raise UserNotFound
 
-    @app_commands.command(name="timeout")
+    timeout = app_commands.Group(name="timeout", description="Timeout a member")
+
+    @timeout.command(name="set")
     @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.checks.bot_has_permissions(moderate_members=True)
     @app_commands.choices(
@@ -203,6 +209,41 @@ class Moderation(Cog):
             await interaction.response.send_message(
                 embed=SuccessEmbed(
                     f"Timed {member.mention} out for {duration.name} \nReason: {reason}"
+                ),
+                ephemeral=True,
+            )
+        except discord.Forbidden:
+            raise NoPermission
+        except discord.NotFound:
+            raise UserNotFound
+
+    @timeout.command(name="remove")
+    @app_commands.checks.has_permissions(moderate_members=True)
+    @app_commands.checks.bot_has_permissions(moderate_members=True)
+    async def _timeout(
+        self,
+        interaction: discord.Interaction,
+        member: discord.Member,
+        reason: typing.Optional[str],
+    ) -> None:
+        """Remove a timeout
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param member: Member to remove timeout
+        :type member: discord.Member
+        :param reason: Reason for timeout removal
+        :type reason: typing.Optional[str]
+        """
+        await self.verify_roles(interaction, member)
+
+        reason = reason or "No reason provided"
+
+        try:
+            await member.timeout(None, reason=reason)
+            await interaction.response.send_message(
+                embed=SuccessEmbed(
+                    f"Removed timeout for {member.mention}\nReason: {reason}"
                 ),
                 ephemeral=True,
             )
