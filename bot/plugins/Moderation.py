@@ -199,7 +199,7 @@ class Moderation(Cog):
         reason = reason or "No reason provided"
 
         try:
-            await member.timeout(until=duration_, reason=reason)
+            await member.timeout(duration_, reason=reason)
             await interaction.response.send_message(
                 embed=SuccessEmbed(
                     f"Timed {member.mention} out for {duration.name} \nReason: {reason}"
