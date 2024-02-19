@@ -1,8 +1,10 @@
+import asyncio
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog
 from subclasses.bot import Bot
 from typing import Optional, Literal
+from .utils.embed import NeutralEmbed
 
 class Developer(Cog):
     def __init__(self, bot: Bot):
@@ -50,6 +52,32 @@ class Developer(Cog):
                 ret += 1
 
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
+        
+    @commands.is_owner()
+    @commands.bot_has_permissions(send_messages=True, embed_links=True)
+    @commands.command(name="pull")
+    async def _sync(self, ctx: commands.Context):
+        """
+        Sync with github.
+        """
+        async with ctx.typing():
+            proc = await asyncio.create_subprocess_shell("git pull", stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+
+            stdout, stderr = await proc.communicate()
+
+            out = ""
+
+            if stdout:
+                out += f"[stdout]\n{stdout.decode()}"
+
+            if stderr:
+                out += f"\n[stderr]\n{stderr.decode()}"
+
+            out = out or "No output"
+
+            NeutralEmbed(
+                description=f"```sh\n$ git pull\n{out}```"
+            )
 
 async def setup(bot: Bot):
     await bot.add_cog(Developer(bot))
