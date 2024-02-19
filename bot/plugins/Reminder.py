@@ -47,7 +47,6 @@ class Reminder(Cog):
             error,
             (ReminderDoesntExist, NoReminders),
         ):
-            await interaction.followup.send(type(error))
             message = error.__doc__
 
         if isinstance(error, app_commands.errors.TransformerError):
