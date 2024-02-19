@@ -1,17 +1,21 @@
-from discord.ext.commands import Bot
-import discord
 import logging
+import os
+import typing
+
+import aiohttp
+import asyncpg
+import discord
+import wavelink
 import yaml
 from discord.app_commands import CommandTree
-import wavelink
-import os
-from dotenv import load_dotenv
-import typing
-import aiohttp
 from discord.ext import commands
-import asyncpg
+from discord.ext.commands import Bot
+from dotenv import load_dotenv
 
 load_dotenv()
+
+os.environ["JISHAKU_NO_UNDERSCORE"] = "True"
+os.environ["JISHAKU_NO_DM_TRACEBACK"] = "True"
 
 with open("config.yaml", "r") as f:
     CONFIG: typing.Dict[str, typing.Union[str, dict, list, bool]] = yaml.safe_load(f)
@@ -113,14 +117,16 @@ class Bot(Bot):
                     )
 
     async def db_get_user(self, user_id: int) -> dict:
-        d = await self.database.fetchrow("SELECT * FROM public.user WHERE id = $1", user_id)
+        d = await self.database.fetchrow(
+            "SELECT * FROM public.user WHERE id = $1", user_id
+        )
 
         if d:
             return dict(d)
 
     async def db_create_user(self, user_id: int) -> None:
         await self.database.execute("INSERT INTO public.user VALUES ($1)", user_id)
-        
+
     async def ensure_user(self, user_id: int) -> None:
         user = await self.db_get_user(user_id)
         if not user:
