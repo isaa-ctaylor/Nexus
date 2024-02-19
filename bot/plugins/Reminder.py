@@ -47,7 +47,7 @@ class Reminder(Cog):
             error,
             (ReminderDoesntExist, NoReminders),
         ):
-            await interaction.followup.send("a")
+            await interaction.followup.send(type(error))
             message = error.__doc__
 
         if isinstance(error, app_commands.errors.TransformerError):
@@ -62,9 +62,9 @@ class Reminder(Cog):
         embed = ErrorEmbed(message)
 
         try:
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.InteractionResponded:
-            await interaction.followup.send(embed=embed)
+            return await interaction.followup.send(embed=embed)
 
     reminder = app_commands.Group(name="reminder", description="Reminders")
 
