@@ -242,24 +242,25 @@ class Music(Cog):
             and len(interaction.guild.me.voice.channel.members) > 1
         ):
             if interaction.user.guild_permissions.move_members:
-                cv = Confirm()
+                c = Confirm()
 
                 await interaction.response.send_message(
                     embed=NeutralEmbed(
                         f"I am already in {interaction.guild.me.voice.channel.mention}.\nPress confirm to move me to {channel.mention}.",
                         title="Confirm move",
                     ),
-                    view=cv,
+                    view=c,
                     ephemeral=True,
                 )
+                c.message = await interaction.original_response()
 
-                if await cv.wait():
+                if await c.wait():
                     return
 
-                if not cv.value:
+                if not c.value:
                     return
 
-                interaction = cv.interaction
+                interaction = c.interaction
             else:
                 raise UserNotInSameVoiceChannel(
                     interaction.guild.me.voice.channel.mention
@@ -304,23 +305,23 @@ class Music(Cog):
             interaction.user.voice.channel.id != interaction.guild.me.voice.channel.id
             and len(interaction.guild.me.voice.channel.members) > 1
         ):
-            cv = Confirm()
+            c = Confirm()
 
             await interaction.response.send_message(
                 embed=NeutralEmbed(
                     "You are not in the same channel as me, please confirm."
                 ),
-                view=cv,
+                view=c,
                 ephemeral=True,
             )
 
-            if await cv.wait():
+            if await c.wait():
                 return
 
-            if not cv.value:
+            if not c.value:
                 return
 
-            interaction = cv.interaction
+            interaction = c.interaction
 
         channel: discord.VoiceChannel = interaction.guild.voice_client.channel
         await interaction.guild.voice_client.disconnect()

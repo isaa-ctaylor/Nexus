@@ -1,12 +1,15 @@
+import datetime
+import logging
 import typing
+
 import discord
+from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Cog
 from subclasses.bot import Bot
-from discord import app_commands
-from .utils.embed import SuccessEmbed, ErrorEmbed
-import logging
-import datetime
+
+from .utils.embed import ErrorEmbed, SuccessEmbed, NeutralEmbed
+from .utils.view import Confirm
 
 
 class ModerationError(Exception):
@@ -76,6 +79,7 @@ class Moderation(Cog):
             raise MemberIsBot
 
     @app_commands.command(name="ban")
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.checks.bot_has_permissions(ban_members=True)
     async def _ban(
@@ -107,6 +111,7 @@ class Moderation(Cog):
             raise UserNotFound
 
     @app_commands.command(name="unban")
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(ban_members=True)
     @app_commands.checks.bot_has_permissions(ban_members=True)
     async def _unban(
@@ -138,6 +143,7 @@ class Moderation(Cog):
             raise BanNotFound
 
     @app_commands.command(name="kick")
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(kick_members=True)
     @app_commands.checks.bot_has_permissions(kick_members=True)
     async def _kick(
@@ -169,6 +175,7 @@ class Moderation(Cog):
             raise UserNotFound
 
     @app_commands.command(name="timeout")
+    @app_commands.guild_only()
     @app_commands.checks.has_permissions(moderate_members=True)
     @app_commands.checks.bot_has_permissions(moderate_members=True)
     @app_commands.choices(
@@ -219,6 +226,35 @@ class Moderation(Cog):
             raise NoPermission
         except discord.NotFound:
             raise UserNotFound
+        
+    @app_commands.command(name="nuke")
+    @app_commands.guild_only()
+    @app_commands.checks.has_permissions(manage_channels=True)
+    @app_commands.checks.bot_has_permissions(
+        manage_channels=True,
+        read_message_history=True,
+        send_messages=True,
+        embed_links=True,
+    )
+    async def _nuke(self, interaction: discord.Interaction, channel: typing.Optional[discord.TextChannel] = None) -> None:
+        """Completely clear a channel by cloning it and deleting the original
+
+        :param interaction: Interaction provided by discord
+        :type interaction: discord.Interaction
+        :param channel: Channel to delete
+        :type channel: discord.TextChannel
+        """
+        c = Confirm()
+        await interaction.response.send_message(embed=NeutralEmbed(message=f"Please confirm you want to "))
+        c.message = await interaction.original_response()
+        
+        channel = channel or interaction.channel
+
+        c = await channel.clone(reason=f"Nuke command invoked by @{interaction.user} ({interaction.user.id})")
+        await c.edit(position=channel.position)
+        await channel.delete()
+
+        await c.send(interaction.user.mention, delete_after=5)
 
 
 async def setup(bot: Bot):

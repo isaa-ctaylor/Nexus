@@ -8,6 +8,7 @@ class Confirm(discord.ui.View):
         super().__init__()
         self.value = None
         self.interaction = None
+        self.message: typing.Optional[discord.InteractionMessage] = None
         
     def disable_children(self):
         for c in self.children:
@@ -31,3 +32,7 @@ class Confirm(discord.ui.View):
 
         self.value = False
         self.stop()
+        
+    async def on_timeout(self) -> None:
+        self.disable_children()
+        await self.message.edit(view=self)
