@@ -78,14 +78,14 @@ class Developer(Cog):
             out = ""
 
             if stdout:
-                out += f"[stdout]\n{stdout.decode()}"
+                out += f"{stdout.decode()}"
 
             if stderr:
-                out += f"\n[stderr]\n{stderr.decode()}"
+                out += f"\n{stderr.decode()}"
 
             out = out or "No output"
 
-        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ git pull\n{out}```"))
+        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ git pull\n{out}```"), mention_author=False)
 
 
 async def setup(bot: Bot):
