@@ -49,7 +49,7 @@ class Reminder(Cog):
         ):
             message = error.__doc__
 
-        if isinstance(error, app_commands.errors.TransformerError):
+        elif isinstance(error, app_commands.errors.TransformerError):
             message = "Failed to convert your input to something meaningful...\nPlease try again."
 
         else:
@@ -63,7 +63,7 @@ class Reminder(Cog):
         try:
             await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.InteractionResponded:
-            await interaction.followup.send(embed=embed, ephemeral=True)
+            await interaction.followup.send(embed=embed)
 
     reminder = app_commands.Group(name="reminder", description="Reminders")
 
