@@ -85,7 +85,7 @@ class Developer(Cog):
 
             out = out or "No output"
 
-        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ git pull\n{out}```"))
+        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ git pull\n{out}```"), mention_author=False)
 
 
 async def setup(bot: Bot):
