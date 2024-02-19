@@ -61,9 +61,11 @@ class Reminder(Cog):
         embed = ErrorEmbed(message)
 
         try:
-            return await interaction.response.send_message(embed=embed, ephemeral=True)
+            self.logger.info("a")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         except discord.InteractionResponded:
-            return await interaction.followup.send(embed=embed)
+            self.logger.info("b")
+            await interaction.followup.send(embed=embed)
 
     reminder = app_commands.Group(name="reminder", description="Reminders")
 
