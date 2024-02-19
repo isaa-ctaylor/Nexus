@@ -78,10 +78,10 @@ class Developer(Cog):
             out = ""
 
             if stdout:
-                out += f"[stdout]\n{stdout.decode()}"
+                out += f"{stdout.decode()}"
 
             if stderr:
-                out += f"\n[stderr]\n{stderr.decode()}"
+                out += f"\n{stderr.decode()}"
 
             out = out or "No output"
 
