@@ -40,7 +40,6 @@ class Reminder(Cog):
     async def cog_app_command_error(
         self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ) -> None:
-        await interaction.response.send_message("a")
         if isinstance(error, discord.app_commands.CommandInvokeError):
             error = error.original
 
@@ -48,6 +47,7 @@ class Reminder(Cog):
             error,
             (ReminderDoesntExist, NoReminders),
         ):
+            await interaction.followup.send("a")
             message = error.__doc__
 
         if isinstance(error, app_commands.errors.TransformerError):
