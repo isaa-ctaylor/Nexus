@@ -634,9 +634,11 @@ class Music(Cog):
             player.queue.mode = m[player.queue.mode]
         else:
             player.queue.mode = sm[type_]
-            
+
         await interaction.response.send_message(
-            embed=SuccessEmbed(f"Changed the loop mode to {str(player.queue.mode).removeprefix('QueueMode.').replace('_', ' ').capitalize()}")
+            embed=SuccessEmbed(
+                f"Changed the loop mode to {str(player.queue.mode).removeprefix('QueueMode.').replace('_', ' ').capitalize()}"
+            )
         )
 
 

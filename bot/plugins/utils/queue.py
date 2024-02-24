@@ -122,5 +122,5 @@ class AsyncLoopShuffleQueue:
             self._queue = deque(queue)
 
             self._shuffled = True
-            
+
         return self._shuffled
