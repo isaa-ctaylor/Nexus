@@ -93,9 +93,9 @@ class Developer(Cog):
             embed=NeutralEmbed(
                 description=f"```sh\n$ {cmd}\n{out}```",
                 colour=(
-                    discord.Colour.green
+                    discord.Colour.green()
                     if len(stdout) > len(stderr)
-                    else discord.Colour.red
+                    else discord.Colour.red()
                 ),
             ),
             mention_author=False,
