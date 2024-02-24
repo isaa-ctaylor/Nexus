@@ -89,7 +89,7 @@ class Developer(Cog):
 
             out = out or "No output"
 
-        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ {cmd}\n{out}```"), mention_author=False)
+        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ {cmd}\n{out}```", colour=discord.Colour.green if len(stdout) > len(stderr) else discord.Colour.red), mention_author=False)
 
 
 async def setup(bot: Bot):
