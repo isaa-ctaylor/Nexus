@@ -9,7 +9,7 @@ class Confirm(discord.ui.View):
         self.value = None
         self.interaction = None
         self.message: typing.Optional[discord.InteractionMessage] = None
-        
+
     def disable_children(self):
         for c in self.children:
             c.disabled = True
@@ -24,7 +24,9 @@ class Confirm(discord.ui.View):
         self.stop()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
-    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def cancel(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         self.disable_children()
         await interaction.response.edit_message(
             embed=NeutralEmbed("Cancelled"), view=self
@@ -32,7 +34,7 @@ class Confirm(discord.ui.View):
 
         self.value = False
         self.stop()
-        
+
     async def on_timeout(self) -> None:
         self.disable_children()
         await self.message.edit(view=self)

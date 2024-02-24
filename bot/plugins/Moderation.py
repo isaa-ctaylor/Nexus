@@ -226,7 +226,7 @@ class Moderation(Cog):
             raise NoPermission
         except discord.NotFound:
             raise UserNotFound
-        
+
     @app_commands.command(name="nuke")
     @app_commands.guild_only()
     @app_commands.checks.has_permissions(manage_channels=True)
@@ -236,7 +236,11 @@ class Moderation(Cog):
         send_messages=True,
         embed_links=True,
     )
-    async def _nuke(self, interaction: discord.Interaction, channel: typing.Optional[discord.TextChannel] = None) -> None:
+    async def _nuke(
+        self,
+        interaction: discord.Interaction,
+        channel: typing.Optional[discord.TextChannel] = None,
+    ) -> None:
         """Completely clear a channel by cloning it and deleting the original
 
         :param interaction: Interaction provided by discord
@@ -245,12 +249,16 @@ class Moderation(Cog):
         :type channel: discord.TextChannel
         """
         c = Confirm()
-        await interaction.response.send_message(embed=NeutralEmbed(message=f"Please confirm you want to "))
+        await interaction.response.send_message(
+            embed=NeutralEmbed(message=f"Please confirm you want to ")
+        )
         c.message = await interaction.original_response()
-        
+
         channel = channel or interaction.channel
 
-        c = await channel.clone(reason=f"Nuke command invoked by @{interaction.user} ({interaction.user.id})")
+        c = await channel.clone(
+            reason=f"Nuke command invoked by @{interaction.user} ({interaction.user.id})"
+        )
         await c.edit(position=channel.position)
         await channel.delete()
 

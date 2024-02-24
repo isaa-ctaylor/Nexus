@@ -54,7 +54,7 @@ class SuccessEmbed(CustomEmbed):
     ):
         if title is None:
             title = "Success!"
-            
+
         if title is discord.utils.MISSING:
             title = None
 
@@ -87,7 +87,7 @@ class ErrorEmbed(CustomEmbed):
     ):
         if title is None:
             title = "Error!"
-            
+
         if title is discord.utils.MISSING:
             title = None
 
