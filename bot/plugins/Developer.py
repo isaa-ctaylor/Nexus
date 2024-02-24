@@ -1,3 +1,4 @@
+import typing
 import asyncio
 import discord
 from discord.ext import commands
@@ -62,13 +63,16 @@ class Developer(Cog):
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     @commands.command(name="pull")
-    async def _pull(self, ctx: commands.Context):
+    async def _pull(self, ctx: commands.Context, url: typing.Optional[str] = None):
         """
         Sync with github.
         """
+        
+        cmd = f"git pull {url or ''} {(url.split("#")[-1]) if url else ''}"
+        
         async with ctx.typing():
             proc = await asyncio.create_subprocess_shell(
-                "git pull",
+                cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
@@ -85,7 +89,7 @@ class Developer(Cog):
 
             out = out or "No output"
 
-        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ git pull\n{out}```"), mention_author=False)
+        await ctx.reply(embed=NeutralEmbed(description=f"```sh\n$ {cmd}\n{out}```"), mention_author=False)
 
 
 async def setup(bot: Bot):
