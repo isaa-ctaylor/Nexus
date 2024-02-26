@@ -175,18 +175,29 @@ class Music(Cog):
                 finally:
                     self._tasks.pop(player.channel.id, None)
             except asyncio.TimeoutError:
-                await player.disconnect()
-                now = datetime.utcnow()
-                await player.channel.send(
-                    embed=SuccessEmbed(
-                        "👋 Disconnected due to inactivity",
-                        title=discord.utils.MISSING,
-                        timestamp=now,
-                    )
-                )
-                self.logger.debug(
-                    f"{payload.player.guild.name} ({payload.player.guild.id}) Timed out getting next song."
-                )
+                self.bot.dispatch("wavelink_inactive_player", player)
+                
+    @commands.Cog.listener(name="on_music_player_paused")
+    async def _on_music_player_paused(self, player: Player):
+        try:
+            self.bot.wait_for("app_command_completion", check=lambda i, c: i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"])
+        except asyncio.TimeoutError:
+            await self.bot.dispatch("wavelink_inactive_player", player)
+
+    @commands.Cog.listener(name="on_wavelink_inactive_player")
+    async def _on_wavelink_inactive_player(self, player: Player):
+        await player.disconnect()
+        now = datetime.utcnow()
+        await player.channel.send(
+            embed=SuccessEmbed(
+                "👋 Disconnected due to inactivity",
+                title=discord.utils.MISSING,
+                timestamp=now,
+            )
+        )
+        self.logger.debug(
+            f"{player.guild.name} ({player.guild.id}) Timed out due to inactivity."
+        )
 
     async def _send_current_playing(
         self,
@@ -406,6 +417,8 @@ class Music(Cog):
         await interaction.response.send_message(
             embed=SuccessEmbed("Paused the player."), ephemeral=True
         )
+        
+        self.bot.dispatch("music_player_paused", player)
 
     @app_commands.guild_only
     @app_commands.command(name="resume")
