@@ -19,7 +19,7 @@ multidict==6.0.5
 mutagen==1.47.0
 netifaces==0.11.0
 packaging==23.2
-Pillow==10.1.0
+Pillow==10.2.0
 prettytable==3.9.0
 psycopg2==2.9.9
 pypng==0.20220715.0
