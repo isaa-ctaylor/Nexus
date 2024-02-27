@@ -175,18 +175,24 @@ class Music(Cog):
                 finally:
                     self._tasks.pop(player.channel.id, None)
             except asyncio.TimeoutError:
-                await player.disconnect()
-                now = datetime.utcnow()
-                await player.channel.send(
-                    embed=SuccessEmbed(
-                        "👋 Disconnected due to inactivity",
-                        title=discord.utils.MISSING,
-                        timestamp=now,
-                    )
-                )
-                self.logger.debug(
-                    f"{payload.player.guild.name} ({payload.player.guild.id}) Timed out getting next song."
-                )
+                self.bot.dispatch("wavelink_inactive_player", player)
+                
+    
+
+    @commands.Cog.listener(name="on_wavelink_inactive_player")
+    async def _on_wavelink_inactive_player(self, player: Player):
+        await player.disconnect()
+        now = datetime.utcnow()
+        await player.channel.send(
+            embed=SuccessEmbed(
+                "👋 Disconnected due to inactivity",
+                title=discord.utils.MISSING,
+                timestamp=now,
+            )
+        )
+        self.logger.debug(
+            f"{player.guild.name} ({player.guild.id}) Timed out due to inactivity."
+        )
 
     async def _send_current_playing(
         self,
