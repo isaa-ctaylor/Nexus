@@ -67,8 +67,9 @@ class Developer(Cog):
         """
         Sync with github.
         """
+        parts = url.split('tree', 1) if url else None
 
-        cmd = f"git pull {url or ''} {(url.split('#')[-1]) if url else ''}"
+        cmd = f"git pull {parts[0] if parts else ''} {(parts[-1].lstrip("/")) if url else ''}"
 
         async with ctx.typing():
             proc = await asyncio.create_subprocess_shell(
