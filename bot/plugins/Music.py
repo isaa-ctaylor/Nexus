@@ -182,7 +182,9 @@ class Music(Cog):
         def ch(i, c):
             self.logger.info(c.name)
             self.logger.info(i.guild.id)
-            return i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"]
+            ret = i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"]
+            self.logger.info(str(ret))
+            return ret
         try:
             await self.bot.wait_for("app_command_completion", check=ch)
         except asyncio.TimeoutError:
