@@ -177,18 +177,7 @@ class Music(Cog):
             except asyncio.TimeoutError:
                 self.bot.dispatch("wavelink_inactive_player", player)
                 
-    @commands.Cog.listener(name="on_music_player_paused")
-    async def _on_music_player_paused(self, player: Player):
-        def ch(i, c):
-            self.logger.info(c.name)
-            self.logger.info(i.guild.id)
-            ret = i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"]
-            self.logger.info(str(ret))
-            return ret
-        try:
-            await self.bot.wait_for("app_command_completion", check=ch)
-        except asyncio.TimeoutError:
-            await self.bot.dispatch("wavelink_inactive_player", player)
+    
 
     @commands.Cog.listener(name="on_wavelink_inactive_player")
     async def _on_wavelink_inactive_player(self, player: Player):
@@ -423,8 +412,6 @@ class Music(Cog):
         await interaction.response.send_message(
             embed=SuccessEmbed("Paused the player."), ephemeral=True
         )
-        
-        self.bot.dispatch("music_player_paused", player)
 
     @app_commands.guild_only
     @app_commands.command(name="resume")
