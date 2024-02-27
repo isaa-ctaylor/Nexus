@@ -179,8 +179,12 @@ class Music(Cog):
                 
     @commands.Cog.listener(name="on_music_player_paused")
     async def _on_music_player_paused(self, player: Player):
+        def ch(i, c):
+            self.logger.info(c.name)
+            self.logger.info(i.guild.id)
+            return i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"]
         try:
-            await self.bot.wait_for("app_command_completion", check=lambda i, c: i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"])
+            await self.bot.wait_for("app_command_completion", check=ch)
         except asyncio.TimeoutError:
             await self.bot.dispatch("wavelink_inactive_player", player)
 
