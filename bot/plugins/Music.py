@@ -177,18 +177,7 @@ class Music(Cog):
             except asyncio.TimeoutError:
                 self.bot.dispatch("wavelink_inactive_player", player)
                 
-    @commands.Cog.listener(name="on_music_player_paused")
-    async def _on_music_player_paused(self, player: Player):
-        def ch(i, c):
-            self.logger.info(c.name)
-            self.logger.info(i.guild.id)
-            ret = i.guild.id == player.guild.id and c.name in ["resume", "disconnect", "join"]
-            self.logger.info(str(ret))
-            return ret
-        try:
-            await self.bot.wait_for("app_command_completion", check=ch)
-        except asyncio.TimeoutError:
-            await self.bot.dispatch("wavelink_inactive_player", player)
+    
 
     @commands.Cog.listener(name="on_wavelink_inactive_player")
     async def _on_wavelink_inactive_player(self, player: Player):
@@ -235,6 +224,7 @@ class Music(Cog):
             self.bot.voice_extras[player.guild.id] = {}
         self.bot.voice_extras[player.guild.id]["last_current_message"] = msg
 
+    @app_commands.guild_only()
     @app_commands.command(name="join")
     async def _join(
         self,
@@ -301,6 +291,7 @@ class Music(Cog):
                     embed=SuccessEmbed(f"Joined channel {channel.mention}")
                 )
 
+    @app_commands.guild_only()
     @app_commands.command(name="disconnect")
     async def _disconnect(self, interaction: discord.Interaction) -> None:
         """Disconnect from a voice channel
@@ -352,6 +343,7 @@ class Music(Cog):
             embed=SuccessEmbed(f"Disconnected from {channel.mention}")
         )
 
+    @app_commands.guild_only()
     @app_commands.command(name="play")
     @app_commands.rename(playable="query")
     async def _play(
@@ -392,6 +384,7 @@ class Music(Cog):
             ephemeral=True,
         )
 
+    @app_commands.guild_only()
     @app_commands.command(name="pause")
     async def _pause(self, interaction: discord.Interaction) -> None:
         """Pause the player
@@ -423,10 +416,8 @@ class Music(Cog):
         await interaction.response.send_message(
             embed=SuccessEmbed("Paused the player."), ephemeral=True
         )
-        
-        self.bot.dispatch("music_player_paused", player)
 
-    @app_commands.guild_only
+    @app_commands.guild_only()
     @app_commands.command(name="resume")
     async def _resume(self, interaction: discord.Interaction) -> None:
         """Resume the player
@@ -459,7 +450,7 @@ class Music(Cog):
             embed=SuccessEmbed("Resumed the player."), ephemeral=True
         )
 
-    queue = app_commands.Group(name="queue", description="Queue")
+    queue = app_commands.Group(name="queue", description="Queue", guild_only=True)
 
     @queue.command(name="list")
     async def _queue_list(self, interaction: discord.Interaction) -> None:
@@ -550,6 +541,7 @@ class Music(Cog):
             embed=SuccessEmbed(f"Removed {removed} from the queue"), ephemeral=True
         )
 
+    @app_commands.guild_only()
     @app_commands.command(name="nowplaying")
     async def _nowplaying(self, interaction: discord.Interaction) -> None:
         """Show the currently playing song
@@ -581,6 +573,7 @@ class Music(Cog):
 
         await self._send_current_playing(interaction.response, player)
 
+    @app_commands.guild_only()
     @app_commands.command(name="skip")
     async def _skip(self, interaction: discord.Interaction) -> None:
         """Skip the current song
@@ -609,6 +602,7 @@ class Music(Cog):
                 embed=SuccessEmbed(f"Skipped {hyperlink(skipped.title, skipped.uri)}")
             )
 
+    @app_commands.guild_only()
     @app_commands.command(name="loop")
     @app_commands.rename(type_="type")
     async def _loop(
