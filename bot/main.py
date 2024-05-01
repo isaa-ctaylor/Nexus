@@ -19,7 +19,7 @@ sentry_sdk.init(
     # of sampled transactions.
     # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
-    environment="prod",
+    environment="dev",
 )
 
 with contextlib.suppress(KeyboardInterrupt):
